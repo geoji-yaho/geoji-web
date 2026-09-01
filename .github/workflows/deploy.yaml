@@ -1,0 +1,72 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 심사 기간(9/21 ~ 10/5) 중 링크가 죽으면 심사에서 제외된다.
+# 배포 전에 게이트를 전부 다시 돌려 깨진 빌드가 Pages에 올라가는 일을 막는다.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 빌드
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v7
+
+      - name: pnpm 설치
+        uses: pnpm/action-setup@v6
+
+      - name: Node 설치
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 의존성 설치
+        run: pnpm install --frozen-lockfile
+
+      - name: 타입 검사
+        run: pnpm type:check
+
+      - name: 빌드
+        run: pnpm build
+
+      - name: 린트
+        run: pnpm lint
+
+      - name: 포맷 검사
+        run: pnpm format:check
+
+      - name: Pages 설정
+        uses: actions/configure-pages@v6
+        with:
+          enablement: true
+
+      - name: 산출물 업로드
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: 배포
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v5
