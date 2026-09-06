@@ -6,6 +6,9 @@ export default defineConfig({
 	base: "/geoji-web/",
 	plugins: [react(), tailwindcss()],
 	server: {
-		port: 3800
+		port: 3800,
+		watch: {
+			ignored: ["**/.omc/**", "**/.agents/**", "**/.claude/**"]
+		}
 	}
 });
