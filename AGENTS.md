@@ -6,9 +6,9 @@
 
 - 문서와 주석, 커밋 메시지, 응답은 한국어. 코드 식별자는 영어
 - Git: `.agents/rules/git-workflow.md`. main은 배포, develop은 통합, feature/{name}은 작업. PR은 develop으로, merge commit
-- `src/` 배치와 import 방향: `.agents/rules/folder-structure.md`. app, pages, features, shared 4층이고 위에서 아래로만 가져온다
-- 구현 후 `pnpm check`(타입 검사, 빌드, 린트, 포맷 검사) 전부 통과해야 완료
-- 위키에 없는 기능은 만들지 않는다. 미결정 값(`docs/product/ROADMAP.md` 미결정 절)을 코드에 박아야 하면 먼저 묻는다
+- `src/` 배치와 import 방향: `.agents/rules/folder-structure.md`. app, features, shared 3층이고 위에서 아래로만 가져온다
+- Tailwind: `.agents/rules/tailwind.md`. 대괄호 임의값 금지, 색은 `src/app/styles/globals.css` 토큰만
+- 구현 후 `pnpm check`(타입 검사, 빌드, 린트, 포맷 검사) 전부 통과해야 완료. 위키에 없는 기능은 만들지 않고 미결정 값(`docs/product/ROADMAP.md` 미결정 절)을 코드에 박아야 하면 먼저 묻는다
 
 ## 기준 문서
 
@@ -17,7 +17,6 @@
 ## 자주 틀리는 것
 
 - 서비스명은 떼거지다. 거지방은 방 단위 명칭, 거지야호는 팀명
-- 판결 결과는 유죄, 무죄, 동의, 기각, 각하 5종이고 도장으로 표현한다. `src/shared/types.ts`의 `Verdict`(승인, 기각, 칭송)는 옛 판결 3종이라 위키와 어긋난다. 고치기 전에 확인한다
-- 공통 컴포넌트(`src/shared/components/`)는 9/3 이전 시안을 옮긴 것이라 명세와 다른 곳이 있다. 차이는 `docs/product/SPEC.md`의 확인 필요 절
+- 판결 결과는 유죄, 무죄, 동의, 기각, 각하 5종이고 도장으로 표현한다. `src/shared/types/verdict.ts`의 `Verdict`가 이 5종이다. 공통 컴포넌트(`src/shared/components/`)와 위키가 어긋나는 것은 `docs/product/SPEC.md`의 확인 필요 절
 - 하단 탭바는 없다. 홈에서 들어가는 2단계 구조이고 모든 화면이 고유 URL을 가진다
 - 개발 서버는 `pnpm dev`, 포트 3800
