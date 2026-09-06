@@ -1,13 +1,12 @@
-import type { Reaction } from "../types/post";
-import type { Tier } from "../types/tier";
-import { Avatar } from "./Avatar";
+import type { Reaction } from "../domain/post";
+import type { Tier } from "../domain/tier";
+import { Avatar } from "../ui/Avatar";
 import { ReactionRow } from "./ReactionRow";
 import { TierBadge } from "./TierBadge";
 
 type NoSpendCardProps = {
 	name: string;
 	tier: Tier;
-	/** 연속 무지출 일수 */
 	streakDays: number;
 	reactions: Reaction[];
 	commentCount: number;

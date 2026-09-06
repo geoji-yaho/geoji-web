@@ -1,5 +1,5 @@
+import type { Reaction } from "../domain/post";
 import { cn } from "../lib/cn";
-import type { Reaction } from "../types/post";
 
 type ReactionRowProps = {
 	reactions: Reaction[];
@@ -10,14 +10,15 @@ type ReactionRowProps = {
 
 export function ReactionRow({ reactions, commentCount, onComments, className }: ReactionRowProps) {
 	return (
-		<div className={cn("flex items-center gap-1.5 text-xs text-mute", className)}>
-			{reactions.map((reaction) => (
-				<span key={reaction.emoji}>
-					{reaction.emoji} {reaction.count}
-				</span>
-			))}
-			{reactions.length > 0 && <span aria-hidden="true">·</span>}
-			<button type="button" onClick={onComments} className="font-bold text-mute">
+		<div className={cn("flex items-center gap-3 text-xs text-mute", className)}>
+			<ul className="flex items-center gap-3">
+				{reactions.map((reaction) => (
+					<li key={reaction.emoji}>
+						{reaction.emoji}&nbsp;{reaction.count}
+					</li>
+				))}
+			</ul>
+			<button type="button" onClick={onComments} className="pressable font-bold text-mute">
 				댓글 {commentCount}
 			</button>
 		</div>

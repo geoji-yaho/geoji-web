@@ -1,12 +1,12 @@
+import type { Intensity } from "../domain/room";
 import { cn } from "../lib/cn";
-import type { Intensity } from "../types/room";
-import { CountBadge } from "./CountBadge";
-import { IntensityTag, StatusTag } from "./Tag";
+import { CountBadge } from "../ui/CountBadge";
+import { IntensityTag } from "./IntensityTag";
+import { StatusTag } from "./StatusTag";
 
 type RoomCardProps = {
 	roomName: string;
 	intensity: Intensity;
-	/** 투표 마감 시간 뱃지. 예: 30분 재판 */
 	deadlineLabel?: string;
 	unreadCount: number;
 	memberCount: number;
@@ -29,7 +29,7 @@ export function RoomCard({
 		<button
 			type="button"
 			onClick={onClick}
-			className={cn("flex w-full flex-col gap-2 rounded-card bg-card p-4 text-left shadow-card", className)}
+			className={cn("flex w-full pressable flex-col gap-2 rounded-card bg-card p-4 text-left shadow-card", className)}
 		>
 			<span className="flex w-full items-center gap-2">
 				<span className="min-w-0 flex-1 truncate text-subtitle text-ink">{roomName}</span>

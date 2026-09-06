@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
+import { type Verdict, VERDICT_LABELS, VERDICT_SIDES } from "../domain/verdict";
 import { cn } from "../lib/cn";
-import { type Verdict, VERDICT_LABELS, VERDICT_SIDES } from "../types/verdict";
 
 const verdictStampVariants = cva(
 	"inline-flex shrink-0 -rotate-7 items-center justify-center rounded-stamp text-stamp-text shadow-stamp select-none",
