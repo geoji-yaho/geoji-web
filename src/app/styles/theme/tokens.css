@@ -1,0 +1,16 @@
+@theme {
+	--container-phone: 393px;
+
+	--radius-card: 22px;
+	--radius-stamp: 12.5%;
+
+	--ease-base: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--duration-press: 150ms;
+
+	--default-transition-timing-function: var(--ease-base);
+
+	--shadow-card: 0 6px 24px var(--color-shadow);
+	--shadow-stamp: 0 6px 16px rgb(0 0 0 / 0.2);
+	--shadow-fab: 0 10px 24px rgb(0 0 0 / 0.18);
+	--shadow-cta: 0 8px 20px rgb(0 0 0 / 0.14);
+}
