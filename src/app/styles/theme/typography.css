@@ -1,0 +1,57 @@
+@theme {
+	--font-sans:
+		"Pretendard Variable", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+		sans-serif;
+
+	--text-display: 38px;
+	--text-display--line-height: 1.1;
+	--text-display--font-weight: 900;
+	--text-display--letter-spacing: -0.03em;
+	--text-amount: 44px;
+	--text-amount--line-height: 1.1;
+	--text-amount--font-weight: 900;
+	--text-amount--letter-spacing: -0.03em;
+	--text-amount-sm: 30px;
+	--text-amount-sm--line-height: 1.1;
+	--text-amount-sm--font-weight: 900;
+	--text-amount-sm--letter-spacing: -0.03em;
+	--text-headline: 26px;
+	--text-headline--line-height: 1.25;
+	--text-headline--font-weight: 900;
+	--text-title: 18px;
+	--text-title--line-height: 1.3;
+	--text-title--font-weight: 900;
+	--text-subtitle: 15px;
+	--text-subtitle--line-height: 1.3;
+	--text-subtitle--font-weight: 900;
+	--text-body: 14px;
+	--text-body--line-height: 1.7;
+	--text-control: 13px;
+	--text-control--line-height: 1.4;
+	--text-chip: 12.5px;
+	--text-chip--line-height: 1.4;
+	--text-label: 11px;
+	--text-label--line-height: 1.3;
+	--text-label--font-weight: 800;
+	--text-label--letter-spacing: 0.06em;
+	--text-tag: 11px;
+	--text-tag--line-height: 1.3;
+	--text-caption: 11px;
+	--text-caption--line-height: 1.4;
+	--text-wordmark: 22px;
+	--text-wordmark--line-height: 1.1;
+	--text-wordmark--font-weight: 900;
+	--text-wordmark--letter-spacing: -0.03em;
+	--text-stamp-sm: 18px;
+	--text-stamp-sm--line-height: 1;
+	--text-stamp-sm--font-weight: 900;
+	--text-stamp-sm--letter-spacing: 0.06em;
+	--text-stamp-md: 22px;
+	--text-stamp-md--line-height: 1;
+	--text-stamp-md--font-weight: 900;
+	--text-stamp-md--letter-spacing: 0.06em;
+	--text-stamp-lg: 32px;
+	--text-stamp-lg--line-height: 1;
+	--text-stamp-lg--font-weight: 900;
+	--text-stamp-lg--letter-spacing: 0.06em;
+}

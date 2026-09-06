@@ -1,27 +1,27 @@
 {
-	"id": "/geoji-web/",
+	"id": "./",
 	"name": "떼거지",
 	"short_name": "떼거지",
 	"description": "친구들이 내 지출을 재판하는 소비 절제 커뮤니티",
 	"lang": "ko",
-	"start_url": "/geoji-web/",
-	"scope": "/geoji-web/",
+	"start_url": "./",
+	"scope": "./",
 	"display": "standalone",
 	"background_color": "#f4f0e7",
 	"theme_color": "#f5d95c",
 	"icons": [
 		{
-			"src": "/geoji-web/icons/icon-192.png",
+			"src": "./icons/icon-192.png",
 			"sizes": "192x192",
 			"type": "image/png"
 		},
 		{
-			"src": "/geoji-web/icons/icon-512.png",
+			"src": "./icons/icon-512.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		},
 		{
-			"src": "/geoji-web/icons/icon-maskable-512.png",
+			"src": "./icons/icon-maskable-512.png",
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "maskable"

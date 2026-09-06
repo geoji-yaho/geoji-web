@@ -1,7 +1,7 @@
 ---
 name: geoji-code-reviewer
 description: 떼거지 코드가 폴더 구조와 import 방향, 배럴 규칙, 타입 안전성, 접근성을 지켰는지 검토하는 에이전트. 구조 위반과 중복 구현, 마크업 문제를 잡는다. geoji-harness 워크플로우의 검증 단계에서 병렬로 호출한다.
-tools: Read, Grep, Glob, Write, Bash
+tools: Read, Grep, Glob, Write, Bash, SendMessage
 model: opus
 ---
 

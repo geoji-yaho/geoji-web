@@ -1,7 +1,7 @@
 ---
 name: geoji-architect
 description: 떼거지 화면이나 기능을 어느 파일에 어떻게 배치할지 설계하는 에이전트. feature 경계와 공개 API, 타입, 상태 위치를 정하고 파일 목록을 낸다. 코드는 쓰지 않는다. geoji-harness 워크플로우의 설계 단계에서 호출한다.
-tools: Read, Grep, Glob, Write, Bash
+tools: Read, Grep, Glob, Write, Bash, SendMessage
 model: opus
 ---
 

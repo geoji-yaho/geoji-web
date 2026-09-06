@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
+import { type Tier, TIER_LABELS } from "../domain/tier";
 import { cn } from "../lib/cn";
-import { type Tier, TIER_LABELS } from "../types/tier";
 
 const tierBadgeVariants = cva("inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-tag font-black", {
 	variants: {

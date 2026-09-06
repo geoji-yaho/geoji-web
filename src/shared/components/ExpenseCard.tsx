@@ -1,5 +1,5 @@
-import type { ImageSource, PostType, Reaction } from "../types/post";
-import type { Tier } from "../types/tier";
+import type { ImageSource, PostType, Reaction } from "../domain/post";
+import type { Tier } from "../domain/tier";
 import {
 	type Sentence,
 	SENTENCE_LABELS,
@@ -8,14 +8,14 @@ import {
 	VERDICT_LABELS,
 	VOTE_VERDICTS,
 	type VoteTally
-} from "../types/verdict";
+} from "../domain/verdict";
+import { Avatar } from "../ui/Avatar";
+import { Button } from "../ui/Button";
 import { formatAmount } from "../utils/format";
-import { Avatar } from "./Avatar";
-import { Button } from "./Button";
-import { MemeThumbnail } from "./MemeThumbnail";
-import { TallyRow } from "./ProgressBar";
+import { PostTypeTag } from "./PostTypeTag";
 import { ReactionRow } from "./ReactionRow";
-import { PostTypeTag, StatusTag } from "./Tag";
+import { StatusTag } from "./StatusTag";
+import { TallyRow } from "./TallyRow";
 import { TierBadge } from "./TierBadge";
 import { VerdictStamp } from "./VerdictStamp";
 
@@ -23,28 +23,23 @@ type ExpenseCardBase = {
 	name: string;
 	tier: Tier;
 	timeAgo: string;
-	/** 형 집행 중이면 상단에 붙는 뱃지 문구. 예: 수감 중 2일 */
 	imprisonedLabel?: string;
 	postType: PostType;
 	category: string;
-	/** 무엇을 샀는지. 지출 등록의 필수 항목 */
 	title: string;
 	amount: number;
-	/** 변론. 선택 항목이라 없을 수 있다 */
 	memo?: string;
 	image?: ImageSource;
-	reactions: Reaction[];
-	commentCount: number;
-	onComments?: () => void;
 };
 
 type VotingProps = {
 	state: "voting";
+	reactions: Reaction[];
+	commentCount: number;
+	onComments?: () => void;
 	deadlineLabel: string;
 	tally: VoteTally;
-	/** 투표 가능 인원. n/m 투표의 m */
 	eligibleCount: number;
-	/** open은 투표 가능, voted는 이미 투표함, own은 본인 게시물 */
 	voteState: "open" | "voted" | "own";
 	onVote?: () => void;
 };
@@ -53,11 +48,8 @@ type JudgedProps = {
 	state: "judged";
 	verdict: Exclude<Verdict, "dismissed">;
 	tally: VoteTally;
-	/** 유죄일 때만 있다 */
 	sentence?: Sentence;
 	headline: string;
-	meme?: ImageSource;
-	onOpenVerdict?: () => void;
 };
 
 type DismissedProps = {
@@ -86,7 +78,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 
 			<div className="flex flex-col gap-1">
 				<span className="text-xs text-mute">
-					{props.category} · {props.title}
+					{props.category}, {props.title}
 				</span>
 				<p className="text-amount-sm text-ink">{formatAmount(props.amount)}원</p>
 				{props.memo && <p className="text-sm text-text">&ldquo;{props.memo}&rdquo;</p>}
@@ -103,7 +95,9 @@ export function ExpenseCard(props: ExpenseCardProps) {
 				{props.state === "voting" && (
 					<>
 						<div className="flex items-center justify-between text-xs">
-							<span className="font-extrabold text-red">◷ {props.deadlineLabel}</span>
+							<span className="font-extrabold text-red">
+								<span aria-hidden="true">◷</span>&nbsp;{props.deadlineLabel}
+							</span>
 							<span className="text-dim">
 								{props.tally.oppose + props.tally.support}/{props.eligibleCount} 투표
 							</span>
@@ -124,7 +118,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 							<VerdictStamp verdict={props.verdict} />
 							<div className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-mute">
 								<span>
-									배심원 평결{" "}
+									배심원 평결&nbsp;
 									<b className="font-black text-ink">
 										{props.tally.oppose} : {props.tally.support}
 									</b>
@@ -137,11 +131,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 								)}
 								<span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>
 							</div>
-							<MemeThumbnail meme={props.meme} />
 						</div>
-						<Button variant="outline" onClick={props.onOpenVerdict}>
-							판결문 보기
-						</Button>
 					</>
 				)}
 
@@ -152,7 +142,9 @@ export function ExpenseCard(props: ExpenseCardProps) {
 					</div>
 				)}
 
-				<ReactionRow reactions={props.reactions} commentCount={props.commentCount} onComments={props.onComments} />
+				{props.state === "voting" && (
+					<ReactionRow reactions={props.reactions} commentCount={props.commentCount} onComments={props.onComments} />
+				)}
 			</div>
 		</article>
 	);

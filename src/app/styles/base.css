@@ -1,0 +1,68 @@
+@layer base {
+	:root {
+		color-scheme: light dark;
+	}
+
+	:root[data-theme="light"] {
+		color-scheme: light;
+	}
+
+	:root[data-theme="dark"] {
+		color-scheme: dark;
+	}
+
+	html {
+		background-color: var(--color-page);
+		color: var(--color-text);
+
+		overflow-x: clip;
+		-webkit-font-smoothing: antialiased;
+		word-break: keep-all;
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-dim) transparent;
+
+		scrollbar-gutter: stable;
+	}
+
+	@supports not (scrollbar-color: auto) {
+		::-webkit-scrollbar {
+			width: 6px;
+			height: 6px;
+		}
+
+		::-webkit-scrollbar-thumb {
+			border-radius: 999px;
+			background-color: var(--color-dim);
+		}
+
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+	}
+
+	button:not(:disabled),
+	a[href],
+	[role="button"],
+	label:has(input[type="file"]) {
+		cursor: pointer;
+	}
+
+	button:disabled {
+		cursor: not-allowed;
+	}
+
+	button,
+	a {
+		-webkit-tap-highlight-color: transparent;
+		touch-action: manipulation;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			transition-duration: 0.01ms !important;
+			animation-duration: 0.01ms !important;
+		}
+	}
+}

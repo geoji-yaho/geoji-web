@@ -1,6 +1,6 @@
 import { cn } from "../lib/cn";
-import { Card } from "./Card";
-import { LogoIcon } from "./Logo";
+import { Card } from "../ui/Card";
+import { LogoIcon } from "./LogoIcon";
 
 type EmptyStateProps = {
 	title: string;

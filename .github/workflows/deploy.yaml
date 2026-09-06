@@ -43,6 +43,9 @@ jobs:
       - name: 빌드
         run: pnpm build
 
+      - name: SPA 폴백
+        run: cp dist/index.html dist/404.html
+
       - name: 린트
         run: pnpm lint
 

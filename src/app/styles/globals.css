@@ -1,128 +1,13 @@
 @import "tailwindcss";
 
-/*
- * 떼거지 디자인 토큰.
- * 정본은 Claude Design 파운데이션 시안(시안 D, 2026-09-02)이다. 같은 토큰 이름을
- * 라이트와 다크가 공유하고 값만 바뀐다. 다크는 시스템 설정(prefers-color-scheme)을 따른다.
- * Tailwind 기본 색 팔레트는 비운다. 색은 여기 있는 이름만 쓴다.
- */
+@source not "../../../.agents";
+@source not "../../../.claude";
+@source not "../../../docs";
 
-@theme {
-	/* 색. 시안 토큰 13개와 시안에 이름이 없는 값 5개(gray, stamp-text, kakao, kakao-text, shadow) */
-	--color-*: initial;
+@import "./fonts.css";
+@import "./theme/colors.css";
+@import "./theme/typography.css";
+@import "./theme/tokens.css";
 
-	--color-page: #ece7dc; /* 페이지 바탕. 앱 프레임 바깥 */
-	--color-screen: #f4f0e7; /* 화면 바탕 */
-	--color-card: #fdfbf6; /* 카드 */
-	--color-fill: #f1ece2; /* 소프트 필. 칩과 보조 버튼 */
-	--color-line: #e6e0d4; /* 구분선 */
-	--color-ink: #2b2520; /* 제목 텍스트 */
-	--color-text: #3a332c; /* 본문 텍스트 */
-	--color-mute: #9a8f82; /* 보조 텍스트 */
-	--color-dim: #b8afa3; /* 비활성과 캡션 */
-	--color-red: #c4553f; /* 테라코타. 유죄, 기각, 수감, 경고 */
-	--color-green: #2a5c4a; /* 그린. 무죄, 동의, 무지출 */
-	--color-tan: #cfa96e; /* 탠. 아바타 바탕 */
-	--color-cta: #f5d95c; /* 노랑. 화면에서 주요 액션 하나 */
-	--color-gray: #7a6a58; /* 각하 도장. 시안에 이름이 없는 값 */
-	--color-stamp-text: #fdf6ee; /* 도장 글자 */
-	--color-kakao: #fee500; /* 카카오 로그인 버튼 바탕 */
-	--color-kakao-text: #191919; /* 카카오 로그인 버튼 글자 */
-	--color-shadow: rgb(80 65 45 / 0.07); /* 카드 그림자 색. 다크에서 바뀐다 */
-
-	/* 타이포그래피. 시스템 고딕에 굵기로만 위계 */
-	--font-sans:
-		-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Malgun Gothic",
-		"Noto Sans KR", sans-serif;
-
-	--text-display: 38px; /* 워드마크 */
-	--text-display--line-height: 1.1;
-	--text-display--font-weight: 900;
-	--text-display--letter-spacing: -0.03em;
-	--text-amount: 44px; /* 금액 입력과 큰 금액 */
-	--text-amount--line-height: 1.1;
-	--text-amount--font-weight: 900;
-	--text-amount--letter-spacing: -0.03em;
-	--text-amount-sm: 30px; /* 카드 안 금액 */
-	--text-amount-sm--line-height: 1.1;
-	--text-amount-sm--font-weight: 900;
-	--text-amount-sm--letter-spacing: -0.03em;
-	--text-headline: 26px; /* 판결 결과 헤드라인 */
-	--text-headline--line-height: 1.25;
-	--text-headline--font-weight: 900;
-	--text-title: 18px; /* 화면 제목과 헤더 */
-	--text-title--line-height: 1.3;
-	--text-title--font-weight: 900;
-	--text-subtitle: 15px; /* 빈 상태 제목 */
-	--text-subtitle--line-height: 1.3;
-	--text-subtitle--font-weight: 900;
-	--text-body: 14px; /* 본문과 판결문 */
-	--text-body--line-height: 1.7;
-	--text-control: 13px; /* 세그먼트, 보조 버튼, 토스트 */
-	--text-control--line-height: 1.4;
-	--text-chip: 12.5px; /* 칩과 경고문 */
-	--text-chip--line-height: 1.4;
-	--text-label: 11px; /* 라벨과 태그 */
-	--text-label--line-height: 1.3;
-	--text-label--font-weight: 800;
-	--text-label--letter-spacing: 0.06em;
-	--text-tag: 11px; /* 태그, 뱃지, 작은 아바타 글자. 자간 없음 */
-	--text-tag--line-height: 1.3;
-	--text-caption: 11px; /* 시각, 글자 수, 멤버 수 같은 보조 텍스트. 굵기 보통 */
-	--text-caption--line-height: 1.4;
-	--text-wordmark: 22px; /* 홈 헤더 워드마크. 로그인은 display */
-	--text-wordmark--line-height: 1.1;
-	--text-wordmark--font-weight: 900;
-	--text-wordmark--letter-spacing: -0.03em;
-	--text-stamp-sm: 18px; /* 도장 글자. 54 도장 */
-	--text-stamp-sm--line-height: 1;
-	--text-stamp-sm--font-weight: 900;
-	--text-stamp-sm--letter-spacing: 0.06em;
-	--text-stamp-md: 22px; /* 64 도장 */
-	--text-stamp-md--line-height: 1;
-	--text-stamp-md--font-weight: 900;
-	--text-stamp-md--letter-spacing: 0.06em;
-	--text-stamp-lg: 32px; /* 96 도장 */
-	--text-stamp-lg--line-height: 1;
-	--text-stamp-lg--font-weight: 900;
-	--text-stamp-lg--letter-spacing: 0.06em;
-
-	/* 모서리. 그 외는 Tailwind 기본을 쓴다(필드 16 rounded-2xl, 시트 24 rounded-3xl, 태그 6 rounded-md, pill rounded-full) */
-	--radius-card: 22px;
-	--radius-stamp: 12.5%; /* 도장. 한 변의 1/8 */
-
-	/* 그림자 */
-	--shadow-card: 0 6px 24px var(--color-shadow);
-	--shadow-stamp: 0 6px 16px rgb(0 0 0 / 0.2);
-	--shadow-fab: 0 10px 24px rgb(0 0 0 / 0.18);
-	--shadow-cta: 0 8px 20px rgb(0 0 0 / 0.14); /* 고정 CTA */
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--color-page: #120d0b;
-		--color-screen: #1c1512;
-		--color-card: #2a1f1a;
-		--color-fill: #3a2c25;
-		--color-line: #3a2c25;
-		--color-ink: #f5ede0;
-		--color-text: #e8dccb;
-		--color-mute: #b89a7a;
-		--color-dim: #8a6f55;
-		--color-red: #d9694f;
-		--color-green: #4fa57c;
-		--color-tan: #dba55d;
-		--color-cta: #efc24f;
-		--color-stamp-text: #f5ede0;
-		--color-shadow: rgb(0 0 0 / 0.35);
-	}
-}
-
-@layer base {
-	html {
-		background-color: var(--color-page);
-		color: var(--color-text);
-		-webkit-font-smoothing: antialiased;
-		word-break: keep-all;
-	}
-}
+@import "./base.css";
+@import "./utilities.css";

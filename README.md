@@ -1,6 +1,8 @@
 # geoji-web
 
-떼거지(친구들이 내 지출을 재판하는 소비 절제 커뮤니티)의 웹 프론트엔드. 원티드 AI Championship 2026에 팀 거지야호로 출품한다. 백엔드는 [geoji-server](https://github.com/geoji-yaho/geoji-server)에 있고 서비스 정의는 `docs/product/PRD.md`, 동작 규칙은 `docs/product/SPEC.md`, 화면은 `docs/design/DESIGN-SPEC.md`에 있다.
+떼거지(친구들이 내 지출을 재판하는 소비 절제 커뮤니티) 웹 프론트엔드
+
+백엔드는 [geoji-server](https://github.com/geoji-yaho/geoji-server)에 있고 서비스 정의는 `docs/product/PRD.md`, 동작 규칙은 `docs/product/SPEC.md`, 화면은 `docs/design/DESIGN-SPEC.md`에 있다.
 
 ## 기술 스택
 
@@ -8,13 +10,16 @@
 | ------------- | ---------------------------------------------- |
 | 프레임워크    | React 19, TypeScript 6                         |
 | 빌드          | Vite 8                                         |
+| 라우터        | react-router 8                                 |
 | 스타일        | Tailwind CSS 4                                 |
 | 클래스 유틸   | clsx, tailwind-merge, class-variance-authority |
+| 애니메이션    | motion 13                                      |
+| 글꼴          | Pretendard Variable (저장소에 두고 서빙)       |
 | 아이콘        | lucide-react                                   |
 | 패키지 매니저 | pnpm 11 (Node 24)                              |
 | 품질 도구     | ESLint 10, Prettier 3, lefthook 2              |
 
-라우터와 상태 관리, 테스트 도구는 아직 넣지 않았다. `src/`는 app, features, shared 3층이고 규칙은 `.agents/rules/folder-structure.md`에 있다. 디자인 토큰은 `src/app/styles/globals.css`에 있고 Tailwind 클래스 규칙은 `.agents/rules/tailwind.md`에 있다.
+상태 관리와 테스트 도구는 아직 넣지 않았다. 글꼴은 Pretendard Variable을 저장소에 두고 서빙한다. 폴더 배치와 import 경로, 스타일 규칙은 [CONTRIBUTING.md](./CONTRIBUTING.md)의 코딩 컨벤션 절에 있다.
 
 ## 시작하기
 
