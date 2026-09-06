@@ -33,3 +33,5 @@ _workspace
 CLAUDE.local.md
 # Claude Code 개인 설정
 .claude/settings.local.json
+# oh-my-claudecode 세션 상태
+.omc

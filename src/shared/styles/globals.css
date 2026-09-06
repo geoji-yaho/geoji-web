@@ -1,1 +1,31 @@
 @import "tailwindcss";
+
+/*
+ * 거지방 디자인 시안(떼거지 공통 컴포넌트, 2026-09) 근사치 토큰.
+ * 정확한 hex는 디자인 확정 전까지 근사값이라 추후 시안 원본 기준으로 교체될 수 있다.
+ * 라이트/다크는 시스템 설정(prefers-color-scheme)을 따른다.
+ */
+@theme {
+	--color-surface: #f7f4ec;
+	--color-card: #ffffff;
+	--color-ink: #211a14;
+	--color-muted: #8a8073;
+	--color-line: #e7e1d3;
+	--color-terracotta: #c1573a;
+	--color-terracotta-soft: #f6e2da;
+	--color-gold: #f0cf3f;
+	--color-praise: #2f7a4f;
+	--color-praise-soft: #e6f2e9;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-surface: #1c1512;
+		--color-card: #241c17;
+		--color-ink: #f7f4ec;
+		--color-muted: #a89c8c;
+		--color-line: #382c24;
+		--color-terracotta-soft: #3a2620;
+		--color-praise-soft: #1c2e21;
+	}
+}
