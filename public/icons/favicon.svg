@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-	<circle cx="24" cy="24" r="21" fill="#fbbf24" stroke="#92400e" stroke-width="3" />
-	<circle cx="24" cy="24" r="15" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="2 3" />
-	<text x="24" y="30.5" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#78350f">₩</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" role="img" aria-label="떼거지">
+	<rect width="34" height="34" rx="7.616" fill="#f5d95c"/>
+	<g transform="translate(3.4 3.4) scale(0.8)">
+		<circle cx="17" cy="17" r="14" fill="#EFC24F" stroke="#5C4028" stroke-width="4.5"/>
+		<rect x="12" y="12" width="10" height="10" rx="2" fill="#5C4028"/>
+	</g>
 </svg>
