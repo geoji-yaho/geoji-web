@@ -1,0 +1,1 @@
+../../.agents/rules/folder-structure.md

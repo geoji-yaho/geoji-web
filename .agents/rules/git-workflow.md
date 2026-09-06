@@ -6,12 +6,15 @@ description: 브랜치 전략과 커밋 메시지 형식, 금지 패턴
 
 ## 브랜치 전략
 
-- `main`은 항상 빌드가 되어야 한다
-- 기능 작업은 `feature/{name}`으로 분기한다. 이름은 영문 케밥 케이스
-  (예: `feature/product-filter`)
-- 설정과 문서, 초기 셋업은 `main`에 바로 커밋해도 된다
-- lint와 타입 검사, 포맷 검사가 통과한 뒤 `main`으로 머지한다
-- 머지는 `--no-ff`로 한다. 작업 단위가 머지 커밋으로 묶여 이력에 남는다
+세 층으로 흐른다. `main`은 배포, `develop`은 통합, `feature/{name}`은 작업 단위다.
+
+- `main`은 배포 브랜치다. 항상 빌드가 되어야 하고 머지되면 GitHub Pages로 자동 배포된다
+- `develop`은 통합 브랜치다. 모든 기능 작업이 여기로 모인다
+- 기능 작업은 `develop`에서 `feature/{name}`으로 분기한다. 이름은 영문 케밥 케이스
+  (예: `feature/product-filter`). 설정과 문서 작업도 같은 흐름을 따른다
+- `feature`는 `develop`으로 PR을 올린다. lint와 타입 검사, 포맷 검사가 통과한 뒤 머지한다
+- 배포할 시점에 `develop`을 `main`으로 머지한다. 이 머지가 배포를 일으킨다
+- 머지는 `--no-ff`로 한다. PR은 merge commit이고 squash는 쓰지 않는다. 작업 단위가 머지 커밋으로 묶여 이력에 남는다
 - 머지 후 feature 브랜치는 삭제한다
 
 ## 커밋 규칙

@@ -8,11 +8,11 @@ description: 현재 브랜치의 변경사항으로 Pull Request를 생성해주
 
 ## 절차
 
-1. `git status`와 `git log main..HEAD --oneline`으로 브랜치의 변경과 커밋 목록 확인
+1. `git status`와 `git log develop..HEAD --oneline`으로 브랜치의 변경과 커밋 목록 확인
 2. 원격 저장소 확인 (`git remote -v`)
    - 원격이 없으면 PR을 만들 수 없다. 사용자에게 알리고 로컬 머지(`/git:merge`)를 안내한 뒤 종료
 3. 현재 브랜치를 push (`git push -u origin HEAD`)
-4. `gh pr create`로 PR 생성. base는 `main`
+4. `gh pr create`로 PR 생성. base는 `develop`
 
 ## PR 작성 규칙
 
