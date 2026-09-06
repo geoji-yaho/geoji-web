@@ -1,5 +1,7 @@
+import { cn } from "../lib/cn";
+import type { Tier } from "../types/tier";
 import { Avatar } from "./Avatar";
-import { TagBadge } from "./Badge";
+import { TierBadge } from "./TierBadge";
 
 type PodiumEntry = {
 	place: 1 | 2 | 3;
@@ -8,25 +10,35 @@ type PodiumEntry = {
 	isMe?: boolean;
 };
 
-export function RankingPodium({ entries }: { entries: PodiumEntry[] }) {
-	const ordered = [...entries].sort((a, b) => {
-		const order = { 2: 0, 1: 1, 3: 2 };
-		return order[a.place] - order[b.place];
-	});
+const PODIUM_ORDER: Record<PodiumEntry["place"], number> = {
+	2: 0,
+	1: 1,
+	3: 2
+};
+
+type RankingPodiumProps = {
+	entries: PodiumEntry[];
+	className?: string;
+};
+
+export function RankingPodium({ entries, className }: RankingPodiumProps) {
+	const ordered = [...entries].sort((a, b) => PODIUM_ORDER[a.place] - PODIUM_ORDER[b.place]);
 
 	return (
-		<div className="flex items-end gap-2">
+		<div className={cn("flex items-end gap-2", className)}>
 			{ordered.map((entry) => (
 				<div
 					key={entry.place}
-					className={`flex flex-1 flex-col items-center gap-2 rounded-2xl p-4 ${
-						entry.isMe ? "bg-ink" : "bg-card"
-					} ${entry.place === 1 ? "py-6" : ""}`}
+					className={cn(
+						"flex flex-1 flex-col items-center gap-1.5 rounded-card bg-card px-2.5 py-3.5 text-ink shadow-card",
+						entry.isMe && "bg-ink text-card",
+						entry.place === 1 && "py-4.5"
+					)}
 				>
-					<Avatar label={entry.name.slice(0, 1)} size={entry.place === 1 ? "lg" : "md"} highlighted={entry.isMe} />
-					<span className={`text-sm font-bold ${entry.isMe ? "text-surface" : "text-ink"}`}>{entry.name}</span>
-					<span className={`text-lg font-black ${entry.isMe ? "text-gold" : "text-ink"}`}>{entry.value}</span>
-					<span className={`text-xs ${entry.isMe ? "text-muted" : "text-muted"}`}>{entry.place}위</span>
+					<Avatar name={entry.name} size={entry.place === 1 ? "lg" : "md"} />
+					<span className="text-control font-black">{entry.name}</span>
+					<span className={cn("text-base font-black", entry.isMe ? "text-cta" : "text-ink")}>{entry.value}</span>
+					<span className={cn("text-tag", entry.isMe ? "text-cta" : "text-dim")}>{entry.place}위</span>
 				</div>
 			))}
 		</div>
@@ -36,29 +48,50 @@ export function RankingPodium({ entries }: { entries: PodiumEntry[] }) {
 type RankingRowProps = {
 	rank: number;
 	name: string;
-	tier: string;
+	tier: Tier;
 	value: string;
-	highlightRank?: boolean;
+	isMe?: boolean;
+	className?: string;
 };
 
-export function RankingRow({ rank, name, tier, value, highlightRank = false }: RankingRowProps) {
+export function RankingRow({ rank, name, tier, value, isMe = false, className }: RankingRowProps) {
 	return (
-		<div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
-			<span className={`w-4 text-sm font-bold ${highlightRank ? "text-terracotta" : "text-muted"}`}>{rank}</span>
-			<Avatar label={name.slice(0, 1)} size="sm" />
-			<span className="flex-1 text-sm font-bold text-ink">{name}</span>
-			<TagBadge label={tier} />
-			<span className="text-sm font-bold text-ink">{value}</span>
+		<div
+			className={cn(
+				"flex items-center gap-2.5 rounded-2xl bg-card px-3.5 py-2.5 text-control shadow-card",
+				isMe && "bg-fill",
+				className
+			)}
+		>
+			<span className={cn("w-3.5 font-black", rank <= 3 ? "text-red" : "text-dim")}>{rank}</span>
+			<Avatar name={name} size="sm" />
+			<span className="flex-1 truncate font-extrabold text-ink">{name}</span>
+			<TierBadge tier={tier} />
+			<span className="font-black text-ink">{value}</span>
 		</div>
 	);
 }
 
-export function MyRankRow({ name, valueLabel }: { name: string; valueLabel: string }) {
+type MyRankRowProps = {
+	name: string;
+	noSpendRank: number;
+	nagRank: number;
+	className?: string;
+};
+
+export function MyRankRow({ name, noSpendRank, nagRank, className }: MyRankRowProps) {
 	return (
-		<div className="flex items-center gap-3 rounded-2xl bg-ink px-4 py-3">
-			<Avatar label={name.slice(0, 1)} size="sm" highlighted />
-			<span className="flex-1 text-sm font-bold text-surface">내 순위</span>
-			<span className="text-sm font-bold text-gold">{valueLabel}</span>
+		<div
+			className={cn(
+				"flex items-center gap-2 rounded-card bg-ink px-5 py-3.5 text-control text-card shadow-card",
+				className
+			)}
+		>
+			<Avatar name={name} size="sm" />
+			<span className="flex-1 font-black">내 순위</span>
+			<span>
+				<b className="font-black text-cta">무지출 {noSpendRank}위</b> · 잔소리 {nagRank}위
+			</span>
 		</div>
 	);
 }

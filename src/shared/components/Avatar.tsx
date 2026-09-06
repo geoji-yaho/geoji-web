@@ -1,23 +1,35 @@
-const SIZE_STYLES = {
-	sm: "size-8 text-xs",
-	md: "size-9 text-sm",
-	lg: "size-14 text-lg"
-} as const;
+import { cva, type VariantProps } from "class-variance-authority";
 
-type AvatarProps = {
-	label: string;
-	size?: keyof typeof SIZE_STYLES;
-	highlighted?: boolean;
+import { cn } from "../lib/cn";
+
+const avatarVariants = cva(
+	"inline-flex shrink-0 items-center justify-center rounded-full bg-tan font-extrabold text-ink select-none",
+	{
+		variants: {
+			size: {
+				xl: "size-15 text-xl",
+				lg: "size-10.5 text-subtitle font-extrabold",
+				md: "size-9 text-control",
+				sm: "size-7 text-xs",
+				xs: "size-5.5 text-tag"
+			}
+		},
+		defaultVariants: {
+			size: "md"
+		}
+	}
+);
+
+type AvatarProps = VariantProps<typeof avatarVariants> & {
+	/** 닉네임. 첫 글자만 표시한다 */
+	name: string;
+	className?: string;
 };
 
-export function Avatar({ label, size = "md", highlighted = false }: AvatarProps) {
+export function Avatar({ name, size, className }: AvatarProps) {
 	return (
-		<span
-			className={`flex shrink-0 items-center justify-center rounded-full font-bold ${SIZE_STYLES[size]} ${
-				highlighted ? "bg-gold text-ink" : "bg-terracotta-soft text-ink"
-			}`}
-		>
-			{label}
+		<span aria-label={name} className={cn(avatarVariants({ size }), className)}>
+			{name.slice(0, 1)}
 		</span>
 	);
 }

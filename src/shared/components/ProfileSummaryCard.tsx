@@ -1,74 +1,89 @@
+import { cn } from "../lib/cn";
+import type { Tier } from "../types/tier";
+import type { Imprisonment } from "../types/verdict";
+import { formatAmount } from "../utils/format";
 import { Avatar } from "./Avatar";
-import { TagBadge } from "./Badge";
-import { MeterBar } from "./ProgressBar";
+import { Card } from "./Card";
+import { ExecutionMeter, MeterBar } from "./ProgressBar";
+import { TierBadge } from "./TierBadge";
 
 type ProfileSummaryCardProps = {
 	name: string;
-	tier: string;
-	scoreLabel: string;
-	scoreValue: number;
+	tier: Tier;
+	/** 다음 티어까지 남은 점수 문구. 티어 순서가 미결정이라 계산하지 않고 받는다. 예: 거지왕까지 14점 */
 	nextTierLabel: string;
+	/** 거지력 0에서 100 */
+	score: number;
 	monthLabel: string;
 	spent: number;
 	budget: number;
-	noSpendDaysLabel: string;
-	sentenceStatusLabel: string;
-	sentenceValue: number;
-	sentenceMax: number;
+	/** 기준지출액. 경과일 기준선 위치. 월예산 * 경과일 / 그 달의 일수 */
+	baseline: number;
+	noSpendDays: number;
+	/** 형 집행 중일 때만 넘긴다 */
+	imprisonment?: Imprisonment;
+	className?: string;
 };
 
 export function ProfileSummaryCard({
 	name,
 	tier,
-	scoreValue,
 	nextTierLabel,
+	score,
 	monthLabel,
 	spent,
 	budget,
-	noSpendDaysLabel,
-	sentenceStatusLabel,
-	sentenceValue,
-	sentenceMax
+	baseline,
+	noSpendDays,
+	imprisonment,
+	className
 }: ProfileSummaryCardProps) {
+	const overBudget = spent > budget;
+
 	return (
-		<div className="flex flex-col gap-4 rounded-2xl bg-card p-4">
-			<div className="flex items-start gap-3">
-				<Avatar label={name.slice(0, 1)} size="lg" highlighted />
-				<div className="flex-1">
-					<div className="flex items-center gap-1.5">
-						<span className="font-bold text-ink">{name}</span>
-						<TagBadge label={tier} />
+		<Card className={cn("flex flex-col gap-3.5 p-4.5", className)}>
+			<div className="flex items-start justify-between gap-3">
+				<div className="flex min-w-0 items-center gap-2.5">
+					<Avatar name={name} size="lg" />
+					<div className="min-w-0">
+						<div className="flex flex-wrap items-center gap-1.5">
+							<span className="text-base font-black text-ink">{name}</span>
+							<TierBadge tier={tier} />
+						</div>
+						<span className="text-caption text-dim">{nextTierLabel}</span>
 					</div>
-					<span className="text-xs text-muted">{nextTierLabel}</span>
 				</div>
-				<span className="text-2xl font-black text-terracotta">{scoreValue}</span>
+				<div className="shrink-0 text-right">
+					<span className="block text-caption text-dim">거지력</span>
+					<span className="text-2xl font-black text-red">{score}</span>
+				</div>
 			</div>
 
-			<div className="flex flex-col gap-2">
-				<div className="flex items-center justify-between text-sm">
-					<span className="text-muted">{monthLabel}</span>
-					<span className="font-bold text-ink">
-						{spent.toLocaleString("ko-KR")} / {budget.toLocaleString("ko-KR")}원
+			<div className="flex flex-col gap-1.5">
+				<div className="flex items-center justify-between text-xs text-mute">
+					<span>{monthLabel}</span>
+					<span className={overBudget ? "font-black text-red" : undefined}>
+						{formatAmount(spent)} / {formatAmount(budget)}원{overBudget && " 초과"}
 					</span>
 				</div>
-				<MeterBar value={spent} max={budget} tone="gold" />
+				<MeterBar value={spent} max={budget} tone={overBudget ? "red" : "cta"} markerValue={baseline} />
 			</div>
 
 			<div className="flex gap-2">
-				<div className="flex-1 rounded-xl bg-line p-3">
-					<span className="text-xs text-muted">무지출</span>
-					<p className="text-lg font-black text-ink">{noSpendDaysLabel}</p>
+				<div className="flex-1 rounded-xl bg-fill px-3 py-2.5">
+					<span className="text-caption text-mute">무지출</span>
+					<p className="text-title text-ink">{noSpendDays}일</p>
 				</div>
-				<div className="flex-1 rounded-xl bg-terracotta-soft p-3">
-					<div className="flex items-center justify-between">
-						<span className="text-xs font-bold text-terracotta">{sentenceStatusLabel}</span>
-						<span className="text-xs text-terracotta">D-{sentenceMax - sentenceValue}</span>
+				{imprisonment && (
+					<div className="flex flex-1 flex-col gap-1.5 rounded-xl bg-red/10 px-3 py-2.5">
+						<div className="flex items-center justify-between text-caption text-red">
+							<span className="font-extrabold">수감 중</span>
+							<span className="font-black">D-{imprisonment.daysLeft}</span>
+						</div>
+						<ExecutionMeter {...imprisonment} />
 					</div>
-					<div className="mt-2">
-						<MeterBar value={sentenceValue} max={sentenceMax} tone="terracotta" />
-					</div>
-				</div>
+				)}
 			</div>
-		</div>
+		</Card>
 	);
 }

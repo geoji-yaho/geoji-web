@@ -1,17 +1,22 @@
+import { cn } from "../lib/cn";
+import { Button } from "./Button";
+
 type FabProps = {
 	label: string;
 	onClick?: () => void;
-	fixed?: boolean;
+	/** 화면 자리는 페이지가 준다. 오른쪽 아래 고정이면 "fixed right-5 bottom-6 z-40" */
+	className?: string;
 };
 
-export function Fab({ label, onClick, fixed = true }: FabProps) {
+export function Fab({ label, onClick, className }: FabProps) {
 	return (
 		<button
 			type="button"
 			onClick={onClick}
-			className={`flex h-[52px] items-center rounded-full bg-gold px-5 text-sm font-bold text-ink ${
-				fixed ? "fixed right-5 bottom-6" : ""
-			}`}
+			className={cn(
+				"inline-flex h-13 shrink-0 items-center rounded-full bg-cta px-5 text-base font-extrabold text-ink shadow-fab",
+				className
+			)}
 		>
 			{label}
 		</button>
@@ -21,19 +26,17 @@ export function Fab({ label, onClick, fixed = true }: FabProps) {
 type StickyCtaProps = {
 	label: string;
 	onClick?: () => void;
-	fixed?: boolean;
+	disabled?: boolean;
+	/** 화면 자리는 페이지가 준다. 하단 고정이면 "fixed inset-x-5 bottom-5 z-40 w-auto" */
+	className?: string;
 };
 
-export function StickyCta({ label, onClick, fixed = true }: StickyCtaProps) {
+export function StickyCta({ label, onClick, disabled = false, className }: StickyCtaProps) {
 	return (
-		<div className={fixed ? "fixed inset-x-5 bottom-5" : ""}>
-			<button
-				type="button"
-				onClick={onClick}
-				className="flex h-11 w-full items-center justify-center rounded-full bg-gold text-sm font-bold text-ink"
-			>
+		<div className={cn("w-full", className)}>
+			<Button onClick={onClick} disabled={disabled} className="h-11 py-0 shadow-cta">
 				{label}
-			</button>
+			</Button>
 		</div>
 	);
 }
