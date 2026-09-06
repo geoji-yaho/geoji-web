@@ -1,12 +1,15 @@
+import { cn } from "../lib/cn";
+
 type TabSegmentProps<T extends string> = {
 	tabs: readonly T[];
 	value: T;
 	onChange: (tab: T) => void;
+	className?: string;
 };
 
-export function TabSegment<T extends string>({ tabs, value, onChange }: TabSegmentProps<T>) {
+export function TabSegment<T extends string>({ tabs, value, onChange, className }: TabSegmentProps<T>) {
 	return (
-		<div className="flex gap-1 rounded-full bg-line p-1" role="tablist">
+		<div role="tablist" className={cn("flex rounded-full bg-page p-1", className)}>
 			{tabs.map((tab) => {
 				const selected = tab === value;
 
@@ -17,9 +20,10 @@ export function TabSegment<T extends string>({ tabs, value, onChange }: TabSegme
 						role="tab"
 						aria-selected={selected}
 						onClick={() => onChange(tab)}
-						className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-							selected ? "bg-ink text-card" : "text-muted"
-						}`}
+						className={cn(
+							"flex-1 rounded-full py-2 text-control font-bold text-mute transition-colors",
+							selected && "bg-ink font-black text-card"
+						)}
 					>
 						{tab}
 					</button>

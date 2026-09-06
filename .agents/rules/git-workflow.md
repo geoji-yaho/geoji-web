@@ -6,13 +6,12 @@ description: 브랜치 전략과 커밋 메시지 형식, 금지 패턴
 
 ## 브랜치 전략
 
-세 층으로 흐른다. `main`은 배포, `develop`은 통합, `feature/{name}`은 작업 단위다.
+`main`은 배포, `develop`은 통합, `feature/{name}`은 작업 단위다.
 
-- `main`은 배포 브랜치다. 항상 빌드가 되어야 하고 머지되면 GitHub Pages로 자동 배포된다
-- `develop`은 통합 브랜치다. 모든 기능 작업이 여기로 모인다
-- 기능 작업은 `develop`에서 `feature/{name}`으로 분기한다. 이름은 영문 케밥 케이스
-  (예: `feature/product-filter`). 설정과 문서 작업도 같은 흐름을 따른다
-- `feature`는 `develop`으로 PR을 올린다. lint와 타입 검사, 포맷 검사가 통과한 뒤 머지한다
+- `main`은 머지되면 GitHub Pages로 자동 배포된다. 항상 빌드가 되어야 한다
+- `develop`에는 모든 작업이 모인다
+- 작업은 `develop`에서 `feature/{name}`으로 분기한다. 이름은 영문 케밥 케이스(예: `feature/product-filter`). 설정과 문서 작업도 같다
+- `feature`는 `develop`으로 PR을 올리고 CI(`pnpm check`)가 통과한 뒤 머지한다
 - 배포할 시점에 `develop`을 `main`으로 머지한다. 이 머지가 배포를 일으킨다
 - 머지는 `--no-ff`로 한다. PR은 merge commit이고 squash는 쓰지 않는다. 작업 단위가 머지 커밋으로 묶여 이력에 남는다
 - 머지 후 feature 브랜치는 삭제한다
@@ -43,7 +42,7 @@ description: 브랜치 전략과 커밋 메시지 형식, 금지 패턴
 | style    | 코드 포맷팅 (세미콜론, 들여쓰기 등) |
 | refactor | 코드 리팩토링                       |
 | perf     | 성능 개선                           |
-| test     | 테스트 추가/수정                    |
+| test     | 테스트 추가와 수정                  |
 | chore    | 빌드, 설정 변경                     |
 
 ### 작성 규칙
@@ -54,6 +53,7 @@ description: 브랜치 전략과 커밋 메시지 형식, 금지 패턴
 - 본문은 72자마다 줄바꿈
 - 어떻게보다 무엇을 왜 했는지를 쓴다
 - 커밋은 작은 작업 단위로 쪼갠다. 성격이 다른 변경(기능과 설정, 포맷)을 한 커밋에 섞지 않는다
+- 이모지와 한자, 가운뎃점과 화살표는 쓰지 않는다
 
 ## 금지 패턴
 

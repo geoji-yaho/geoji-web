@@ -1,23 +1,23 @@
+import { cn } from "../lib/cn";
 import { Avatar } from "./Avatar";
 
 type AvatarStackProps = {
-	labels: string[];
+	names: string[];
 	max?: number;
+	className?: string;
 };
 
-export function AvatarStack({ labels, max = 3 }: AvatarStackProps) {
-	const visible = labels.slice(0, max);
-	const overflow = labels.length - visible.length;
+export function AvatarStack({ names, max = 3, className }: AvatarStackProps) {
+	const visible = names.slice(0, max);
+	const overflow = names.length - visible.length;
 
 	return (
-		<div className="flex items-center -space-x-2">
-			{visible.map((label, index) => (
-				<span key={`${label}-${index}`} className="rounded-full ring-2 ring-card">
-					<Avatar label={label} size="sm" />
-				</span>
+		<div className={cn("flex items-center -space-x-1.5", className)}>
+			{visible.map((name, index) => (
+				<Avatar key={`${name}-${index}`} name={name} size="xs" className="ring-2 ring-screen" />
 			))}
 			{overflow > 0 && (
-				<span className="flex size-8 items-center justify-center rounded-full bg-ink text-xs font-bold text-surface ring-2 ring-card">
+				<span className="inline-flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ink text-tag font-extrabold text-card ring-2 ring-screen">
 					+{overflow}
 				</span>
 			)}
