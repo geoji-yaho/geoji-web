@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json.schemastore.org/package.json",
 	"name": "geoji-web",
-	"description": "거지방 AI 총무 웹 프론트엔드. 지출을 자진 신고하면 AI 총무가 판결하는 무지출 챌린지 서비스",
+	"description": "떼거지 웹 프론트엔드. 친구들이 내 지출을 재판하는 소비 절제 커뮤니티",
 	"version": "1.0.0",
 	"private": true,
 	"license": "UNLICENSED",
@@ -16,6 +16,11 @@
 			"name": "여찬규",
 			"email": "dev.cgyeo@gmail.com",
 			"url": "https://github.com/chan9yu"
+		},
+		{
+			"name": "이소윤",
+			"email": "leesoyun4206@naver.com",
+			"url": "https://github.com/leesoyuun"
 		}
 	],
 	"packageManager": "pnpm@11.25.0",
