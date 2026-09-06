@@ -21,6 +21,10 @@ Deploy 워크플로는 빌드 잡에서 게이트를 돌리고 산출물을 올�
 
 배포 뒤에는 프로덕션 URL에 접속해 화면이 뜨는지 보고, Actions 탭의 Deploy 실행이 성공했는지와 배포된 커밋이 의도한 커밋인지 본다.
 
+BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitHub Pages는 없는 경로에 `404.html`을 돌려주니 워크플로가 `dist/index.html`을 `dist/404.html`로 복사한다. 그래야 새로고침과 딥링크가 앱으로 들어온다. `public/manifest.webmanifest`의 경로는 `./`로 적어 base가 바뀌어도 따라가게 했다.
+
+글꼴은 `src/app/styles/fonts/`의 Pretendard 조각 92개를 빌드에 실어 보낸다. CDN을 거치지 않으니 외부 서비스가 죽어도 글꼴이 함께 죽지 않는다.
+
 ## 롤백
 
 두 가지 방법이 있다. 어느 쪽이든 배포 뒤 실제 접속을 확인한다.
