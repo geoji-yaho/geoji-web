@@ -6,7 +6,6 @@ type TextFieldProps = {
 	onChange: (value: string) => void;
 	maxLength?: number;
 	required?: boolean;
-	/** 선택 항목이면 라벨 옆에 붙는 말. 예: 선택 */
 	hint?: string;
 	placeholder?: string;
 	multiline?: boolean;
@@ -14,8 +13,8 @@ type TextFieldProps = {
 };
 
 const FIELD_STYLES = "w-full min-w-0 bg-transparent text-ink outline-none placeholder:font-normal placeholder:text-dim";
-const TEXTAREA_STYLES = `${FIELD_STYLES} min-h-13 resize-none text-body`;
-const INPUT_STYLES = `${FIELD_STYLES} text-subtitle font-extrabold`;
+const TEXTAREA_STYLES = cn(FIELD_STYLES, "min-h-13 resize-none text-body");
+const INPUT_STYLES = cn(FIELD_STYLES, "text-subtitle font-extrabold");
 
 export function TextField({
 	label,
@@ -40,7 +39,7 @@ export function TextField({
 				<span className="text-label text-mute">
 					{label}
 					{required && <span className="text-red"> *</span>}
-					{hint && <span className="font-normal tracking-normal"> · {hint}</span>}
+					{hint && <span className="font-normal tracking-normal"> ({hint})</span>}
 				</span>
 				{multiline && count}
 			</span>

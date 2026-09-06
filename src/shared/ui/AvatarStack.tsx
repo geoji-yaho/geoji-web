@@ -12,15 +12,17 @@ export function AvatarStack({ names, max = 3, className }: AvatarStackProps) {
 	const overflow = names.length - visible.length;
 
 	return (
-		<div className={cn("flex items-center -space-x-1.5", className)}>
+		<ul className={cn("flex items-center -space-x-1.5", className)}>
 			{visible.map((name, index) => (
-				<Avatar key={`${name}-${index}`} name={name} size="xs" className="ring-2 ring-screen" />
+				<li key={`${name}-${index}`} className="flex">
+					<Avatar name={name} size="xs" className="ring-2 ring-screen" />
+				</li>
 			))}
 			{overflow > 0 && (
-				<span className="inline-flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ink text-tag font-extrabold text-card ring-2 ring-screen">
+				<li className="inline-flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ink text-tag font-extrabold text-card ring-2 ring-screen">
 					+{overflow}
-				</span>
+				</li>
 			)}
-		</div>
+		</ul>
 	);
 }

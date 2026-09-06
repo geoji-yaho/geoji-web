@@ -4,7 +4,7 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "../lib/cn";
 
 const buttonVariants = cva(
-	"inline-flex w-full items-center justify-center rounded-full transition-colors disabled:bg-line disabled:text-mute disabled:shadow-none",
+	"inline-flex w-full pressable items-center justify-center rounded-full disabled:bg-line disabled:text-mute disabled:shadow-none",
 	{
 		variants: {
 			variant: {

@@ -1,11 +1,10 @@
-import type { ReactNode } from "react";
+import type { PropsWithChildren } from "react";
 
 import { cn } from "../lib/cn";
 
-type ToastProps = {
-	children: ReactNode;
+type ToastProps = PropsWithChildren<{
 	className?: string;
-};
+}>;
 
 export function Toast({ children, className }: ToastProps) {
 	return (

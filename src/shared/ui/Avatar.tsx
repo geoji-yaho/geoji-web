@@ -21,15 +21,14 @@ const avatarVariants = cva(
 );
 
 type AvatarProps = VariantProps<typeof avatarVariants> & {
-	/** 닉네임. 첫 글자만 표시한다 */
 	name: string;
 	className?: string;
 };
 
 export function Avatar({ name, size, className }: AvatarProps) {
 	return (
-		<span aria-label={name} className={cn(avatarVariants({ size }), className)}>
-			{name.slice(0, 1)}
+		<span role="img" aria-label={name} className={cn(avatarVariants({ size }), className)}>
+			<span aria-hidden="true">{name.slice(0, 1)}</span>
 		</span>
 	);
 }

@@ -4,7 +4,6 @@ import { cn } from "../lib/cn";
 
 type AttachmentFieldProps = {
 	label: string;
-	/** 고른 파일. 있으면 라벨 대신 파일 이름을 보인다 */
 	file?: File | null;
 	onSelect: (file: File | null) => void;
 	className?: string;
@@ -15,6 +14,7 @@ export function AttachmentField({ label, file, onSelect, className }: Attachment
 		<label
 			className={cn(
 				"flex cursor-pointer items-center gap-2 rounded-2xl bg-fill px-3.5 py-3 text-chip text-mute",
+				"focus-within:ring-2 focus-within:ring-ink",
 				file && "font-bold text-ink",
 				className
 			)}
@@ -24,7 +24,7 @@ export function AttachmentField({ label, file, onSelect, className }: Attachment
 			<input
 				type="file"
 				accept="image/*"
-				className="hidden"
+				className="sr-only"
 				onChange={(event) => onSelect(event.target.files?.[0] ?? null)}
 			/>
 		</label>
