@@ -45,7 +45,7 @@
 
 ## 자주 틀리는 것
 
-**Tailwind 기본 팔레트는 비어 있다.** `globals.css`가 `--color-*: initial`로 지웠다. `bg-gray-100`을 쓰면 오류 없이 CSS가 안 나온다. 요소는 있는데 배경이 없는 화면이 된다. 쓸 수 있는 색은 `globals.css`의 `@theme`에 있는 이름뿐이다.
+**Tailwind 기본 팔레트는 비어 있다.** `theme/colors.css`가 `--color-*: initial`로 지웠다. `bg-gray-100`을 쓰면 오류 없이 CSS가 안 나온다. 요소는 있는데 배경이 없는 화면이 된다. 쓸 수 있는 색은 `theme/colors.css`에 있는 이름뿐이다.
 
 **타이포 토큰을 추가하면 `cn.ts`에도 넣는다.** `src/shared/lib/cn.ts`의 `extendTailwindMerge` 목록에 없는 `text-*` 토큰은 글자색으로 오인된다. `text-title text-ink`를 쓰면 뒤가 앞을 지운다. 오류가 없어 화면을 봐야 안다.
 

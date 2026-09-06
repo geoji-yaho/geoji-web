@@ -1,7 +1,7 @@
 ---
 name: geoji-spec-auditor
 description: 떼거지 화면이나 기능을 만들기 전에 무엇을 만들지 정본 문서에서 확인하는 에이전트. 화면 ID와 URL, 배치와 상태, 동작 규칙을 뽑아내고 미결정 항목에 걸리는지 판정한다. geoji-harness 워크플로우의 첫 단계에서 호출한다.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, SendMessage
 model: opus
 ---
 

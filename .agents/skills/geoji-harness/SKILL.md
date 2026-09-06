@@ -38,6 +38,8 @@ Agent({
 
 `_workspace/`는 `.gitignore`에 있어 커밋되지 않는다. 중간 산출물을 남겨 두면 후속 요청에서 처음부터 다시 하지 않아도 된다.
 
+일이 끝난 에이전트는 `SendMessage`로 `shutdown_request`를 보내 정리한다. 에이전트 정의의 `tools`에 `SendMessage`가 없으면 그 에이전트는 응답하지 못해 세션이 남는다. 도구를 좁힐 때 이것을 빼지 않는다.
+
 ## Phase 0. 어디서 시작할지 정한다
 
 `_workspace/`를 보고 실행 모드를 고른다.

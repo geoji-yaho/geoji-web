@@ -1,7 +1,7 @@
 ---
 name: geoji-design-reviewer
 description: 떼거지 화면 구현이 시안과 디자인 토큰 규칙을 지켰는지 검토하는 에이전트. Tailwind 대괄호 임의값, 토큰 밖의 색, 명세에 있는데 빠진 요소와 상태, 카피 톤을 잡는다. geoji-harness 워크플로우의 검증 단계에서 병렬로 호출한다.
-tools: Read, Grep, Glob, Write, Bash
+tools: Read, Grep, Glob, Write, Bash, SendMessage
 model: opus
 ---
 
