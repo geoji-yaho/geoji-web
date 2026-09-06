@@ -27,11 +27,10 @@ dist-ssr
 # AI Tools
 _workspace
 .serena
-.playwright-mcp
-.settings.local.json
-.mcp.json
-CLAUDE.local.md
-# Claude Code 개인 설정
-.claude/settings.local.json
-# oh-my-claudecode 세션 상태
 .omc
+.playwright-mcp
+.mcp.json
+
+# local
+*.local.json
+*.local.md
