@@ -10,4 +10,7 @@ jsxSingleQuote: false
 bracketSameLine: false
 plugins:
   - prettier-plugin-tailwindcss
-tailwindStylesheet: ./src/shared/styles/globals.css
+tailwindStylesheet: ./src/app/styles/globals.css
+tailwindFunctions:
+  - cn
+  - cva

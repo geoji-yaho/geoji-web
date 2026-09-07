@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" role="img" aria-label="떼거지">
+	<rect width="34" height="34" rx="7.616" fill="#f5d95c"/>
+	<g transform="translate(3.4 3.4) scale(0.8)">
+		<circle cx="17" cy="17" r="14" fill="#EFC24F" stroke="#5C4028" stroke-width="4.5"/>
+		<rect x="12" y="12" width="10" height="10" rx="2" fill="#5C4028"/>
+	</g>
+</svg>

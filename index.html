@@ -3,9 +3,30 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content="지출을 자진 신고하면 AI 총무가 판결하는 무지출 챌린지 서비스" />
-		<title>거지방 AI 총무</title>
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="description" content="친구들이 내 지출을 재판하는 소비 절제 커뮤니티" />
+		<meta name="theme-color" data-scheme="light" media="(prefers-color-scheme: light)" content="#f4f0e7" />
+		<meta name="theme-color" data-scheme="dark" media="(prefers-color-scheme: dark)" content="#1c1512" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="떼거지" />
+		<meta property="og:description" content="친구들이 내 지출을 재판하는 소비 절제 커뮤니티" />
+		<meta property="og:image" content="https://geoji-yaho.github.io/geoji-web/images/og.png" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<title>떼거지</title>
+		<link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<script>
+			try {
+				var theme = localStorage.getItem("ttegeoji-theme");
+				if (theme === "light" || theme === "dark") {
+					document.documentElement.dataset.theme = theme;
+					var metas = document.querySelectorAll('meta[name="theme-color"]');
+					for (var i = 0; i < metas.length; i++) {
+						metas[i].media = metas[i].dataset.scheme === theme ? "" : "not all";
+					}
+				}
+			} catch {}
+		</script>
 	</head>
 	<body>
 		<div id="root"></div>

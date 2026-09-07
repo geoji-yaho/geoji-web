@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-	<circle cx="24" cy="24" r="21" fill="#fbbf24" stroke="#92400e" stroke-width="3" />
-	<circle cx="24" cy="24" r="15" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="2 3" />
-	<text x="24" y="30.5" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#78350f">₩</text>
-</svg>

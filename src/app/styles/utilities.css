@@ -1,0 +1,19 @@
+@utility sticky-cta {
+	position: sticky;
+	bottom: calc(var(--spacing) * 11);
+	z-index: 40;
+	margin-top: auto;
+	padding-inline: calc(var(--spacing) * 5);
+}
+
+@utility pressable {
+	transition:
+		transform var(--duration-press) var(--ease-base),
+		color var(--duration-press) var(--ease-base),
+		background-color var(--duration-press) var(--ease-base),
+		border-color var(--duration-press) var(--ease-base),
+		opacity var(--duration-press) var(--ease-base);
+	&:active:not(:disabled) {
+		transform: scale(0.97);
+	}
+}

@@ -1,16 +1,19 @@
+import { cn } from "../lib/cn";
+import { Card } from "../ui/Card";
+import { LogoIcon } from "./LogoIcon";
+
 type EmptyStateProps = {
 	title: string;
 	description: string;
+	className?: string;
 };
 
-export function EmptyState({ title, description }: EmptyStateProps) {
+export function EmptyState({ title, description, className }: EmptyStateProps) {
 	return (
-		<div className="flex flex-col items-center gap-3 rounded-2xl bg-card px-6 py-10 text-center">
-			<span aria-hidden="true" className="text-[56px]">
-				💰
-			</span>
-			<p className="text-[15px] font-black text-ink">{title}</p>
-			<p className="text-sm leading-relaxed whitespace-pre-line text-muted">{description}</p>
-		</div>
+		<Card className={cn("flex flex-col items-center gap-2.5 px-5 py-7 text-center", className)}>
+			<LogoIcon className="size-14" />
+			<p className="text-subtitle text-ink">{title}</p>
+			<p className="text-chip whitespace-pre-line text-mute">{description}</p>
+		</Card>
 	);
 }

@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json.schemastore.org/package.json",
 	"name": "geoji-web",
-	"description": "거지방 AI 총무 웹 프론트엔드. 지출을 자진 신고하면 AI 총무가 판결하는 무지출 챌린지 서비스",
+	"description": "떼거지 웹 프론트엔드. 친구들이 내 지출을 재판하는 소비 절제 커뮤니티",
 	"version": "1.0.0",
 	"private": true,
 	"license": "UNLICENSED",
@@ -16,6 +16,11 @@
 			"name": "여찬규",
 			"email": "dev.cgyeo@gmail.com",
 			"url": "https://github.com/chan9yu"
+		},
+		{
+			"name": "이소윤",
+			"email": "leesoyun4206@naver.com",
+			"url": "https://github.com/leesoyuun"
 		}
 	],
 	"packageManager": "pnpm@11.25.0",
@@ -37,8 +42,14 @@
 		"prepare": "lefthook install && pnpm link:agents"
 	},
 	"dependencies": {
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^1.41.0",
+		"motion": "^13.2.0",
 		"react": "^19.2.8",
-		"react-dom": "^19.2.8"
+		"react-dom": "^19.2.8",
+		"react-router": "^8.3.1",
+		"tailwind-merge": "^3.6.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
