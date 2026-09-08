@@ -10,11 +10,11 @@ paths:
 
 ## 층
 
-| 층       | 경로                      | 담는 것                                                                                                         |
-| -------- | ------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| app      | `src/app/`                | 앱 초기화와 조립. `layouts`, `router`, `styles`, `App.tsx`. 라우트 레이아웃은 feature 전용이라도 여기 둔다      |
-| features | `src/features/{feature}/` | 비즈니스 기능 단위. `pages`, `components`, `api`, `hooks`, `store`, `utils`, `index.ts` 가운데 필요한 것만 둔다 |
-| shared   | `src/shared/`             | 여러 feature가 함께 쓰는 것. `ui`, `components`, `domain`, `api`, `hooks`, `lib`, `utils`, `constants`          |
+| 층       | 경로                      | 담는 것                                                                                                          |
+| -------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| app      | `src/app/`                | 앱 초기화와 조립. `layouts`, `router`, `styles`, `App.tsx`. 라우트 레이아웃은 feature 전용이라도 여기 둔다       |
+| features | `src/features/{feature}/` | 비즈니스 기능 단위. `pages`, `components`, `api`, `hooks`, `store`, `utils`, `index.ts` 가운데 필요한 것만 둔다  |
+| shared   | `src/shared/`             | 여러 feature가 함께 쓰는 것. `ui`, `components`, `domain`, `api`, `hooks`, `lib`, `utils`, `constants`, `@types` |
 
 ## import 방향
 
@@ -79,7 +79,7 @@ app/
 features/{feature}/
   pages/               라우트에 붙는 화면. 파일 이름이 Page로 끝난다
   components/          화면을 이루는 조각. 페이지를 가져오지 않는다
-  api/                 이 기능의 API 호출
+  api/                 이 기능만 쓰는 API 호출. 둘 이상이 쓰면 shared/api로 내린다
   hooks/
   store/               이 기능의 상태
   utils/
@@ -89,11 +89,12 @@ shared/
   ui/                  도메인을 모르는 UI. 다른 제품에 옮겨도 그대로 돈다
   components/          서비스에 종속된 공통 컴포넌트
   domain/              도메인 타입과 그 타입에 딸린 값
-  api/                 fetch 클라이언트
+  api/                 fetch 클라이언트와 두 feature 이상이 쓰는 엔티티 요청 모듈
   constants/           타입에 매이지 않은 값
   hooks/               범용 훅
   lib/                 외부 라이브러리 설정과 브라우저 API를 감싼 것
   utils/               범용 함수
+  @types/              전역 선언 파일(.d.ts). import와 export를 쓰지 않는다
 ```
 
 라우트 레이아웃은 feature 전용이라도 `app/layouts/`에 둔다. 라우터가 조립하는 것이라 URL 구조를 아는 층이 갖는 편이 맞다. 그 레이아웃이 feature의 컴포넌트를 쓰면 그 컴포넌트를 feature `index.ts`에 내보낸다.
@@ -109,13 +110,15 @@ shared/
 
 `shared/domain/`의 타입을 가져오거나 브랜드 자산과 서비스 카피를 담으면 `components`, 그 밖은 `ui`다. `components`는 `ui`를 가져다 쓰고 반대는 안 된다. 도메인을 아는 것이 도메인을 모르는 것에 얹히는 방향이라야 UI를 따로 떼어 볼 수 있다.
 
+`domain`과 `@types`를 가르는 것은 export 여부다. `Verdict`처럼 가져다 쓰는 타입은 `domain`의 모듈이고, `ImportMetaEnv`처럼 전역을 보강하는 선언은 `@types`의 `.d.ts`다. 선언 파일에 `import`나 `export`가 한 줄이라도 들어가면 모듈이 되어 전역 보강이 끊긴다.
+
 `domain`과 `constants`를 가르는 것은 그 값이 타입에 매여 있는지다. `VERDICT_LABELS`는 `Record<Verdict, string>`이라 `Verdict`가 바뀌면 컴파일러가 함께 고치라고 한다. 그래서 같은 파일에 둔다. `EXPENSE_CATEGORIES`는 그런 짝이 없으니 `constants`다.
 
 같은 컴포넌트의 순수한 껍데기와 도메인 껍질을 나눠도 된다. `ui/Tag`가 딱지의 모양을 갖고 `components/IntensityTag`가 잔소리 강도를 그 모양에 얹는 식이다.
 
 ## 파일 이름
 
-컴포넌트 파일은 PascalCase(`RoomCard.tsx`)다. 폴더는 kebab-case.
+컴포넌트 파일은 PascalCase(`RoomCard.tsx`)다. 폴더는 kebab-case. `@types`만 예외로, 선언 파일만 담는 폴더라는 표시다.
 
 컴포넌트가 아닌 파일은 무엇을 내보내는지로 갈린다.
 
