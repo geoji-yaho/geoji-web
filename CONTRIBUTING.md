@@ -16,11 +16,11 @@ Node 24(`.nvmrc`)와 pnpm 11(`corepack enable`)이 필요하다. `pnpm install`�
 
 `src/`는 app, features, shared 3층이다. 위에서 아래로만 가져온다. app은 features와 shared를, features는 shared만 가져온다. features끼리는 import하지 않는다.
 
-| 층                        | 담는 것                                                                   |
-| ------------------------- | ------------------------------------------------------------------------- |
-| `src/app/`                | 앱 조립. `layouts`, `router`, `styles`, `App.tsx`. 라우트 레이아웃도 여기 |
-| `src/features/{feature}/` | 기능 단위. `pages`, `components`, `index.ts` 가운데 필요한 것만           |
-| `src/shared/`             | `ui`, `components`, `domain`, `constants`, `hooks`, `lib`, `utils`        |
+| 층                        | 담는 것                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| `src/app/`                | 앱 조립. `layouts`, `router`, `styles`, `App.tsx`. 라우트 레이아웃도 여기           |
+| `src/features/{feature}/` | 기능 단위. `pages`, `components`, `api`, `hooks`, `index.ts` 가운데 필요한 것만     |
+| `src/shared/`             | `ui`, `components`, `domain`, `constants`, `api`, `hooks`, `lib`, `utils`, `@types` |
 
 `shared`는 넷으로 갈린다. 떼거지를 모르는 UI는 `ui`, 판결과 티어처럼 서비스 개념을 아는 것은 `components`, 도메인 타입과 그 타입 없이는 뜻이 없는 값은 `domain`, 타입에 매이지 않은 값은 `constants`다. `components`는 `ui`를 가져다 쓰고 반대는 안 된다.
 
@@ -58,6 +58,41 @@ import { RoomRuleList } from "../components/RoomRuleList";
 
 컴포넌트는 PascalCase(`RoomCard.tsx`), 폴더는 kebab-case다. 컴포넌트가 아닌 파일은 주 export가 하나이고 파일 이름이 그 심볼과 같아지면 심볼 표기를 그대로 쓰고(`useTheme.ts`, `cn.ts`), 상수와 타입 모음처럼 여럿을 내보내면 kebab-case로 쓴다(`expense-categories.ts`, `theme-store.ts`). 한 `.tsx`에는 컴포넌트 하나만 둔다.
 
+### 데이터 층
+
+서버 상태는 TanStack Query 5가 맡고 요청은 `src/shared/api/http.ts`의 `http`가 브라우저 `fetch`로 보낸다. 백엔드 규약은 geoji-server 저장소의 `API.md`다. 기준 주소는 `VITE_API_BASE_URL` 환경 변수에서 오고 로컬 설정은 [README.md](./README.md)의 시작하기 절에 있다.
+
+| 파일                                    | 하는 일                                                                                                                             |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `src/shared/api/http.ts`                | `http.get`, `post`, `put`, `delete`. 쿼리 스트링과 JSON 바디, Authorization 헤더, 10초 타임아웃을 붙이고 실패는 `ApiError`로 던진다 |
+| `src/shared/api/api-error.ts`           | `ApiError`와 `isApiError`. `kind`는 badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout 8종           |
+| `src/shared/api/auth-token.ts`          | `setAccessTokenProvider`와 `getAccessToken`. 등록한 공급자가 없으면 Authorization 헤더 없이 요청한다                                |
+| `src/shared/api/profile.ts`, `rooms.ts` | 엔티티 모듈. 응답 타입과 요청 함수, `queryOptions` 팩토리(`profileQueries`, `roomQueries`)                                          |
+| `src/shared/lib/env.ts`                 | `env.apiBaseUrl`. 읽는 순간 `VITE_API_BASE_URL`을 확인하고 없으면 던진다                                                            |
+| `src/shared/lib/query-client.ts`        | `createQueryClient`. 쿼리 기본 옵션과 재시도 규칙, 401이면 `onUnauthorized`                                                         |
+| `src/app/providers/QueryProvider.tsx`   | `QueryClientProvider`와 devtools. 401이면 `/login`으로 보낸다                                                                       |
+
+feature에서 API를 부를 때는 이렇게 한다.
+
+- 요청은 `http`만 쓴다. 화면이나 훅에서 `fetch`를 직접 부르지 않는다
+- 엔티티 모듈(응답 타입, 요청 함수, `queryOptions` 팩토리)은 두 feature 이상이 쓰면 `src/shared/api/{entity}.ts`, 한 feature만 쓰면 그 feature의 `api/`에 둔다. 프로필(auth, home, me)과 방(home, room)은 shared다
+- 키는 엔티티로 시작하는 계층이다. `["rooms"]`, `["rooms", "list"]`, `["rooms", "detail", id]`처럼 팩토리 함수로 만들고 `queryOptions`로 정의해 `useQuery`, `useSuspenseQuery`, `queryClient.prefetchQuery`가 같은 정의를 쓴다
+- 변이는 쓰는 화면의 feature `hooks/`에 `useMutation` 훅으로 둔다. 성공하면 `setQueryData`로 상세를 채우고 `invalidateQueries`로 목록을 다시 받는다. `onSuccess`가 그 Promise를 돌려주면 목록이 올 때까지 `isPending`이 유지된다
+- 401은 전역에서 로그인 화면으로 보내므로 화면이 다루지 않는다. 그 밖은 `error.kind`로 분기한다. `Register.defaultError`를 `ApiError`로 등록해 두어 `error`가 `ApiError`로 잡힌다
+- 아직 없는 리소스는 queryFn 안에서 잡아 `null`로 바꾼다. 404로 오는 엔드포인트(왕관, 이번 주 도전 과제)는 `notFound`를, 온보딩 전 프로필은 `GET /api/me`가 409로 오므로 `conflict`를 잡는다. `data === null`이 아직 없다는 뜻이다
+- 재시도는 network와 timeout, server만 2회까지다. 4xx와 변이는 다시 시도하지 않는다
+- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 방 강도처럼 화면 모델(`Intensity`)과 값이 다른 것은 정본이 정해질 때까지 대응표를 만들지 않는다
+
+실제 예시는 엔티티 모듈 `src/shared/api/profile.ts`와 `src/shared/api/rooms.ts`, 변이 훅 `src/features/auth/hooks/useCreateProfile.ts`와 `src/features/me/hooks/useUpdateProfile.ts`, `src/features/room/hooks/useCreateRoom.ts`, `src/features/room/hooks/useJoinRoom.ts`다. 화면에서는 이렇게 쓴다.
+
+```tsx
+const { data: profile, isPending } = useQuery(profileQueries.me());
+const needsOnboarding = profile === null;
+
+const rooms = useQuery(roomQueries.list());
+const createRoom = useCreateRoom();
+```
+
 ### props 타입
 
 `children`을 받으면 `PropsWithChildren`으로 감싼다. `children?: ReactNode`를 직접 적지 않는다. cva를 쓰면 변형 타입을 `VariantProps`에서 뽑는다.
@@ -85,6 +120,9 @@ type TagProps = PropsWithChildren<{
 - `AppLayout`이 `useOutlet()`을 쓰는 이유는 `Outlet`을 직접 쓰면 나가는 화면도 새 화면을 그려 전환 중 두 화면이 같아지기 때문이다
 - `stamp-sound.ts`의 `primeStampSound`는 사용자 제스처 핸들러 안에서 먼저 불러야 한다. `playStampSound`는 애니메이션 프레임에서 불려 제스처가 아니고, 그때 AudioContext를 처음 만들면 무음이 된다
 - `pressable` 유틸리티가 색 전환까지 맡는다. `transition-colors`를 같이 쓰면 그쪽이 뒤에 나와 transform 전환을 덮는다
+- `src/shared/lib/env.ts`의 `env`가 getter인 이유는 모듈을 가져오는 시점에 `VITE_API_BASE_URL`을 검사하면 API를 안 쓰는 화면까지 죽기 때문이다. 배포된 사이트에는 아직 이 변수가 없다. `env.apiBaseUrl`을 읽는 순간에만 던진다
+- `http`는 호출자의 `signal`이 aborted면 오류를 `ApiError`로 감싸지 않고 그대로 다시 던진다. TanStack Query의 쿼리 취소가 그 오류를 보고 동작한다
+- `QueryProvider`가 `ReactQueryDevtools`를 조건 없이 그리는 이유는 프로덕션 빌드에서 패키지가 빈 컴포넌트를 내보내기 때문이다. `import.meta.env.DEV` 분기를 두지 않는다
 
 ## 완료 기준
 
