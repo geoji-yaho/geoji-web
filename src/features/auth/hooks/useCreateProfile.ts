@@ -9,6 +9,11 @@ export function useCreateProfile() {
 		mutationFn: createProfile,
 		onSuccess: (profile) => {
 			queryClient.setQueryData(profileQueries.me().queryKey, profile);
+		},
+		onError: (error) => {
+			if (error.kind === "conflict") {
+				return queryClient.invalidateQueries({ queryKey: profileQueries.me().queryKey });
+			}
 		}
 	});
 }
