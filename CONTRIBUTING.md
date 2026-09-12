@@ -62,15 +62,15 @@ import { RoomRuleList } from "../components/RoomRuleList";
 
 서버 상태는 TanStack Query 5가 맡고 요청은 `src/shared/api/http.ts`의 `http`가 브라우저 `fetch`로 보낸다. 백엔드 규약은 geoji-server 저장소의 `API.md`다. 기준 주소는 `VITE_API_BASE_URL` 환경 변수에서 오고 로컬 설정은 [README.md](./README.md)의 시작하기 절에 있다.
 
-| 파일                                    | 하는 일                                                                                                                             |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `src/shared/api/http.ts`                | `http.get`, `post`, `put`, `delete`. 쿼리 스트링과 JSON 바디, Authorization 헤더, 10초 타임아웃을 붙이고 실패는 `ApiError`로 던진다 |
-| `src/shared/api/api-error.ts`           | `ApiError`와 `isApiError`. `kind`는 badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout 8종           |
-| `src/shared/api/auth-token.ts`          | `setAccessTokenProvider`와 `getAccessToken`. 등록한 공급자가 없으면 Authorization 헤더 없이 요청한다                                |
-| `src/shared/api/profile.ts`, `rooms.ts` | 엔티티 모듈. 응답 타입과 요청 함수, `queryOptions` 팩토리(`profileQueries`, `roomQueries`)                                          |
-| `src/shared/lib/env.ts`                 | `env.apiBaseUrl`. 읽는 순간 `VITE_API_BASE_URL`을 확인하고 없으면 던진다                                                            |
-| `src/shared/lib/query-client.ts`        | `createQueryClient`. 쿼리 기본 옵션과 재시도 규칙, 401이면 `onUnauthorized`                                                         |
-| `src/app/providers/QueryProvider.tsx`   | `QueryClientProvider`와 devtools. 401이면 `/login`으로 보낸다                                                                       |
+| 파일                                    | 하는 일                                                                                                                                                                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/shared/api/http.ts`                | `http.get`, `post`, `put`, `delete`. 쿼리 스트링과 JSON 바디, Authorization 헤더, 10초 타임아웃을 붙이고 실패는 `ApiError`로 던진다                                         |
+| `src/shared/api/api-error.ts`           | `ApiError`와 `isApiError`. `kind`는 badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout 8종                                                   |
+| `src/shared/api/auth-token.ts`          | `setAccessTokenProvider`와 `getAccessToken`. 등록한 공급자가 없으면 Authorization 헤더 없이 요청한다. 지금은 `App.tsx`가 개발용 토큰(`env.devAccessToken`)을 등록한다       |
+| `src/shared/api/profile.ts`, `rooms.ts` | 엔티티 모듈. 응답 타입과 요청 함수, `queryOptions` 팩토리(`profileQueries`, `roomQueries`)                                                                                  |
+| `src/shared/lib/env.ts`                 | `env.apiBaseUrl`. 읽는 순간 `VITE_API_BASE_URL`을 확인하고 없거나 https 페이지에서 http 주소면 던진다. `env.devAccessToken`과 `env.devNickname`은 개발 서버에서만 값이 있다 |
+| `src/shared/lib/query-client.ts`        | `createQueryClient`. 쿼리 기본 옵션과 재시도 규칙, 401이면 `onUnauthorized`                                                                                                 |
+| `src/app/providers/QueryProvider.tsx`   | `QueryClientProvider`와 devtools. 401이면 `/login`으로 보낸다                                                                                                               |
 
 feature에서 API를 부를 때는 이렇게 한다.
 
@@ -79,9 +79,9 @@ feature에서 API를 부를 때는 이렇게 한다.
 - 키는 엔티티로 시작하는 계층이다. `["rooms"]`, `["rooms", "list"]`, `["rooms", "detail", id]`처럼 팩토리 함수로 만들고 `queryOptions`로 정의해 `useQuery`, `useSuspenseQuery`, `queryClient.prefetchQuery`가 같은 정의를 쓴다
 - 변이는 쓰는 화면의 feature `hooks/`에 `useMutation` 훅으로 둔다. 성공하면 `setQueryData`로 상세를 채우고 `invalidateQueries`로 목록을 다시 받는다. `onSuccess`가 그 Promise를 돌려주면 목록이 올 때까지 `isPending`이 유지된다
 - 401은 전역에서 로그인 화면으로 보내므로 화면이 다루지 않는다. 그 밖은 `error.kind`로 분기한다. `Register.defaultError`를 `ApiError`로 등록해 두어 `error`가 `ApiError`로 잡힌다
-- 아직 없는 리소스는 queryFn 안에서 잡아 `null`로 바꾼다. 404로 오는 엔드포인트(왕관, 이번 주 도전 과제)는 `notFound`를, 온보딩 전 프로필은 `GET /api/me`가 409로 오므로 `conflict`를 잡는다. `data === null`이 아직 없다는 뜻이다
+- 아직 없는 리소스는 queryFn 안에서 잡아 `null`로 바꾼다. 404로 오는 엔드포인트(이번 주 도전 과제)는 `notFound`를, 온보딩 전 프로필은 `GET /api/me`가 409로 오므로 `conflict`를 잡는다. `data === null`이 아직 없다는 뜻이다
 - 재시도는 network와 timeout, server만 2회까지다. 4xx와 변이는 다시 시도하지 않는다
-- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 방 강도처럼 화면 모델(`Intensity`)과 값이 다른 것은 정본이 정해질 때까지 대응표를 만들지 않는다
+- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 화면 모델과 값이 다른 것은 엔티티 모듈에 대응표를 두고 화면이 그 표로 바꾼다. 방 강도는 `rooms.ts`의 `SPICE_LEVEL_BY_INTENSITY`와 `INTENSITY_BY_SPICE_LEVEL`, 게시물 타입은 `features/post/api/expenses.ts`의 `EXPENSE_SOURCE_BY_POST_TYPE`이다
 
 실제 예시는 엔티티 모듈 `src/shared/api/profile.ts`와 `src/shared/api/rooms.ts`, 변이 훅 `src/features/auth/hooks/useCreateProfile.ts`와 `src/features/me/hooks/useUpdateProfile.ts`, `src/features/room/hooks/useCreateRoom.ts`, `src/features/room/hooks/useJoinRoom.ts`다. 화면에서는 이렇게 쓴다.
 

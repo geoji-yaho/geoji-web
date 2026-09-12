@@ -4,7 +4,7 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "../lib/cn";
 
 const chipVariants = cva(
-	"inline-flex shrink-0 pressable items-center justify-center rounded-full px-3.5 py-2 text-chip text-mute",
+	"inline-flex shrink-0 pressable items-center justify-center rounded-full px-3.5 py-2 text-chip text-mute disabled:bg-line disabled:text-mute disabled:shadow-none",
 	{
 		variants: {
 			selected: {
