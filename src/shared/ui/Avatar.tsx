@@ -27,7 +27,12 @@ type AvatarProps = VariantProps<typeof avatarVariants> & {
 
 export function Avatar({ name, size, className }: AvatarProps) {
 	return (
-		<span role="img" aria-label={name} className={cn(avatarVariants({ size }), className)}>
+		<span
+			role={name ? "img" : undefined}
+			aria-label={name || undefined}
+			aria-hidden={name ? undefined : true}
+			className={cn(avatarVariants({ size }), className)}
+		>
 			<span aria-hidden="true">{name.slice(0, 1)}</span>
 		</span>
 	);
