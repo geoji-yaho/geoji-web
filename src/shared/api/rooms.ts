@@ -1,10 +1,23 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import type { Intensity, VoteDeadlineMinutes } from "../domain/room";
 import { http } from "./http";
 
-export type RoomSpiceLevel = "mild" | "hot" | "direct";
+export type RoomSpiceLevel = "MILD" | "SPICY" | "HELL";
 
-export type RoomVoteDeadlineMinutes = 30 | 60 | 180 | 360 | 720;
+export type RoomVoteDeadlineMinutes = VoteDeadlineMinutes;
+
+export const SPICE_LEVEL_BY_INTENSITY: Record<Intensity, RoomSpiceLevel> = {
+	mild: "MILD",
+	spicy: "SPICY",
+	hell: "HELL"
+};
+
+export const INTENSITY_BY_SPICE_LEVEL: Record<RoomSpiceLevel, Intensity> = {
+	MILD: "mild",
+	SPICY: "spicy",
+	HELL: "hell"
+};
 
 export type Room = {
 	id: string;

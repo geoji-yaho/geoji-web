@@ -11,7 +11,7 @@ export type Profile = {
 };
 
 export type ProfileInput = {
-	nickname: string;
+	nickname?: string;
 	monthlyBudget?: number;
 };
 
