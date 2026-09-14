@@ -1,63 +1,20 @@
 ---
-description: 브랜치 전략과 커밋 메시지 형식, 금지 패턴
+description: main과 develop, feature 세 브랜치. 커밋 메시지는 <타입>: <한국어 제목>. 금지 패턴 여섯. 브랜치와 커밋, PR, 머지, 릴리스 절차는 geoji-git 스킬에 있다
 ---
 
 # Git 워크플로우
 
-## 브랜치 전략
-
-`main`은 배포, `develop`은 통합, `feature/{name}`은 작업 단위다.
-
-- `main`은 머지되면 GitHub Pages로 자동 배포된다. 항상 빌드가 되어야 한다
-- `develop`에는 모든 작업이 모인다
-- 작업은 `develop`에서 `feature/{name}`으로 분기한다. 이름은 영문 케밥 케이스(예: `feature/product-filter`). 설정과 문서 작업도 같다
-- `feature`는 `develop`으로 PR을 올리고 CI(`pnpm check`)가 통과한 뒤 머지한다
-- 배포할 시점에 `develop`을 `main`으로 머지한다. 이 머지가 배포를 일으킨다
-- 머지는 `--no-ff`로 한다. PR은 merge commit이고 squash는 쓰지 않는다. 작업 단위가 머지 커밋으로 묶여 이력에 남는다
-- 머지 후 feature 브랜치는 삭제한다
-
-## 커밋 규칙
-
-사용자가 "커밋해" 또는 `/git:commit`을 요청할 때만 커밋한다. 임의로 커밋하지 않는다.
-
-### 커밋 메시지 형식
-
-```
-<타입>: <제목>
-
-본문 (선택). 왜 이 변경이 필요한지 설명
-
-꼬리말 (선택). 관련 이슈: #123
-```
-
-예: `chore: lefthook Git 훅 파이프라인 추가`
-
-### 타입
-
-| 타입     | 용도                                |
-| -------- | ----------------------------------- |
-| feat     | 새로운 기능                         |
-| fix      | 버그 수정                           |
-| docs     | 문서 변경                           |
-| style    | 코드 포맷팅 (세미콜론, 들여쓰기 등) |
-| refactor | 코드 리팩토링                       |
-| perf     | 성능 개선                           |
-| test     | 테스트 추가와 수정                  |
-| chore    | 빌드, 설정 변경                     |
-
-### 작성 규칙
-
-- 타입은 소문자 영문, 제목은 한국어로 쓴다
-- 제목은 50자 이내
-- 제목과 본문 사이에 빈 줄을 넣는다
-- 본문은 72자마다 줄바꿈
-- 어떻게보다 무엇을 왜 했는지를 쓴다
-- 커밋은 작은 작업 단위로 쪼갠다. 성격이 다른 변경(기능과 설정, 포맷)을 한 커밋에 섞지 않는다
-- 이모지와 한자, 가운뎃점과 화살표는 쓰지 않는다
+- `main`은 배포, `develop`은 통합이다. 둘에 직접 커밋하지 않고 `feature/{슬러그}`에서 `develop`으로 PR을 올린다. 머지는 merge commit이고 squash를 쓰지 않는다
+- 커밋 메시지는 `<타입>: <제목>`이다. 제목은 50자 이내 한국어이고 타입은 `scripts/commit-template.txt`의 여덟이다. 이모지와 한자, 가운뎃점과 화살표를 쓰지 않는다
+- 사용자가 "커밋해"나 `/git:commit`으로 요청할 때만 커밋하고 푸시한다
 
 ## 금지 패턴
 
-1. **`git add -A` 광범위 스테이징.** 파일 단위로 명시해서 add한다
-2. **`.env`와 secret 파일 커밋.** `.gitignore` 확인이 필수다
-3. **병합 충돌 `--ours` 일방 해소.** 양쪽 의미를 검토한 뒤 해소한다
-4. **커밋 메시지에 "WIP" 잔존 병합.** rebase나 squash로 정리한 뒤 병합한다
+1. `main`과 `develop` 직접 커밋, `main` 직접 푸시. 릴리스는 `develop`에서 `main`으로 PR이다
+2. `git add -A`와 `git add .` 광범위 스테이징. 파일 단위로 명시한다
+3. `.env`와 비밀값 파일 커밋. `.env.example`에 자리만 남긴다
+4. 병합 충돌 `--ours` 일방 해소. 양쪽 의미를 검토한 뒤 해소한다
+5. 강제 푸시와 `--no-verify`. 리베이스가 필요하면 `--force-with-lease`만 쓰고 `main`과 `develop`에는 쓰지 않는다
+6. "WIP" 커밋을 그대로 병합. rebase로 정리한 뒤 병합한다
+
+광범위 스테이징과 `.env` 스테이징, 훅 건너뛰기, 강제 푸시, `main` 푸시, `main`과 `develop`에서의 커밋은 PreToolUse 훅 `.agents/hooks/guard-git.sh`가 막는다. 절차와 이유, lefthook이 하는 일, 릴리스 뒤 정리는 `.agents/skills/geoji-git/SKILL.md`에 있다.
