@@ -1,35 +1,36 @@
 import { StampSlam } from "@/shared/components/StampSlam";
 import { VerdictStamp } from "@/shared/components/VerdictStamp";
 import { type Sentence, SENTENCE_LABELS, SENTENCE_NOTES, type Verdict, VERDICT_SIDES } from "@/shared/domain/verdict";
+import { cn } from "@/shared/lib/cn";
 
 type VerdictHeadlineBlockProps = {
 	verdict: Verdict;
-	headline: string;
-	sentence: Sentence;
-	onUnstamp: () => void;
+	headline: string | null;
+	sentence?: Sentence;
 	onLand?: () => void;
 };
 
-export function VerdictHeadlineBlock({ verdict, headline, sentence, onUnstamp, onLand }: VerdictHeadlineBlockProps) {
-	const note = SENTENCE_NOTES[sentence];
+export function VerdictHeadlineBlock({ verdict, headline, sentence, onLand }: VerdictHeadlineBlockProps) {
+	const side = VERDICT_SIDES[verdict];
+	const note = sentence ? SENTENCE_NOTES[sentence] : null;
 
 	return (
-		<button
-			type="button"
-			onClick={onUnstamp}
-			className="flex w-full pressable items-center justify-between gap-4 py-1 text-left"
-		>
-			<span className="flex min-w-0 flex-1 flex-col gap-1.5">
-				<span className="text-headline text-ink">{headline}</span>
-				<span className="flex flex-wrap items-baseline gap-1.5">
-					<span className="text-caption text-mute">형량</span>
-					<span className="text-xl font-black text-red">{SENTENCE_LABELS[sentence]}</span>
-					{note && <span className="text-xs text-mute">{note}</span>}
-				</span>
-			</span>
-			<StampSlam side={VERDICT_SIDES[verdict]} onLand={onLand} className="shrink-0">
+		<div className="flex items-center justify-between gap-4 py-1">
+			<div className="flex min-w-0 flex-1 flex-col gap-1.5">
+				{headline && (
+					<h2 className={cn(side === "none" ? "text-subtitle text-mute" : "text-headline text-ink")}>{headline}</h2>
+				)}
+				{sentence && (
+					<p className="flex flex-wrap items-baseline gap-1.5">
+						<span className="text-caption text-mute">형량</span>
+						<span className="text-xl font-black text-red">{SENTENCE_LABELS[sentence]}</span>
+						{note && <span className="text-xs text-mute">{note}</span>}
+					</p>
+				)}
+			</div>
+			<StampSlam side={side} onLand={onLand} className="shrink-0">
 				<VerdictStamp verdict={verdict} size="lg" />
 			</StampSlam>
-		</button>
+		</div>
 	);
 }
