@@ -6,12 +6,13 @@
 .agents/
   README.md            이 파일
   rules/               룰 본문
-  scripts/             본문을 도구 디렉터리에 잇는 스크립트
+  scripts/             본문을 도구 디렉터리에 잇는 스크립트와 컨벤션 검사
   skills/              스킬 본문
 .claude/
   rules/               .agents/rules/*.md 로 가는 심볼릭 링크
   skills/              .agents/skills/* 로 가는 심볼릭 링크
-  agents/              에이전트 정의. 도구마다 형식이 달라 링크하지 않는다
+  agents/              에이전트 정의. build, review, qa 세 폴더. 도구마다 형식이 달라 링크하지 않는다
+  hooks/               Stop 훅. 컨벤션 검사를 돌린다
   commands/            슬래시 커맨드. 마찬가지
 AGENTS.md              늘 지켜야 하는 것을 직접 적는다
 CLAUDE.md              AGENTS.md 로 가는 심볼릭 링크
@@ -39,23 +40,24 @@ Claude Code는 `CLAUDE.md`와 `.claude/rules/**/*.md`를 읽고 `AGENTS.md`는 �
 
 스킬 본문은 `.agents/skills/{이름}/SKILL.md`에 만들고 `pnpm link:agents`를 돌린다. 스킬은 요청이 스킬 설명과 맞을 때만 붙는다. 여러 단계를 밟는 절차나 작업 하나에서만 쓰는 지식은 룰 대신 스킬로 만든다.
 
-| 스킬            | 붙는 자리                                         |
-| --------------- | ------------------------------------------------- |
-| `geoji-harness` | 화면과 컴포넌트, 기능을 만들거나 고쳐 달라는 요청 |
+| 스킬              | 붙는 자리                                                                          |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| `geoji-dev`       | 화면과 기능을 만들거나 API를 붙이거나 리뷰를 맡기거나 만들기 전에 자문하는 요청    |
+| `review-protocol` | 리뷰어 여섯에 `skills:`로 미리 실린다. 사용자가 꺼내지 않는다                      |
+| `geoji-qa`        | `docs/release/TC.md`의 테스트 케이스를 화면별로 돌리거나 TC를 만들거나 맞추는 요청 |
 
 `SKILL.md`는 500줄 안에 둔다. 길어지면 `references/`로 나누고 본문에는 언제 그 파일을 읽는지만 남긴다. 스킬이 트리거되기 전에는 이름과 설명만 컨텍스트에 올라가고, `references/`는 필요할 때만 읽힌다.
 
 ## 에이전트
 
-에이전트 정의는 `.claude/agents/{이름}.md`에 직접 둔다. 도구마다 형식이 달라 링크하지 않는다.
+에이전트 정의는 `.claude/agents/{폴더}/{이름}.md`에 직접 둔다. 도구마다 형식이 달라 링크하지 않는다. 식별은 `name` 프론트매터이고 폴더는 정리용이라 파일 이름을 `name`과 같게 둔다.
 
-| 에이전트                | 맡는 것                                  |
-| ----------------------- | ---------------------------------------- |
-| `geoji-spec-auditor`    | 정본에서 무엇을 만들지 확인, 미결정 판정 |
-| `geoji-architect`       | 파일 배치와 공개 API, 타입 설계          |
-| `geoji-implementer`     | 구현                                     |
-| `geoji-design-reviewer` | 시안과 디자인 토큰 대조                  |
-| `geoji-code-reviewer`   | 구조와 타입, 접근성                      |
-| `geoji-qa-verifier`     | 게이트와 브라우저 실물 확인              |
+| 폴더      | 에이전트                                                                                                    | 맡는 것                                                       |
+| --------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `build/`  | `plan-architect`, `data-builder`, `ui-builder`                                                              | 계획, 데이터 층, 화면                                         |
+| `review/` | `review-structure`, `review-typescript`, `review-tailwind`, `review-screen`, `review-data`, `review-router` | 룰을 하나씩 소유하고 스크립트가 못 잡는 판단을 한다           |
+| `qa/`     | `qa-verifier`, `tc-author`, `browser-runner`                                                                | 명세와 백엔드 계약 대비 동작과 게이트, TC 작성, 브라우저 실행 |
 
-여섯을 언제 어떤 순서로 부르는지는 `geoji-harness` 스킬이 정한다. 에이전트를 더하거나 역할을 바꾸면 그 스킬의 표와 Phase도 함께 고친다. 한쪽만 고치면 없는 에이전트를 부르거나 있는 에이전트를 놓친다.
+누구를 언제 부르는지는 `geoji-dev`와 `geoji-qa` 스킬이 정한다. 에이전트를 더하거나 역할을 바꾸면 그 스킬의 표와 `AGENTS.md` 하네스 절도 함께 고친다. 한쪽만 고치면 없는 에이전트를 부르거나 있는 에이전트를 놓친다.
+
+기계가 판정할 수 있는 검사는 `.agents/scripts/check-conventions.sh`에 모아 두고 `.claude/hooks/check-on-stop.sh`가 응답을 끝내기 전에 돌린다. 검사를 더할 때는 근거 룰 이름을 절 제목에 적는다.
