@@ -21,26 +21,28 @@ import { VerdictStamp } from "./VerdictStamp";
 
 type ExpenseCardBase = {
 	name: string;
-	tier: Tier;
+	tier?: Tier;
 	timeAgo: string;
 	imprisonedLabel?: string;
 	postType: PostType;
-	category: string;
-	title: string;
+	category?: string;
+	title?: string;
 	amount: number;
 	memo?: string;
 	image?: ImageSource;
+	reactions?: Reaction[];
+	commentCount: number;
+	onComments?: () => void;
 };
+
+export type ExpenseVoteState = "open" | "voted" | "own" | "closed";
 
 type VotingProps = {
 	state: "voting";
-	reactions: Reaction[];
-	commentCount: number;
-	onComments?: () => void;
 	deadlineLabel: string;
 	tally: VoteTally;
 	eligibleCount: number;
-	voteState: "open" | "voted" | "own";
+	voteState: ExpenseVoteState;
 	onVote?: () => void;
 };
 
@@ -49,17 +51,23 @@ type JudgedProps = {
 	verdict: Exclude<Verdict, "dismissed">;
 	tally: VoteTally;
 	sentence?: Sentence;
-	headline: string;
+	headline?: string;
+	onOpenVerdict?: () => void;
 };
 
 type DismissedProps = {
 	state: "dismissed";
 };
 
-type ExpenseCardProps = ExpenseCardBase & (VotingProps | JudgedProps | DismissedProps);
+type PlainProps = {
+	state: "plain";
+};
+
+type ExpenseCardProps = ExpenseCardBase & (VotingProps | JudgedProps | DismissedProps | PlainProps);
 
 export function ExpenseCard(props: ExpenseCardProps) {
 	const { oppose, support } = VOTE_VERDICTS[props.postType];
+	const subject = [props.category, props.title].filter((part) => part !== undefined && part !== "").join(", ");
 
 	return (
 		<article className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-card">
@@ -68,7 +76,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-1.5">
 						<span className="text-sm font-black text-ink">{props.name}</span>
-						<TierBadge tier={props.tier} />
+						{props.tier && <TierBadge tier={props.tier} />}
 						{props.imprisonedLabel && <StatusTag label={props.imprisonedLabel} />}
 					</div>
 					<span className="text-caption text-dim">{props.timeAgo}</span>
@@ -77,9 +85,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 			</div>
 
 			<div className="flex flex-col gap-1">
-				<span className="text-xs text-mute">
-					{props.category}, {props.title}
-				</span>
+				{subject !== "" && <span className="text-xs text-mute">{subject}</span>}
 				<p className="text-amount-sm text-ink">{formatAmount(props.amount)}원</p>
 				{props.memo && <p className="text-sm text-text">&ldquo;{props.memo}&rdquo;</p>}
 				{props.image && (
@@ -129,9 +135,14 @@ export function ExpenseCard(props: ExpenseCardProps) {
 										{SENTENCE_NOTES[props.sentence] && ` (${SENTENCE_NOTES[props.sentence]})`}
 									</span>
 								)}
-								<span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>
+								{props.headline && <span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>}
 							</div>
 						</div>
+						{props.onOpenVerdict && (
+							<Button variant="outline" onClick={props.onOpenVerdict}>
+								판결문 보기
+							</Button>
+						)}
 					</>
 				)}
 
@@ -142,9 +153,11 @@ export function ExpenseCard(props: ExpenseCardProps) {
 					</div>
 				)}
 
-				{props.state === "voting" && (
-					<ReactionRow reactions={props.reactions} commentCount={props.commentCount} onComments={props.onComments} />
-				)}
+				<ReactionRow
+					reactions={props.reactions ?? []}
+					commentCount={props.commentCount}
+					onComments={props.onComments}
+				/>
 			</div>
 		</article>
 	);
