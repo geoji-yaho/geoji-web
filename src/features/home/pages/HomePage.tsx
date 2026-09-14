@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
@@ -7,6 +8,7 @@ import { HomeHeader } from "@/shared/components/HomeHeader";
 import { RoomCard } from "@/shared/components/RoomCard";
 import { formatVoteDeadlineLabel } from "@/shared/domain/room";
 import { useMyMonthStats } from "@/shared/hooks/useMyMonthStats";
+import { isOnboardingSkipped } from "@/shared/lib/onboarding-skip";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Reveal } from "@/shared/ui/Reveal";
@@ -23,6 +25,14 @@ export function HomePage() {
 	const profile = stats.profile;
 	const roomList = rooms.data ?? [];
 	const monthLabel = `${kstCalendar(new Date()).month}월 지출`;
+	const needsProfile = !stats.isPending && stats.error === null && profile === null;
+	const needsOnboarding = needsProfile && !isOnboardingSkipped();
+
+	useEffect(() => {
+		if (needsOnboarding) {
+			void navigate("/onboarding/budget", { replace: true });
+		}
+	}, [needsOnboarding, navigate]);
 
 	return (
 		<div className="flex flex-1 flex-col pb-11">
@@ -53,7 +63,7 @@ export function HomePage() {
 					</Reveal>
 				)}
 
-				{!stats.isPending && !profile && (
+				{needsProfile && !needsOnboarding && (
 					<Reveal>
 						<button
 							type="button"
