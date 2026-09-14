@@ -11,7 +11,7 @@
 # - 추적하는 파일에 바뀐 것이 없다. 질문만 한 턴에는 검사할 것이 없다
 #
 # 게이트 넷은 여기서 돌리지 않는다. 빌드가 느리고 타입 검사는 물어보려고 멈추는 자리를
-# 자주 막는다. 게이트는 AGENTS.md가 시키고 lefthook이 커밋과 푸시에서 돌린다.
+# 자주 막는다. 게이트는 AGENTS.md 가 시키고 lefthook 이 커밋과 푸시에서 돌린다.
 
 set -uo pipefail
 
@@ -26,7 +26,7 @@ cd "$project_dir" 2>/dev/null || exit 0
 
 [ -f .agents/scripts/check-conventions.sh ] || exit 0
 
-changed="$(git status --porcelain -- src docs .agents .claude AGENTS.md README.md CONTRIBUTING.md index.html 2>/dev/null)"
+changed="$(git status --porcelain -- src docs scripts .agents .claude .codex AGENTS.md CLAUDE.md README.md CONTRIBUTING.md index.html 2>/dev/null)"
 [ -n "$changed" ] || exit 0
 
 output="$(bash .agents/scripts/check-conventions.sh 2>&1)" && exit 0
