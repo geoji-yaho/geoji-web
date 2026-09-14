@@ -41,7 +41,9 @@ export function RoomCreatePage() {
 
 	const selectIntensity = (next: Intensity) => {
 		setIntensity(next);
-		if (next === "hell") setHellPending(true);
+		if (next === "hell") {
+			setHellPending(true);
+		}
 	};
 
 	const cancelHell = () => {
@@ -50,7 +52,9 @@ export function RoomCreatePage() {
 	};
 
 	const submit = () => {
-		if (!trimmedName) return;
+		if (!trimmedName) {
+			return;
+		}
 		createRoom.mutate({
 			name: trimmedName,
 			spiceLevel: SPICE_LEVEL_BY_INTENSITY[intensity],
@@ -60,7 +64,9 @@ export function RoomCreatePage() {
 	};
 
 	const goToRoom = () => {
-		if (created) void navigate(`/rooms/${created.id}`);
+		if (created) {
+			void navigate(`/rooms/${created.id}`);
+		}
 	};
 
 	return (

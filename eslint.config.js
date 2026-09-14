@@ -9,7 +9,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-	globalIgnores(["dist"]),
+	globalIgnores(["dist", "_workspace"]),
 	{
 		files: ["**/*.{ts,tsx}"],
 		extends: [
@@ -32,5 +32,10 @@ export default defineConfig([
 		}
 	},
 	...pluginQuery.configs["flat/recommended"],
-	prettierConfig
+	prettierConfig,
+	{
+		rules: {
+			curly: ["error", "all"]
+		}
+	}
 ]);

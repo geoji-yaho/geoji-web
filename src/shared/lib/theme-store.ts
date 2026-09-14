@@ -1,4 +1,4 @@
-import type { ThemePreference } from "@/shared/domain/theme";
+import type { ThemePreference } from "../domain/theme";
 
 export type ResolvedTheme = "light" | "dark";
 
@@ -27,7 +27,7 @@ function readPreference(): ThemePreference {
 	return applied === "light" || applied === "dark" ? applied : "system";
 }
 
-function resolve(preference: ThemePreference): ResolvedTheme {
+function resolve(preference: ThemePreference) {
 	if (preference !== "system") {
 		return preference;
 	}

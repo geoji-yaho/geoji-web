@@ -54,6 +54,25 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 백엔드는 슬립 없는 구성이 요건이다. 무료 플랜은 유휴 시 슬립되어 심사 기간 첫 접속이 실패할 수 있다.
 
+로그인이 붙기 전까지 로컬에서는 개발용 토큰으로 API를 부른다.
+
+1. `cp .env.example .env.local`로 만들고 `VITE_API_BASE_URL`에 로컬 서버 주소나 배포된 서버 주소를 넣는다
+2. `VITE_DEV_ACCESS_TOKEN`에는 Supabase Auth의 access token을 넣는다. 로그인 화면이 없으니 이메일과 비밀번호로 가입된 Supabase 계정으로 직접 받는다. 프로젝트 주소는 geoji-server `application.yml`의 issuer와 같고 anon key는 백엔드 담당에게 받는다. 테스트 계정은 팀 위키에 있고 이 저장소에는 적지 않는다
+
+   ```bash
+   curl -s 'https://wfovlprcxmsanfuzbfvd.supabase.co/auth/v1/token?grant_type=password' \
+     -H 'apikey: <SUPABASE_ANON_KEY>' \
+     -H 'Content-Type: application/json' \
+     -d '{"email":"...","password":"..."}'
+   ```
+
+   응답의 `access_token`을 넣는다. anon key는 access token이 아니다
+
+3. `VITE_DEV_NICKNAME`은 온보딩 때 보낼 닉네임이다. 이메일 가입 계정은 소셜 메타데이터가 없어 이 값이 없으면 서버가 400을 준다
+4. `.env.local`을 바꾸면 `pnpm dev`를 다시 띄운다. Vite는 시작할 때만 env를 읽는다
+
+토큰이 없거나 만료되면 401이 오고 앱이 `/login`으로 보낸다. Supabase 기본 설정이면 토큰은 1시간 뒤 만료된다.
+
 ## 도메인 전환
 
 도메인은 미정이다(`../product/ROADMAP.md` 미결정 절). 커스텀 도메인을 붙이면 `/geoji-web/` 접두를 새 주소로 바꿀 곳이다.

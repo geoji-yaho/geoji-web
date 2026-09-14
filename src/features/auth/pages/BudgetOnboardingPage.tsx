@@ -43,7 +43,9 @@ export function BudgetOnboardingPage() {
 			{
 				onSuccess: () => void navigate("/"),
 				onError: (error) => {
-					if (error.kind === "conflict") void navigate("/");
+					if (error.kind === "conflict") {
+						void navigate("/");
+					}
 				}
 			}
 		);

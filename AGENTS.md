@@ -12,17 +12,19 @@
 
 ## 하네스
 
-화면과 컴포넌트, 기능을 만들 때는 `geoji-harness` 스킬로 진행한다. 명세 대조와 배치 설계, 구현, 검증 셋을 전문 서브 에이전트가 나눠 맡는다. 에이전트 정의는 `.claude/agents/`에, 워크플로우는 `.agents/skills/geoji-harness/`에 있다. 단순 질문과 한 줄 수정, 문서 작업, 커밋에는 쓰지 않는다.
+둘이다. 개발은 `.agents/skills/geoji-dev`, QA는 `.agents/skills/geoji-qa`다. 화면이나 기능을 만들거나 API를 붙이기 전에 dev를 읽는다. qa는 `docs/release/TC.md`의 테스트 케이스를 화면별로 돌린다. `review-protocol`은 리뷰어에 미리 실리는 공통 규약이라 사용자가 꺼내지 않는다. 스킬은 이 셋이고 어떤 스킬이 있는지는 이 절이 정본이다.
 
-| 날짜       | 바꾼 것                                     | 대상                     | 왜                                                                |
-| ---------- | ------------------------------------------- | ------------------------ | ----------------------------------------------------------------- |
-| 2026-09-06 | 하네스 신설. 에이전트 6개와 워크플로우 스킬 | 전체                     | -                                                                 |
-| 2026-09-06 | 검토 에이전트 넷에 `SendMessage` 추가       | `.claude/agents/`        | 종료 요청에 응답하지 못해 세션이 남았다                           |
-| 2026-09-06 | `shared/ui` 신설과 한 파일 한 컴포넌트      | `src/shared/`, 규칙 문서 | 도메인을 모르는 UI와 서비스 종속 컴포넌트가 한 폴더에 섞여 있었다 |
+에이전트 열둘이 `.claude/agents/` 아래 세 폴더에 있다. `build/`에 `plan-architect`와 `data-builder`, `ui-builder`, `review/`에 룰을 하나씩 소유하는 리뷰어 여섯(`structure`, `typescript`, `tailwind`, `screen`, `data`, `router`), `qa/`에 `qa-verifier`와 `tc-author`, `browser-runner`다. **전부 부르지 않는다.** 바뀐 파일이 리뷰어를 정하고 한두 파일 고치는 일에는 아무도 부르지 않는다. 리뷰어는 만들기 전에 자문으로도 부른다.
+
+```bash
+bash .agents/scripts/check-conventions.sh
+```
+
+룰에 적힌 grep 검사를 한 번에 돌린다. 막는 검사에 걸리면 Stop 훅이 응답을 끝내지 못하게 한다. 훅 설정은 `.claude/settings.json`이다.
 
 ## 기준 문서
 
-기능과 화면의 정본은 팀 위키다. 저장소의 `docs/`는 그 요약이고 배치 기준은 `docs/CLAUDE.md`에 있다. 동작 규칙은 `docs/product/SPEC.md`, 화면은 `docs/design/DESIGN-SPEC.md`, 디자인 토큰은 `docs/design/DESIGN.md`를 본다. 위키 문서끼리 어긋나면 화면 구성 명세, MVP 스펙, 서비스 설계, AI 에이전트 구조, 결정 로그 순서로 앞 문서가 이긴다.
+기능과 화면의 정본은 팀 위키다. 저장소의 `docs/`는 그 요약이고 배치 기준은 `docs/README.md`에 있다. 동작 규칙은 `docs/product/SPEC.md`, 화면은 `docs/design/DESIGN-SPEC.md`, 디자인 토큰은 `docs/design/DESIGN.md`를 본다. 위키 문서끼리 어긋나면 화면 구성 명세, MVP 스펙, 서비스 설계, AI 에이전트 구조, 결정 로그 순서로 앞 문서가 이긴다.
 
 ## 자주 틀리는 것
 

@@ -48,7 +48,9 @@ export function ExpenseCreatePage() {
 	const roomCountLabel = rooms.isSuccess ? `(${rooms.data.length}개)` : "";
 
 	const submit = () => {
-		if (!draft) return;
+		if (!draft) {
+			return;
+		}
 		createExpense.mutate(draft, { onSuccess: () => void navigate("/") });
 	};
 

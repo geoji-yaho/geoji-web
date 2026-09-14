@@ -13,7 +13,7 @@ const TAB_LABELS: Record<TabSegmentValue, string> = {
 	info: "방 정보"
 };
 
-function currentSegment(pathname: string, roomId: string): TabSegmentValue {
+function currentSegment(pathname: string, roomId: string) {
 	const tail = pathname.split(`/rooms/${roomId}`)[1]?.replace(/^\/|\/$/g, "") ?? "";
 
 	return TAB_SEGMENTS.find((segment) => segment === tail) ?? "";

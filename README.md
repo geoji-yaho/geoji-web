@@ -32,7 +32,7 @@ cp .env.example .env.local   # 백엔드 주소. 기본값은 로컬 geoji-serve
 pnpm dev                     # 개발 서버. http://localhost:3800
 ```
 
-백엔드를 부르는 화면은 `VITE_API_BASE_URL`이 필요하다. 로컬 값은 `.env.local`에 두고 커밋하지 않는다. 배포에 넣는 방법과 변수가 없을 때 앱이 어떻게 되는지는 `docs/release/RUNBOOK.md`의 환경 변수 절에 있다.
+백엔드를 부르는 화면은 `VITE_API_BASE_URL`이 필요하고 로그인이 붙기 전까지는 `VITE_DEV_ACCESS_TOKEN`의 토큰으로 API를 부른다. 로컬 값은 `.env.local`에 두고 커밋하지 않는다. 토큰 받는 절차와 배포에 넣는 방법, 변수가 없을 때 앱이 어떻게 되는지는 `docs/release/RUNBOOK.md`의 환경 변수 절에 있다.
 
 | 명령                | 하는 일                                                |
 | ------------------- | ------------------------------------------------------ |
