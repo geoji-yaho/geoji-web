@@ -42,20 +42,24 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 | `VITE_DEV_ACCESS_TOKEN`  | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다                | 로컬 전용. Supabase 세션이 없을 때만 쓰이는 대체 토큰이다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                                                                                             |
 | `VITE_DEV_NICKNAME`      | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                                      | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                                                                                               |
 
-`VITE_` 접두사 변수는 빌드 시점에 번들에 박힌다. GitHub Pages는 정적 호스팅이라 배포 뒤에 바꿀 수 없고 값을 바꾸면 다시 빌드해 배포한다. Deploy 워크플로(`.github/workflows/deploy.yaml`)에는 아직 이 변수가 없다. 없어도 타입 검사와 빌드는 통과하고 앱은 뜬다. `env.apiBaseUrl`을 읽는 순간에만 던지므로 API를 부르는 화면에서만 오류가 나고 API를 안 쓰는 화면은 그대로 열린다. 로그인도 같은 방식이라 Supabase 두 변수가 없으면 카카오 버튼을 누르는 순간에만 오류가 난다.
+`VITE_` 접두사 변수는 빌드 시점에 번들에 박힌다. GitHub Pages는 정적 호스팅이라 배포 뒤에 바꿀 수 없고 값을 바꾸면 다시 빌드해 배포한다. Deploy 워크플로(`.github/workflows/deploy.yaml`)의 빌드 단계가 저장소 Actions variables에서 셋을 읽고, 그 앞의 환경 변수 확인 단계가 비어 있는 값을 찾으면 빌드 전에 멈춘다.
+
+확인 단계를 둔 이유는 값이 없어도 타입 검사와 빌드가 통과하기 때문이다. `env.apiBaseUrl`을 읽는 순간에만 던지므로 API를 부르는 화면에서만 오류가 나고 API를 안 쓰는 화면은 그대로 열린다. 로그인도 같은 방식이라 Supabase 두 변수가 없으면 카카오 버튼을 누르는 순간에만 오류가 난다. 확인 단계가 없으면 이 오류가 배포된 화면에서야 드러난다.
 
 배포에 넣어야 하는 것은 셋이다. `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`다. 개발용 토큰과 닉네임 둘은 로컬 전용이라 넣지 않는다.
 
-프로덕션 주소가 정해지면 이렇게 한다.
+배포에 필요한 준비 넷 가운데 둘은 끝났다.
 
-1. 저장소 Settings의 Actions variables에 `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 셋을 넣는다. 셋 다 공개 값이라 secrets가 아니라 variables다
-2. `deploy.yaml`의 빌드 단계에 `env`로 `VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}`처럼 셋을 붙인다. CI(`ci.yaml`)는 값이 없어도 통과하므로 붙이지 않아도 된다
+1. 저장소 Settings의 Actions variables에 `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 셋이 들어 있다. 셋 다 공개 값이라 secrets가 아니라 variables다. secrets로 두면 로그에서 가려질 뿐 번들에는 그대로 실려 가려진 만큼의 보호가 없다
+2. `deploy.yaml`의 빌드 단계가 `${{ vars.VITE_API_BASE_URL }}` 형태로 셋을 읽는다. CI(`ci.yaml`)는 값이 없어도 통과하므로 붙이지 않았다
 3. Supabase 대시보드의 Authentication URL 설정에 리다이렉트 주소를 등록한다. 배포 주소 `https://geoji-yaho.github.io/geoji-web/`와 로컬 주소 `http://localhost:3800/` 둘 다 있어야 한다. `useKakaoLogin`이 `redirectTo`를 실행 중인 주소와 Vite의 base 경로로 만들어 보내므로 둘 중 하나가 빠지면 그 환경의 로그인만 콜백에서 막힌다
 4. 배포 뒤 프로덕션 URL에서 API를 부르는 화면이 실제 응답을 받는지, 카카오 로그인이 돌아오는지 확인한다
 
 - 비밀값은 프론트엔드에 두지 않는다. VAPID 개인키와 카카오 시크릿은 백엔드에만 둔다
 - 로컬 값은 `.env.local`에 둔다. `.gitignore`의 `*.local` 규칙이 걸러 주고 `.env`는 걸리지 않으니 `.env`를 만들지 않는다. 커밋하는 예시는 `.env.example` 하나다
 - 웹 푸시 VAPID 공개키와 카카오 로그인 앱 키는 후보이고 도입할 때 위 표에 더한다
+
+백엔드가 HTTPS를 지원하기 전까지 배포된 화면은 API를 부르지 못한다. GitHub Pages는 https로 서비스되고 배포된 서버는 http라 브라우저가 요청 자체를 막는다. `env.ts`가 이 경우를 미리 잡아 화면에 사유를 띄운다. 백엔드에 인증서와 로드밸런서가 붙어 주소가 https로 바뀌면 Actions variables의 `VITE_API_BASE_URL`을 고치고 Deploy를 다시 돌린다.
 
 백엔드는 슬립 없는 구성이 요건이다. 무료 플랜은 유휴 시 슬립되어 심사 기간 첫 접속이 실패할 수 있다.
 
