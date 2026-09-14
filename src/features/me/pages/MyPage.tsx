@@ -3,75 +3,95 @@ import { useNavigate } from "react-router";
 
 import { BackHeader } from "@/shared/components/BackHeader";
 import { THEME_LABELS } from "@/shared/domain/theme";
-import { type Verdict, VERDICT_LABELS, VERDICT_SIDES, type VerdictSide } from "@/shared/domain/verdict";
+import { useMyMonthStats } from "@/shared/hooks/useMyMonthStats";
+import { useSignOut } from "@/shared/hooks/useSignOut";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { cn } from "@/shared/lib/cn";
+import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Reveal } from "@/shared/ui/Reveal";
+import { kstCalendar } from "@/shared/utils/date";
 
 import { MonthSummaryCard } from "../components/MonthSummaryCard";
+import { NicknameSheet } from "../components/NicknameSheet";
 import { ProfileHeaderCard } from "../components/ProfileHeaderCard";
 import { SettingsList } from "../components/SettingsList";
 import { ThemeSheet } from "../components/ThemeSheet";
-
-const PROFILE = {
-	name: "소윤",
-	tier: "flower",
-	nextTierLabel: "거지왕까지",
-	nextTierScore: 14
-} as const;
-
-const MONTH_SUMMARY = {
-	monthLabel: "9월에 쓴 금액",
-	spent: 412000,
-	budget: 500000,
-	noSpendDays: 6,
-	score: 71
-} as const;
-
-const VERDICT_HISTORY: { verdict: Verdict; count: number }[] = [
-	{ verdict: "guilty", count: 2 },
-	{ verdict: "notGuilty", count: 5 },
-	{ verdict: "dismissed", count: 1 }
-];
-
-const VERDICT_SIDE_STYLES: Record<VerdictSide, string> = {
-	oppose: "text-red",
-	support: "text-green",
-	none: "text-mute"
-};
+import { VerdictHistory } from "../components/VerdictHistory";
+import { useUpdateProfile } from "../hooks/useUpdateProfile";
 
 export function MyPage() {
 	const navigate = useNavigate();
+	const stats = useMyMonthStats();
 	const { preference, resolved, setPreference } = useTheme();
+	const signOut = useSignOut();
+	const updateProfile = useUpdateProfile();
 	const [themeOpen, setThemeOpen] = useState(false);
+	const [nicknameOpen, setNicknameOpen] = useState(false);
+	const [nickname, setNickname] = useState("");
 
+	const profile = stats.profile;
+	const monthLabel = `${kstCalendar(new Date()).month}월에 쓴 금액`;
 	const themeLabel =
 		preference === "system" ? `${THEME_LABELS.system} (${THEME_LABELS[resolved]})` : THEME_LABELS[preference];
+
+	const openNickname = () => {
+		setNickname(profile?.nickname ?? "");
+		setNicknameOpen(true);
+	};
+
+	const submitNickname = () => {
+		updateProfile.mutate({ nickname: nickname.trim() }, { onSuccess: () => setNicknameOpen(false) });
+	};
 
 	return (
 		<div className="flex flex-1 flex-col px-5">
 			<BackHeader title="마이페이지" onBack={() => navigate(-1)} />
 			<div className="flex flex-1 flex-col gap-3 pt-1.5 pb-8.5">
-				<Reveal>
-					<ProfileHeaderCard {...PROFILE} />
-				</Reveal>
-				<Reveal index={1}>
-					<MonthSummaryCard {...MONTH_SUMMARY} />
-				</Reveal>
-				<Reveal index={2} className="flex gap-2">
-					{VERDICT_HISTORY.map(({ verdict, count }) => (
-						<Card key={verdict} className="flex-1 p-2.75 text-center">
-							<p className={cn("text-tag font-black", VERDICT_SIDE_STYLES[VERDICT_SIDES[verdict]])}>
-								{VERDICT_LABELS[verdict]}
-							</p>
-							<p className="text-title text-ink">{count}</p>
-						</Card>
-					))}
-				</Reveal>
+				{stats.isPending && (
+					<Card role="status" className="p-4.5 text-chip text-mute">
+						프로필을 불러오는 중
+					</Card>
+				)}
+				{stats.error && <Alert>{stats.error.message}</Alert>}
+
+				{!stats.isPending && profile && (
+					<>
+						<Reveal>
+							<ProfileHeaderCard
+								name={profile.nickname}
+								tier={stats.tier}
+								nextTierLabel={stats.nextTierLabel}
+								onNicknameEdit={openNickname}
+							/>
+						</Reveal>
+						<Reveal index={1}>
+							<MonthSummaryCard
+								monthLabel={monthLabel}
+								spent={stats.spentThisMonth}
+								budget={profile.monthlyBudget}
+								baseline={stats.baseline ?? undefined}
+								score={stats.score}
+							/>
+						</Reveal>
+						<Reveal index={2}>
+							<VerdictHistory
+								guilty={stats.judged.guilty}
+								notGuilty={stats.judged.notGuilty}
+								dismissed={stats.judged.dismissed}
+							/>
+						</Reveal>
+					</>
+				)}
+
 				<Reveal index={3}>
-					<SettingsList themeLabel={themeLabel} onThemeClick={() => setThemeOpen(true)} />
+					<SettingsList
+						themeLabel={themeLabel}
+						onThemeClick={() => setThemeOpen(true)}
+						onSignOut={() => signOut.mutate()}
+						signingOut={signOut.isPending}
+					/>
 				</Reveal>
+				{signOut.error && <Alert>{signOut.error.message}</Alert>}
 			</div>
 
 			<ThemeSheet
@@ -80,6 +100,15 @@ export function MyPage() {
 				value={preference}
 				resolved={resolved}
 				onSelect={setPreference}
+			/>
+			<NicknameSheet
+				open={nicknameOpen}
+				onClose={() => setNicknameOpen(false)}
+				value={nickname}
+				onChange={setNickname}
+				onSubmit={submitNickname}
+				isPending={updateProfile.isPending}
+				errorMessage={updateProfile.error?.message}
 			/>
 		</div>
 	);

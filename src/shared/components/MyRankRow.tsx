@@ -1,14 +1,14 @@
+import { DEBT_SCORE_PENDING_LABEL } from "../domain/score";
 import { cn } from "../lib/cn";
 import { Avatar } from "../ui/Avatar";
 
 type MyRankRowProps = {
 	name: string;
-	noSpendRank: number;
-	nagRank: number;
+	rank: number | null;
 	className?: string;
 };
 
-export function MyRankRow({ name, noSpendRank, nagRank, className }: MyRankRowProps) {
+export function MyRankRow({ name, rank, className }: MyRankRowProps) {
 	return (
 		<div
 			className={cn(
@@ -18,9 +18,7 @@ export function MyRankRow({ name, noSpendRank, nagRank, className }: MyRankRowPr
 		>
 			<Avatar name={name} size="sm" />
 			<span className="flex-1 font-black">내 순위</span>
-			<span>
-				<b className="font-black text-cta">무지출 {noSpendRank}위</b>, 잔소리 {nagRank}위
-			</span>
+			<b className="font-black text-cta">{rank === null ? DEBT_SCORE_PENDING_LABEL : `거지력 ${rank}위`}</b>
 		</div>
 	);
 }

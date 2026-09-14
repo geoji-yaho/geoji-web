@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-import type { ThemePreference } from "@/shared/domain/theme";
-import { themeStore } from "@/shared/lib/theme-store";
+import type { ThemePreference } from "../domain/theme";
+import { themeStore } from "../lib/theme-store";
 
 export function useTheme() {
 	const { preference, resolved } = useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot);

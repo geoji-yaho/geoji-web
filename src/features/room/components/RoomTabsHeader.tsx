@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { RoomHeader } from "@/shared/components/RoomHeader";
 import { TabSegment } from "@/shared/ui/TabSegment";
@@ -13,30 +13,35 @@ const TAB_LABELS: Record<TabSegmentValue, string> = {
 	info: "방 정보"
 };
 
-function currentSegment(pathname: string, roomId: string): TabSegmentValue {
+function currentSegment(pathname: string, roomId: string) {
 	const tail = pathname.split(`/rooms/${roomId}`)[1]?.replace(/^\/|\/$/g, "") ?? "";
 
 	return TAB_SEGMENTS.find((segment) => segment === tail) ?? "";
 }
 
 type RoomTabsHeaderProps = {
+	roomId: string;
 	roomName: string;
 	memberNames: string[];
 };
 
-export function RoomTabsHeader({ roomName, memberNames }: RoomTabsHeaderProps) {
-	const { roomId = "1" } = useParams();
+export function RoomTabsHeader({ roomId, roomName, memberNames }: RoomTabsHeaderProps) {
 	const navigate = useNavigate();
 	const { pathname } = useLocation();
 
 	return (
 		<div className="px-5">
-			<RoomHeader roomName={roomName} memberNames={memberNames} onBack={() => navigate(-1)} />
+			<RoomHeader
+				roomName={roomName}
+				memberNames={memberNames}
+				onBack={() => void navigate("/")}
+				onMore={() => void navigate(`/rooms/${roomId}/info`)}
+			/>
 			<TabSegment
 				tabs={TAB_SEGMENTS}
 				value={currentSegment(pathname, roomId)}
 				renderLabel={(segment) => TAB_LABELS[segment]}
-				onChange={(segment) => navigate(`/rooms/${roomId}${segment ? `/${segment}` : ""}`, { replace: true })}
+				onChange={(segment) => void navigate(`/rooms/${roomId}${segment ? `/${segment}` : ""}`, { replace: true })}
 			/>
 		</div>
 	);

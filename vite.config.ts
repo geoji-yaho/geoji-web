@@ -18,7 +18,9 @@ export default defineConfig(({ command }) => ({
 		rolldownOptions: {
 			output: {
 				manualChunks: (id) => {
-					if (!id.includes("node_modules")) return undefined;
+					if (!id.includes("node_modules")) {
+						return undefined;
+					}
 					const name = Object.keys(VENDOR_CHUNKS).find((key) => VENDOR_CHUNKS[key].test(id));
 					return name ?? "vendor";
 				}
@@ -28,7 +30,7 @@ export default defineConfig(({ command }) => ({
 	server: {
 		port: 3800,
 		watch: {
-			ignored: ["**/.agents/**", "**/.claude/**", "**/.omc/**"]
+			ignored: ["**/.agents/**", "**/.claude/**", "**/.codex/**", "**/.omc/**"]
 		}
 	}
 }));

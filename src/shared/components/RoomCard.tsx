@@ -8,9 +8,9 @@ type RoomCardProps = {
 	roomName: string;
 	intensity: Intensity;
 	deadlineLabel?: string;
-	unreadCount: number;
-	memberCount: number;
-	recentActivity: string;
+	unreadCount?: number;
+	memberCount?: number;
+	recentActivity?: string;
 	onClick?: () => void;
 	className?: string;
 };
@@ -35,10 +35,10 @@ export function RoomCard({
 				<span className="min-w-0 flex-1 truncate text-subtitle text-ink">{roomName}</span>
 				<IntensityTag intensity={intensity} />
 				{deadlineLabel && <StatusTag label={deadlineLabel} />}
-				{unreadCount > 0 && <CountBadge count={unreadCount} />}
+				{unreadCount !== undefined && unreadCount > 0 && <CountBadge count={unreadCount} />}
 			</span>
-			<span className="truncate text-chip text-text">{recentActivity}</span>
-			<span className="text-caption text-dim">멤버 {memberCount}명</span>
+			{recentActivity && <span className="truncate text-chip text-text">{recentActivity}</span>}
+			{memberCount !== undefined && <span className="text-caption text-dim">멤버 {memberCount}명</span>}
 		</button>
 	);
 }

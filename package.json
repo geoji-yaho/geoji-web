@@ -23,7 +23,7 @@
 			"url": "https://github.com/leesoyuun"
 		}
 	],
-	"packageManager": "pnpm@11.25.0",
+	"packageManager": "pnpm@11.27.0",
 	"engines": {
 		"node": "24.x",
 		"pnpm": "11.x"
@@ -38,12 +38,16 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"type:check": "tsc -b --noEmit",
-		"link:agents": "bash .agents/scripts/link-agents.sh",
-		"prepare": "lefthook install && pnpm link:agents"
+		"harness:sync": "node .agents/scripts/agents-sync.mjs",
+		"harness:check": "bash .agents/scripts/harness-check.sh",
+		"prepare": "lefthook install && pnpm harness:sync"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.116.0",
+		"@tanstack/react-query": "^5.102.8",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"html-to-image": "^1.11.13",
 		"lucide-react": "^1.41.0",
 		"motion": "^13.2.0",
 		"react": "^19.2.8",
@@ -54,6 +58,8 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@tailwindcss/vite": "^4.3.3",
+		"@tanstack/eslint-plugin-query": "^5.102.8",
+		"@tanstack/react-query-devtools": "^5.102.8",
 		"@types/node": "^24.13.3",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.5",

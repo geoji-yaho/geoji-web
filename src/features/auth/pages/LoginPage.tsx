@@ -1,15 +1,45 @@
 import { MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { LogoIcon } from "@/shared/components/LogoIcon";
+import { useSession } from "@/shared/hooks/useSession";
+import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Reveal } from "@/shared/ui/Reveal";
 import { Toast } from "@/shared/ui/Toast";
 
+import { useKakaoLogin } from "../hooks/useKakaoLogin";
+import { oauthError } from "../utils/oauthError";
+
 const LOGIN_POINTS = ["피고 = 나", "배심원 = 친구", "판사 = AI"];
+const CANCELLED_MESSAGE = "로그인이 취소되었습니다";
+const FAILED_MESSAGE = "로그인에 실패했습니다";
+
+function formatFailureMessage(description: string | null) {
+	return description === null ? FAILED_MESSAGE : `${FAILED_MESSAGE}. ${description}`;
+}
 
 export function LoginPage() {
 	const navigate = useNavigate();
+	const { session } = useSession();
+	const login = useKakaoLogin();
+	const [callbackError] = useState(() => oauthError);
+
+	useEffect(() => {
+		if (session) {
+			void navigate("/", { replace: true });
+		}
+	}, [session, navigate]);
+
+	const isCancelled = callbackError?.isCancelled === true;
+	let failed: string | null = null;
+
+	if (callbackError !== null && !callbackError.isCancelled) {
+		failed = formatFailureMessage(callbackError.description);
+	} else if (login.isError) {
+		failed = formatFailureMessage(login.error.message);
+	}
 
 	return (
 		<div className="flex flex-1 flex-col px-5 pb-8.5">
@@ -33,12 +63,20 @@ export function LoginPage() {
 				</Reveal>
 			</div>
 
-			<Reveal index={5} className="mb-8.5">
-				<Toast>로그인이 취소되었습니다</Toast>
-			</Reveal>
+			{isCancelled && (
+				<Reveal index={5} className="mb-8.5">
+					<Toast>{CANCELLED_MESSAGE}</Toast>
+				</Reveal>
+			)}
+
+			{failed !== null && (
+				<Reveal index={5} className="mb-8.5">
+					<Alert>{failed}</Alert>
+				</Reveal>
+			)}
 
 			<Reveal index={6} className="flex flex-col gap-3.5">
-				<Button variant="kakao" className="gap-2" onClick={() => navigate("/onboarding/budget")}>
+				<Button variant="kakao" className="gap-2" disabled={login.isPending} onClick={() => login.mutate()}>
 					<MessageCircle className="size-5" fill="currentColor" strokeWidth={0} aria-hidden="true" />
 					카카오로 시작하기
 				</Button>

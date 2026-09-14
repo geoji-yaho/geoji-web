@@ -6,25 +6,17 @@ import { formatAmount } from "@/shared/utils/format";
 
 type CaseSummaryCardProps = {
 	name: string;
-	tier: Tier;
+	tier?: Tier;
 	timeAgo: string;
-	category: string;
+	category?: string;
 	amount: number;
-	title: string;
-	plea: string;
-	ruleNote: string;
+	title?: string;
+	rules: string[];
 };
 
-export function CaseSummaryCard({
-	name,
-	tier,
-	timeAgo,
-	category,
-	amount,
-	title,
-	plea,
-	ruleNote
-}: CaseSummaryCardProps) {
+export function CaseSummaryCard({ name, tier, timeAgo, category, amount, title, rules }: CaseSummaryCardProps) {
+	const meta = [timeAgo, category].filter((part) => part !== undefined && part !== "").join(", ");
+
 	return (
 		<Card>
 			<div className="flex flex-col gap-2.5 p-4">
@@ -33,24 +25,27 @@ export function CaseSummaryCard({
 					<div className="flex-1">
 						<div className="flex items-center gap-1.5">
 							<span className="text-sm font-black text-ink">{name}</span>
-							<TierBadge tier={tier} />
+							{tier && <TierBadge tier={tier} />}
 						</div>
-						<p className="text-caption text-dim">
-							{timeAgo}, {category}
-						</p>
+						<p className="text-caption text-dim">{meta}</p>
 					</div>
 				</div>
 
 				<div className="flex items-baseline gap-2">
 					<strong className="text-amount-sm text-ink">{formatAmount(amount)}원</strong>
-					<span className="text-control text-mute">{title}</span>
+					{title && <span className="text-control text-mute">{title}</span>}
 				</div>
 
-				<p className="text-body text-text">&quot;{plea}&quot;</p>
-
-				<div className="flex h-18 items-center justify-center rounded-2xl bg-fill text-caption text-dim">증거 사진</div>
-
-				<p className="text-chip text-mute">참고 규칙: {ruleNote}</p>
+				{rules.length > 0 && (
+					<div className="flex flex-col gap-1 text-chip text-mute">
+						<span>참고 규칙</span>
+						<ul className="flex flex-col gap-0.5">
+							{rules.map((rule, index) => (
+								<li key={`${index}-${rule}`}>{rule}</li>
+							))}
+						</ul>
+					</div>
+				)}
 			</div>
 		</Card>
 	);

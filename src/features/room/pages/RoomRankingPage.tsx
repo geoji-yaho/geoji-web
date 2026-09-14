@@ -1,63 +1,101 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
 
+import { memberQueries, type RoomMember } from "@/shared/api/members";
+import { profileQueries } from "@/shared/api/profile";
 import { MyRankRow } from "@/shared/components/MyRankRow";
-import type { PodiumEntry } from "@/shared/components/RankingPodium";
+import { type PodiumPlace, RankingPodium } from "@/shared/components/RankingPodium";
+import { RankingRow } from "@/shared/components/RankingRow";
+import { tierFromScore } from "@/shared/domain/tier";
+import { Alert } from "@/shared/ui/Alert";
+import { Card } from "@/shared/ui/Card";
 import { Reveal } from "@/shared/ui/Reveal";
-import { TabSegment } from "@/shared/ui/TabSegment";
 
-import { type RankingEntry, RankingSection } from "../components/RankingSection";
+const PODIUM_PLACES = [1, 2, 3] as const satisfies readonly PodiumPlace[];
+const ROW_REVEAL_FROM = 2;
 
-const PERIODS = ["이번 주", "이번 달"] as const;
+function rankMembers(members: RoomMember[]) {
+	const scored = members.flatMap((member) => (member.debtScore === null ? [] : [{ member, score: member.debtScore }]));
 
-type Period = (typeof PERIODS)[number];
+	return scored.map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
 
-const NO_SPEND_PODIUM: PodiumEntry[] = [
-	{ place: 2, name: "현우", value: "5일" },
-	{ place: 1, name: "소윤", value: "6일", isMe: true },
-	{ place: 3, name: "민재", value: "3일" }
-];
-
-const NO_SPEND_ROWS: RankingEntry[] = [
-	{ rank: 4, name: "지민", tier: "hardcore", value: "1일" },
-	{ rank: 5, name: "태양", tier: "penniless", value: "0일" }
-];
-
-const NAG_ROWS: RankingEntry[] = [{ rank: 1, name: "지민", tier: "hardcore", value: "48점" }];
-
-const NAG_REVEAL_FROM = 2 + NO_SPEND_ROWS.length;
-
-const MY_RANK = {
-	name: "소윤",
-	noSpendRank: 1,
-	nagRank: 3
-} as const;
+function formatScore(score: number) {
+	return `${score}점`;
+}
 
 export function RoomRankingPage() {
-	const [period, setPeriod] = useState<Period>("이번 주");
+	const { roomId = "" } = useParams();
+	const members = useQuery(memberQueries.list(roomId));
+	const me = useQuery(profileQueries.me());
+
+	const memberList = members.data ?? [];
+	const myUserId = me.data?.id ?? null;
+	const ranked = rankMembers(memberList);
+	const podium = ranked.slice(0, PODIUM_PLACES.length);
+	const rows = ranked.slice(PODIUM_PLACES.length);
+	const pending = memberList.filter((member) => member.debtScore === null);
+	const mine = memberList.find((member) => member.userId === myUserId);
+	const myRank = ranked.find((entry) => entry.member.userId === myUserId)?.rank ?? null;
 
 	return (
 		<>
-			<div className="flex flex-1 flex-col gap-4 px-5 py-3">
+			<div className="flex flex-1 flex-col gap-2.5 px-5 py-3">
 				<Reveal>
-					<TabSegment tabs={PERIODS} value={period} onChange={setPeriod} className="w-42.5 rounded-full" />
+					<h2 className="text-base font-black text-ink">거지력</h2>
 				</Reveal>
 
-				<RankingSection
-					title="무지출왕"
-					caption="무지출 일수"
-					podium={NO_SPEND_PODIUM}
-					rows={NO_SPEND_ROWS}
-					revealFrom={1}
-				/>
-				<RankingSection title="잔소리왕" caption="투표와 댓글 점수" rows={NAG_ROWS} revealFrom={NAG_REVEAL_FROM} />
+				{members.isPending && (
+					<Card role="status" className="p-4.5 text-chip text-mute">
+						랭킹을 불러오는 중
+					</Card>
+				)}
+				{members.isError && <Alert>{members.error.message}</Alert>}
+				{me.isError && <Alert>{me.error.message}</Alert>}
+
+				{podium.length > 0 && (
+					<Reveal index={1}>
+						<RankingPodium
+							entries={podium.map((entry, index) => ({
+								place: PODIUM_PLACES[index],
+								name: entry.member.nickname,
+								tier: tierFromScore(entry.score),
+								value: formatScore(entry.score),
+								isMe: entry.member.userId === myUserId
+							}))}
+						/>
+					</Reveal>
+				)}
+
+				{(rows.length > 0 || pending.length > 0) && (
+					<ol className="flex flex-col gap-2.5">
+						{rows.map((entry, index) => (
+							<Reveal key={entry.member.userId} as="li" index={ROW_REVEAL_FROM + index}>
+								<RankingRow
+									rank={entry.rank}
+									name={entry.member.nickname}
+									tier={tierFromScore(entry.score)}
+									value={formatScore(entry.score)}
+									isMe={entry.member.userId === myUserId}
+								/>
+							</Reveal>
+						))}
+						{pending.map((member, index) => (
+							<Reveal key={member.userId} as="li" index={ROW_REVEAL_FROM + rows.length + index}>
+								<RankingRow
+									rank={null}
+									name={member.nickname}
+									tier={null}
+									value={null}
+									isMe={member.userId === myUserId}
+								/>
+							</Reveal>
+						))}
+					</ol>
+				)}
 			</div>
 
-			<MyRankRow
-				name={MY_RANK.name}
-				noSpendRank={MY_RANK.noSpendRank}
-				nagRank={MY_RANK.nagRank}
-				className="sticky bottom-0 z-40 rounded-none"
-			/>
+			{mine && <MyRankRow name={mine.nickname} rank={myRank} className="sticky bottom-0 z-40 rounded-none" />}
 		</>
 	);
 }

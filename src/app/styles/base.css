@@ -18,26 +18,35 @@
 		overflow-x: clip;
 		-webkit-font-smoothing: antialiased;
 		word-break: keep-all;
-		scrollbar-width: thin;
-		scrollbar-color: var(--color-dim) transparent;
-
 		scrollbar-gutter: stable;
 	}
 
-	@supports not (scrollbar-color: auto) {
-		::-webkit-scrollbar {
-			width: 6px;
-			height: 6px;
+	@supports not selector(::-webkit-scrollbar) {
+		html {
+			scrollbar-width: thin;
+			scrollbar-color: var(--color-dim) transparent;
 		}
+	}
 
-		::-webkit-scrollbar-thumb {
-			border-radius: 999px;
-			background-color: var(--color-dim);
-		}
+	::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
 
-		::-webkit-scrollbar-track {
-			background: transparent;
-		}
+	::-webkit-scrollbar-thumb {
+		border: 2px solid transparent;
+		border-radius: 999px;
+		background-color: var(--color-dim);
+		background-clip: content-box;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background-color: var(--color-mute);
+	}
+
+	::-webkit-scrollbar-track,
+	::-webkit-scrollbar-corner {
+		background: transparent;
 	}
 
 	button:not(:disabled),

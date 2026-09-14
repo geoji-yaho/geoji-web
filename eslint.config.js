@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 import { defineConfig, globalIgnores } from "eslint/config";
 import prettierConfig from "eslint-config-prettier/flat";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -8,7 +9,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-	globalIgnores(["dist"]),
+	globalIgnores(["dist", "_workspace"]),
 	{
 		files: ["**/*.{ts,tsx}"],
 		extends: [
@@ -30,5 +31,11 @@ export default defineConfig([
 			"simple-import-sort/exports": "error"
 		}
 	},
-	prettierConfig
+	...pluginQuery.configs["flat/recommended"],
+	prettierConfig,
+	{
+		rules: {
+			curly: ["error", "all"]
+		}
+	}
 ]);
