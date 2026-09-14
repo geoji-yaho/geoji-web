@@ -1,36 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
-import { profileQueries } from "@/shared/api/profile";
 import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { HomeHeader } from "@/shared/components/HomeHeader";
 import { RoomCard } from "@/shared/components/RoomCard";
 import { formatVoteDeadlineLabel } from "@/shared/domain/room";
+import { useMyMonthStats } from "@/shared/hooks/useMyMonthStats";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
+import { kstCalendar } from "@/shared/utils/date";
 
 import { ProfileSummaryCard } from "../components/ProfileSummaryCard";
 
-const SAMPLE_SUMMARY = {
-	tier: "flower",
-	nextTierLabel: "거지왕까지 14점",
-	score: 71,
-	monthLabel: "9월 지출",
-	spent: 412000,
-	noSpendDays: 6,
-	imprisonment: { daysLeft: 2, totalDays: 3 }
-} as const;
-
 export function HomePage() {
 	const navigate = useNavigate();
-	const me = useQuery(profileQueries.me());
+	const stats = useMyMonthStats();
 	const rooms = useQuery(roomQueries.list());
 
-	const profile = me.data ?? null;
+	const profile = stats.profile;
 	const roomList = rooms.data ?? [];
+	const monthLabel = `${kstCalendar(new Date()).month}월 지출`;
 
 	return (
 		<div className="flex flex-1 flex-col pb-11">
@@ -39,20 +31,29 @@ export function HomePage() {
 			</div>
 
 			<div className="flex flex-1 flex-col gap-3.5 px-5 pt-1.5">
-				{me.isPending && (
+				{stats.isPending && (
 					<Card role="status" className="p-4.5 text-chip text-mute">
 						프로필을 불러오는 중
 					</Card>
 				)}
-				{me.isError && <Alert>{me.error.message}</Alert>}
+				{stats.error && <Alert>{stats.error.message}</Alert>}
 
-				{profile && (
+				{!stats.isPending && profile && (
 					<Reveal>
-						<ProfileSummaryCard {...SAMPLE_SUMMARY} name={profile.nickname} budget={profile.monthlyBudget} />
+						<ProfileSummaryCard
+							name={profile.nickname}
+							tier={stats.tier}
+							nextTierLabel={stats.nextTierLabel}
+							score={stats.score}
+							monthLabel={monthLabel}
+							spent={stats.spentThisMonth}
+							budget={profile.monthlyBudget}
+							baseline={stats.baseline ?? undefined}
+						/>
 					</Reveal>
 				)}
 
-				{me.isSuccess && !profile && (
+				{!stats.isPending && !profile && (
 					<Reveal>
 						<button
 							type="button"

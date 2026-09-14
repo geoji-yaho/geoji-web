@@ -31,49 +31,57 @@ M2가 끝나면 가설 검증이 가능한 최소 형태가 나온다. 이때부
 
 ### 프론트엔드 현재 위치
 
-| 있는 것                                                                                             | 없는 것                                                                                              |
-| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 스택 세팅, GitHub Pages 배포, CI 게이트(`pnpm check`)                                               | 나머지 화면의 API 연결. 재판(투표와 판결)과 방 상세, 예산 변경, 랭킹. 아래 API 연동 현황 절          |
-| 공통 컴포넌트와 디자인 토큰, 컴포넌트 카탈로그                                                      | 로그인. 개발 서버에서는 `VITE_DEV_ACCESS_TOKEN`의 토큰을 공급자로 등록하고 Supabase Auth 연결은 없다 |
-| 도메인 타입과 유틸(`cn`, `formatAmount`, `parseAmount`)                                             | 클라이언트 상태 관리, 테스트 도구, `platform.ts`                                                     |
-| 라우터(react-router 8)와 레이아웃, 화면 14개의 마크업                                               | Service Worker, Web Push                                                                             |
-| 데이터 층. TanStack Query 5, `http` 클라이언트와 `ApiError`, 토큰 공급자 인터페이스, `.env.example` |                                                                                                      |
-| API 연동 다섯 화면. 온보딩 예산, 홈, 방 만들기, 방 참가, 지출 등록                                  |                                                                                                      |
-| 브랜치 전략(main 배포, develop 통합, feature 작업)과 폴더 구조 규칙(app, features, shared 3층)      |                                                                                                      |
-| 브랜드 자산(파비콘, 앱 아이콘, OG 이미지, manifest)                                                 |                                                                                                      |
+| 있는 것                                                                                        | 없는 것                                                             |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 스택 세팅, GitHub Pages 배포, CI 게이트(`pnpm check`)                                          | 무지출 신고와 리액션, 짤, 형 집행 조회. 서버에 API가 없다           |
+| 공통 컴포넌트와 디자인 토큰, 컴포넌트 카탈로그                                                 | 시상식과 도전 과제, 순찰 알림, 하루로그 화면. 아래 API 연동 현황 절 |
+| 도메인 타입과 유틸(`cn`, `formatAmount`, `parseAmount`, `date.ts`, `score.ts`, `platform.ts`)  | 클라이언트 상태 관리, 테스트 도구                                   |
+| 라우터(react-router 8)와 레이아웃, 화면 14개                                                   | Service Worker, Web Push                                            |
+| 데이터 층. TanStack Query 5, `http` 클라이언트와 `ApiError`, 엔티티 모듈 여섯, `.env.example`  | 방 피드의 무한 스크롤. 최근 30일을 한 번 받는다                     |
+| 로그인. 카카오 OAuth(Supabase Auth `signInWithOAuth`)와 세션 토큰 공급자, 로그아웃             |                                                                     |
+| API 연동 화면 열넷. 아래 API 연동 현황 절                                                      |                                                                     |
+| 브랜치 전략(main 배포, develop 통합, feature 작업)과 폴더 구조 규칙(app, features, shared 3층) |                                                                     |
+| 브랜드 자산(파비콘, 앱 아이콘, OG 이미지, manifest)                                            |                                                                     |
 
-백엔드 geoji-server는 Spring Boot와 Supabase(Postgres, Auth)로 확정됐고 규약은 그 저장소의 `API.md`다. 배포된 서버 주소는 있으나 HTTPS가 아니라 GitHub Pages에서 부를 수 없다(미결정 절). 화면과 API를 이으며 드러난 규약 차이는 `SPEC.md`의 확인 필요 절에 있다.
+백엔드 geoji-server는 Spring Boot와 Supabase(Postgres, Auth)로 확정됐고 규약은 그 저장소의 `API.md`다. 배포된 서버 주소는 있으나 HTTPS가 아니라 GitHub Pages에서 부를 수 없고, 배포된 빌드가 `API.md`보다 오래되어 열거형 값이 다르다(미결정 절). 화면과 API를 이으며 드러난 규약 차이는 `SPEC.md`의 확인 필요 절에 있다.
 
 ### API 연동 현황
 
-서버 기준 커밋은 geoji-server `b38b5a1`(2026-09-12)이다. 데이터 층 규칙은 `CONTRIBUTING.md`의 데이터 층 절, 환경 변수와 개발용 토큰은 `../release/RUNBOOK.md`의 환경 변수 절이 정본이다.
+서버 기준 커밋은 geoji-server `d0f9fd5`(2026-09-11)다. 데이터 층 규칙은 `CONTRIBUTING.md`의 데이터 층 절, 환경 변수와 개발용 토큰은 `../release/RUNBOOK.md`의 환경 변수 절이 정본이다.
 
-| 화면                      | 엔드포인트                          | 파일                                                                                                                    |
-| ------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| S-02 온보딩 예산          | `POST /api/me`                      | `features/auth/pages/BudgetOnboardingPage.tsx`, `features/auth/hooks/useCreateProfile.ts`                               |
-| S-03 홈(프로필과 방 목록) | `GET /api/me`, `GET /api/rooms`     | `features/home/pages/HomePage.tsx`, `shared/api/profile.ts`, `shared/api/rooms.ts`                                      |
-| S-04 방 만들기            | `POST /api/rooms`                   | `features/room/pages/RoomCreatePage.tsx`, `features/room/hooks/useCreateRoom.ts`                                        |
-| S-05 방 참가              | `POST /api/rooms/join/{inviteCode}` | `features/room/pages/RoomJoinPage.tsx`, `features/room/hooks/useJoinRoom.ts`                                            |
-| S-09 지출 등록            | `POST /api/expenses`                | `features/post/pages/ExpenseCreatePage.tsx`, `features/post/api/expenses.ts`, `features/post/hooks/useCreateExpense.ts` |
+화면 열넷이 모두 서버를 부른다. 파일 칸에는 그 화면이 데이터를 받는 자리만 적었다.
 
-서버 값과 화면 모델의 대응표는 `shared/api/rooms.ts`(강도 `MILD`, `SPICY`, `HELL`과 `mild`, `spicy`, `hell`)와 `features/post/api/expenses.ts`(`quick_tap`, `purchase_check`와 돈 썼어요, 살까 말까)에 있다.
+| 화면             | 엔드포인트                                                                                                                         | 파일                                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| S-01 로그인      | Supabase Auth `signInWithOAuth`(카카오). 이 서버에는 로그인 엔드포인트가 없다                                                      | `features/auth/pages/LoginPage.tsx`, `features/auth/hooks/useKakaoLogin.ts`, `shared/lib/supabase.ts`, `shared/hooks/useSession.ts` |
+| S-02 온보딩 예산 | `POST /api/me`                                                                                                                     | `features/auth/pages/BudgetOnboardingPage.tsx`, `features/auth/hooks/useCreateProfile.ts`                                           |
+| S-03 홈          | `GET /api/me`, `GET /api/rooms`, `GET .../expenses`, `GET .../trial`                                                               | `features/home/pages/HomePage.tsx`, `shared/hooks/useMyMonthStats.ts`                                                               |
+| S-04 방 만들기   | `POST /api/rooms`                                                                                                                  | `features/room/pages/RoomCreatePage.tsx`, `features/room/hooks/useCreateRoom.ts`                                                    |
+| S-05 방 참가     | `POST /api/rooms/join/{inviteCode}`                                                                                                | `features/room/pages/RoomJoinPage.tsx`, `features/room/hooks/useJoinRoom.ts`                                                        |
+| S-06 방 피드     | `GET /api/rooms/{roomId}`, `GET .../members`, `GET .../expenses`, `GET .../trial`, `GET/POST .../comments`                         | `features/room/pages/RoomFeedPage.tsx`, `features/room/components/TrialExpenseCard.tsx`, `app/layouts/RoomLayout.tsx`               |
+| S-07 방 랭킹     | `GET .../members`, `GET /api/me`                                                                                                   | `features/room/pages/RoomRankingPage.tsx`, `features/room/components/MemberList.tsx`                                                |
+| S-08 방 정보     | `GET /api/rooms/{roomId}`, `GET .../members`, `GET /api/me`                                                                        | `features/room/pages/RoomInfoPage.tsx`                                                                                              |
+| S-09 지출 등록   | `POST /api/expenses`                                                                                                               | `features/post/pages/ExpenseCreatePage.tsx`, `features/post/hooks/useCreateExpense.ts`                                              |
+| S-10 판결 결과   | `GET .../trial`, `GET .../expenses`, `GET .../members`, `GET /api/rooms/{roomId}`, `GET/POST .../comments`, `POST .../trial/judge` | `features/post/pages/VerdictPage.tsx`, `features/post/hooks/useJudgeTrial.ts`                                                       |
+| S-11 공유 카드   | `GET .../trial`, `GET .../expenses`, `GET .../members`                                                                             | `features/post/pages/VerdictCardPage.tsx`, `shared/lib/platform.ts`                                                                 |
+| S-12 마이페이지  | `GET /api/me`, `PUT /api/me`, `GET /api/rooms`, `GET .../expenses`, `GET .../trial`                                                | `features/me/pages/MyPage.tsx`, `shared/hooks/useMyMonthStats.ts`, `shared/hooks/useSignOut.ts`                                     |
+| S-13 예산 변경   | `GET /api/me`, `PUT /api/me`                                                                                                       | `features/me/pages/BudgetEditPage.tsx`, `features/me/hooks/useUpdateProfile.ts`                                                     |
+| S-14 배심원 투표 | `GET .../expenses`, `GET .../trial`, `GET .../members`, `GET /api/rooms/{roomId}`, `POST .../votes`, `POST .../trial/judge`        | `features/post/pages/VotePage.tsx`, `features/post/hooks/useCastVote.ts`                                                            |
 
-로그인은 카카오 OAuth(Supabase Auth `signInWithOAuth`)를 아직 붙이지 않았다. 붙일 때는 `src/app/App.tsx`의 `setAccessTokenProvider` 등록을 Supabase 세션으로 바꾸고 온보딩에서 `env.devNickname`을 보내는 부분을 뺀다. 서버가 소셜 메타데이터로 닉네임을 채운다.
+엔티티 모듈은 `shared/api/`의 `profile.ts`, `rooms.ts`, `expenses.ts`, `trials.ts`, `members.ts`, `comments.ts` 여섯이다. 서버 값과 화면 모델의 대응표도 각 모듈에 있다. 방 강도는 `rooms.ts`, 게시물 타입은 `expenses.ts`, 판결과 형량은 `trials.ts`다.
 
-아직 붙이지 않은 API는 `API.md` 전체에서 위 표를 뺀 나머지다.
+`GET .../trial`은 조회만 해도 재판을 만든다. 방 피드와 홈, 마이페이지가 이 조회를 걸므로 그 화면을 여는 순간 내 돈 썼어요 지출에 재판이 생기고 방의 `voteDeadlineMinutes`로 마감 시계가 돌기 시작한다.
 
-| API.md 장              | 엔드포인트                                                                                                       | 관련 화면                                          | 왜 아직인가                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 1. 프로필              | `PUT /api/me`                                                                                                    | S-13 예산 변경                                     | 착수 전. 변이 훅 `features/me/hooks/useUpdateProfile.ts`는 있다                          |
-| 2. 거지방              | `GET /api/rooms/{roomId}`                                                                                        | S-06 방 상세, S-08 방 정보                         | 착수 전. `roomQueries.detail()`은 있고 화면이 아직 안 쓴다                               |
-| 3. 지출 기록           | `GET /api/rooms/{roomId}/expenses?from&to`                                                                       | S-06 방 피드                                       | 응답에 재판 상태와 표 집계가 없어 `ExpenseCard`를 못 채운다. 10장 재판 API와 같이 붙인다 |
-| 4. 격자 칸 댓글        | `GET/POST /api/rooms/{roomId}/expenses/{expenseId}/comments`                                                     | S-06 방 피드                                       | 방 피드가 미연동이라 같이 밀린다                                                         |
-| 5. 주간 거지왕 시상식  | `GET/POST /api/rooms/{roomId}/awards`, `POST .../awards/generate`                                                | 시상식                                             | 착수 전                                                                                  |
-| 6. 개인 맞춤 도전 과제 | `GET .../challenges/me`, `POST .../challenges`, `POST .../challenges/{id}/accept`                                | 도전 과제                                          | 착수 전                                                                                  |
-| 7. 개인화 순찰 알림    | `GET .../patrol-notifications/me`, `POST .../patrol-notifications`, `POST .../patrol-notifications/{id}/respond` | 순찰 알림                                          | 착수 전                                                                                  |
-| 8. 하루로그            | `GET/POST /api/rooms/{roomId}/daily-logs`                                                                        | 하루로그                                           | 착수 전                                                                                  |
-| 9. 방 멤버(랭킹)       | `GET /api/rooms/{roomId}/members`                                                                                | S-03 방 카드 멤버 수, S-05 참가 전 정보, S-08 랭킹 | 착수 전. 붙이면 방 카드의 멤버 수도 채울 수 있다                                         |
-| 10. 지출 재판          | `GET .../trial`, `POST .../votes`, `POST .../trial/judge`                                                        | S-06 방 피드 투표, S-14 재판                       | 서버가 `b38b5a1`에서 추가했다. 위키의 배심원 투표와 AI 판결에 대응한다. 다음 작업 1순위  |
+아직 붙이지 않은 API는 넷이다. 대응하는 화면이 화면 목록에 없다.
+
+| API.md 장              | 엔드포인트                                                                                                       | 관련 화면 | 왜 아직인가                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------- |
+| 5. 주간 거지왕 시상식  | `GET/POST /api/rooms/{roomId}/awards`, `POST .../awards/generate`                                                | 시상식    | 화면 열넷에 대응하는 것이 없다. M4의 확산 항목에도 들어 있지 않다 |
+| 6. 개인 맞춤 도전 과제 | `GET .../challenges/me`, `POST .../challenges`, `POST .../challenges/{id}/accept`                                | 도전 과제 | 화면 열넷에 대응하는 것이 없다                                    |
+| 7. 개인화 순찰 알림    | `GET .../patrol-notifications/me`, `POST .../patrol-notifications`, `POST .../patrol-notifications/{id}/respond` | 순찰 알림 | 화면 열넷에 대응하는 것이 없다. Web Push도 미도입이다             |
+| 8. 하루로그            | `GET/POST /api/rooms/{roomId}/daily-logs`                                                                        | 하루로그  | 화면 열넷에 대응하는 것이 없다                                    |
+
+반대로 화면에 있는데 서버에 없는 것은 무지출 신고와 이모지 리액션, 짤, 형 집행 조회, 방 설정 편집과 나가기, 삭제, 댓글 삭제다. `SPEC.md`의 확인 필요 절에 화면별로 적었다.
 
 ## M4가 밀릴 때 덜어내는 순서
 
@@ -128,5 +136,9 @@ M4는 사흘뿐이다. 밀리면 이 순서로 덜어낸다.
 | 짤 제작 방식과 수량               | 팀, M4 전                  | 태그 5종에 3장에서 5장씩이 제안값. 결과 페이지와 공유 카드의 짤 자리 크기에 영향                                                                                                                                                                                                                                                                                                                                                                        |
 | 여러 방 공유 시 마감 기준         | 팀, 각하율을 보고          | 제안은 가장 짧은 방. 카드의 남은 시간 표시에 영향                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 판결 전달 방식(동기 또는 SSE)     | AI와 백엔드                | SSE면 글자가 찍히는 판결 UI와 도장 애니메이션 순서가 필요하다. 동기면 페이지 진입 시 재생                                                                                                                                                                                                                                                                                                                                                               |
+| 배포 서버 재배포                  | 백엔드                     | 배포된 서버가 geoji-server `d0f9fd5` 이전 빌드라 `spiceLevel`과 `verdict`를 소문자 옛 값(`mild`, `guilty`)으로만 주고받는다. 프론트는 `API.md`대로 `MILD`와 `SPICY`, `HELL`, `GUILTY`, `NOT_GUILTY`를 보내므로 배포 서버에 대고는 방 만들기와 투표가 400으로 실패하고, 판결이 난 카드는 대응표에 없는 값을 받아 도장 라벨과 형량 줄이 빈다. 프론트 코드는 `API.md`를 정본으로 두고 고치지 않았다. 서버를 main으로 다시 배포하면 풀린다                  |
+| 각하 판정 주체                    | 백엔드                     | 서버는 판결을 `GUILTY`와 `NOT_GUILTY` 둘로만 주고 각하 상태를 주지 않는다. 지금은 화면이 마감이 지났고 표가 2 미만이면 각하로 그린다(`features/post/utils/trial.ts`의 `verdictFromTrial`과 `TrialExpenseCard`). SPEC의 "투표 가능 인원이 2명 미만이면 그 인원 수" 조항은 반영하지 않아 2인 방에서 표 하나가 모이면 각하가 아니라 마감된 투표 중으로 남는다. 서버가 각하를 확정하면 이 계산을 지운다                                                     |
+| 즉시 판결 호출 주체               | 백엔드                     | 전원 투표 즉시 확정을 지금은 클라이언트가 낸다. `useCastVote`가 투표 성공 뒤 표 수가 투표 가능 인원 이상이면 `POST .../trial/judge`를 이어 부른다. 마지막 투표자가 화면을 닫으면 판결이 나지 않고 다음에 판결 화면을 여는 사람의 판결하기 버튼을 기다린다. 서버에 스케줄러나 자동 확정이 생기면 이 호출을 뺀다                                                                                                                                          |
+| 예산 변경 월 1회 제한의 기록 주체 | 백엔드, 기획               | 서버가 이번 달 변경 횟수를 기록하지 않아 S-13이 제한을 걸 근거가 없다. 지금은 몇 번이든 바꿀 수 있고 안내 문구와 비활성 상태를 그리지 않는다. 제한을 살리려면 `GET /api/me`에 마지막 변경 시각이나 이번 달 변경 여부가 필요하다                                                                                                                                                                                                                         |
 | 프로덕션 API 주소와 HTTPS         | 백엔드                     | 배포된 서버는 Elastic Beanstalk의 http 주소다(`../release/RUNBOOK.md` 환경 변수 절). HTTPS가 아니라 GitHub Pages(https)에서는 브라우저가 mixed content로 막고 `env.apiBaseUrl`이 요청 전에 이 상황을 잡아 이유를 담은 오류를 낸다. 홈이 API를 부르므로 백엔드에 HTTPS가 붙기 전에 develop을 main에 올리면 첫 화면에 오류가 뜬다. HTTPS 주소가 정해지면 Deploy 워크플로에 `VITE_API_BASE_URL`로 넣는다. 심사 기간 접속 유지를 위해 슬립 없는 구성이 요건 |
 | 도메인 거지.앱 구매               | 팀                         | 논의만 됐다. OG 이미지와 manifest는 GitHub Pages 주소를 쓴다. 공유 카드의 짧은 URL과 초대 링크에 영향                                                                                                                                                                                                                                                                                                                                                   |

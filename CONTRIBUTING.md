@@ -62,26 +62,41 @@ import { RoomRuleList } from "../components/RoomRuleList";
 
 서버 상태는 TanStack Query 5가 맡고 요청은 `src/shared/api/http.ts`의 `http`가 브라우저 `fetch`로 보낸다. 백엔드 규약은 geoji-server 저장소의 `API.md`다. 기준 주소는 `VITE_API_BASE_URL` 환경 변수에서 오고 로컬 설정은 [README.md](./README.md)의 시작하기 절에 있다.
 
-| 파일                                    | 하는 일                                                                                                                                                                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/shared/api/http.ts`                | `http.get`, `post`, `put`, `delete`. 쿼리 스트링과 JSON 바디, Authorization 헤더, 10초 타임아웃을 붙이고 실패는 `ApiError`로 던진다                                         |
-| `src/shared/api/api-error.ts`           | `ApiError`와 `isApiError`. `kind`는 badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout 8종                                                   |
-| `src/shared/api/auth-token.ts`          | `setAccessTokenProvider`와 `getAccessToken`. 등록한 공급자가 없으면 Authorization 헤더 없이 요청한다. 지금은 `App.tsx`가 개발용 토큰(`env.devAccessToken`)을 등록한다       |
-| `src/shared/api/profile.ts`, `rooms.ts` | 엔티티 모듈. 응답 타입과 요청 함수, `queryOptions` 팩토리(`profileQueries`, `roomQueries`)                                                                                  |
-| `src/shared/lib/env.ts`                 | `env.apiBaseUrl`. 읽는 순간 `VITE_API_BASE_URL`을 확인하고 없거나 https 페이지에서 http 주소면 던진다. `env.devAccessToken`과 `env.devNickname`은 개발 서버에서만 값이 있다 |
-| `src/shared/lib/query-client.ts`        | `createQueryClient`. 쿼리 기본 옵션과 재시도 규칙, 401이면 `onUnauthorized`                                                                                                 |
-| `src/app/providers/QueryProvider.tsx`   | `QueryClientProvider`와 devtools. 401이면 `/login`으로 보낸다                                                                                                               |
+| 파일                                     | 하는 일                                                                                                                                                                                                                                               |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/shared/api/http.ts`                 | `http.get`, `post`, `put`, `delete`. 쿼리 스트링과 JSON 바디, Authorization 헤더, 10초 타임아웃을 붙이고 실패는 `ApiError`로 던진다                                                                                                                   |
+| `src/shared/api/api-error.ts`            | `ApiError`와 `isApiError`. `kind`는 badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout 8종                                                                                                                             |
+| `src/shared/api/auth-token.ts`           | `setAccessTokenProvider`와 `getAccessToken`. 등록한 공급자가 없으면 Authorization 헤더 없이 요청한다. `App.tsx`가 등록한 공급자는 Supabase 세션의 `access_token`을 먼저 보고 없을 때 개발용 토큰(`env.devAccessToken`)으로 떨어진다                   |
+| `src/shared/api/profile.ts`, `rooms.ts`  | 엔티티 모듈. 응답 타입과 요청 함수, `queryOptions` 팩토리(`profileQueries`, `roomQueries`)                                                                                                                                                            |
+| `src/shared/api/expenses.ts`             | 지출 엔티티. `createExpense`, 방 기간 조회 `fetchRoomExpenses`, 단건 조회 `fetchRoomExpense`(단건 API가 없어 최근 90일 목록에서 id로 찾는다), `expenseQueries`, 게시물 타입 대응표                                                                    |
+| `src/shared/api/trials.ts`               | 재판 엔티티. `fetchTrial`(살까 말까 지출은 400이라 `null`), `castVote`, `judgeTrial`, `trialQueries`, 판결과 형량 대응표. `Trial`에서 나오는 파생 계산 `voteCount`와 `verdictFromTrial`, `headlineFromVerdictText`, 정족수 `TRIAL_QUORUM`도 여기 있다 |
+| `src/shared/api/members.ts`              | 방 멤버 엔티티. `fetchRoomMembers`, `memberQueries`, 멤버 도우미 `findMember`와 `memberName`, `memberTier`                                                                                                                                            |
+| `src/shared/api/comments.ts`             | 댓글 엔티티. `fetchComments`, `createComment`, `commentQueries`                                                                                                                                                                                       |
+| `src/shared/domain/score.ts`             | 거지력 산식. `calculateDebtScore`와 경과일 기준선 `baselineSpend`. 지금 계산하는 것은 예산 준수와 판결 둘뿐이다(`docs/product/SPEC.md` 확인 필요 절)                                                                                                  |
+| `src/shared/utils/date.ts`               | KST 기준 기간과 시간 문구. `kstCalendar`, `monthRange`, `recentRange`, `formatRelativeTime`, `formatRemaining`, `isPast`                                                                                                                              |
+| `src/shared/lib/supabase.ts`             | `getSupabase()`. 처음 부를 때 클라이언트를 만들어 재사용한다                                                                                                                                                                                          |
+| `src/shared/hooks/useSession.ts`         | 모듈 스코프 세션 저장소를 `useSyncExternalStore`로 감싼 `useSession()`. `{ session, isLoading }`을 준다                                                                                                                                               |
+| `src/shared/hooks/useSignOut.ts`         | 로그아웃 변이. 세션을 지우고 `queryClient.clear()` 뒤 `/login`으로 보낸다. auth feature가 아니라 shared에 있어 me feature도 쓴다                                                                                                                      |
+| `src/shared/constants/routes.ts`         | 판결 화면 경로 조립. `verdictPath`, `verdictCardPath`, `votePath`. 라우트 정의는 `app/router/routes.tsx`이고 이 파일은 그 주소를 만들기만 한다                                                                                                        |
+| `src/shared/hooks/useCreateComment.ts`   | 댓글 작성 변이. 성공하면 그 지출의 댓글 목록을 무효화한다. 방 피드와 판결 결과가 같이 쓴다                                                                                                                                                            |
+| `src/shared/hooks/useMyMonthStats.ts`    | 프로필과 방 목록, 방별 이번 달 지출, 내 지출의 재판을 합쳐 이번 달 지출액과 거지력, 티어, 판결 이력을 계산한다. 홈과 마이페이지가 같이 쓴다                                                                                                           |
+| `src/shared/lib/platform.ts`             | `shareContent`, `downloadDataUrl`, `copyText`. `navigator.share`가 없거나 거부되면 링크를 클립보드에 복사하고 결과만 돌려준다                                                                                                                         |
+| `src/shared/components/CommentSheet.tsx` | 댓글 바텀시트. 목록과 입력을 그리고 방 피드와 판결 결과가 같이 쓴다                                                                                                                                                                                   |
+| `src/shared/lib/env.ts`                  | `env.apiBaseUrl`. 읽는 순간 `VITE_API_BASE_URL`을 확인하고 없거나 https 페이지에서 http 주소면 던진다. `env.supabaseUrl`과 `env.supabaseAnonKey`도 같은 모양이다. `env.devAccessToken`과 `env.devNickname`은 개발 서버에서만 값이 있다                |
+| `src/shared/lib/query-client.ts`         | `createQueryClient`. 쿼리 기본 옵션과 재시도 규칙, 401이면 `onUnauthorized`                                                                                                                                                                           |
+| `src/app/providers/QueryProvider.tsx`    | `QueryClientProvider`와 devtools. 401이면 `/login`으로 보낸다                                                                                                                                                                                         |
 
 feature에서 API를 부를 때는 이렇게 한다.
 
 - 요청은 `http`만 쓴다. 화면이나 훅에서 `fetch`를 직접 부르지 않는다
 - 엔티티 모듈(응답 타입, 요청 함수, `queryOptions` 팩토리)은 두 feature 이상이 쓰면 `src/shared/api/{entity}.ts`, 한 feature만 쓰면 그 feature의 `api/`에 둔다. 프로필(auth, home, me)과 방(home, room)은 shared다
 - 키는 엔티티로 시작하는 계층이다. `["rooms"]`, `["rooms", "list"]`, `["rooms", "detail", id]`처럼 팩토리 함수로 만들고 `queryOptions`로 정의해 `useQuery`, `useSuspenseQuery`, `queryClient.prefetchQuery`가 같은 정의를 쓴다
+- 조회 훅은 따로 만들지 않는다. 페이지에서 `useQuery(xxxQueries.yyy())`로 바로 부른다. 쿼리 여럿을 합쳐 계산하고 그 결과를 화면 둘 이상이 쓰는 자리만 `shared/hooks/`에 훅으로 둔다. `useMyMonthStats`가 그 경우다
 - 변이는 쓰는 화면의 feature `hooks/`에 `useMutation` 훅으로 둔다. 성공하면 `setQueryData`로 상세를 채우고 `invalidateQueries`로 목록을 다시 받는다. `onSuccess`가 그 Promise를 돌려주면 목록이 올 때까지 `isPending`이 유지된다
 - 401은 전역에서 로그인 화면으로 보내므로 화면이 다루지 않는다. 그 밖은 `error.kind`로 분기한다. `Register.defaultError`를 `ApiError`로 등록해 두어 `error`가 `ApiError`로 잡힌다
 - 아직 없는 리소스는 queryFn 안에서 잡아 `null`로 바꾼다. 404로 오는 엔드포인트(이번 주 도전 과제)는 `notFound`를, 온보딩 전 프로필은 `GET /api/me`가 409로 오므로 `conflict`를 잡는다. `data === null`이 아직 없다는 뜻이다
 - 재시도는 network와 timeout, server만 2회까지다. 4xx와 변이는 다시 시도하지 않는다
-- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 화면 모델과 값이 다른 것은 엔티티 모듈에 대응표를 두고 화면이 그 표로 바꾼다. 방 강도는 `rooms.ts`의 `SPICE_LEVEL_BY_INTENSITY`와 `INTENSITY_BY_SPICE_LEVEL`, 게시물 타입은 `features/post/api/expenses.ts`의 `EXPENSE_SOURCE_BY_POST_TYPE`이다
+- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 화면 모델과 값이 다른 것은 엔티티 모듈에 대응표를 두고 화면이 그 표로 바꾼다. 방 강도는 `rooms.ts`의 `SPICE_LEVEL_BY_INTENSITY`와 `INTENSITY_BY_SPICE_LEVEL`, 게시물 타입은 `src/shared/api/expenses.ts`의 `EXPENSE_SOURCE_BY_POST_TYPE`과 `POST_TYPE_BY_EXPENSE_SOURCE`이다
 
 실제 예시는 엔티티 모듈 `src/shared/api/profile.ts`와 `src/shared/api/rooms.ts`, 변이 훅 `src/features/auth/hooks/useCreateProfile.ts`와 `src/features/me/hooks/useUpdateProfile.ts`, `src/features/room/hooks/useCreateRoom.ts`, `src/features/room/hooks/useJoinRoom.ts`다. 화면에서는 이렇게 쓴다.
 
@@ -123,6 +138,13 @@ type TagProps = PropsWithChildren<{
 - `src/shared/lib/env.ts`의 `env`가 getter인 이유는 모듈을 가져오는 시점에 `VITE_API_BASE_URL`을 검사하면 API를 안 쓰는 화면까지 죽기 때문이다. 배포된 사이트에는 아직 이 변수가 없다. `env.apiBaseUrl`을 읽는 순간에만 던진다
 - `http`는 호출자의 `signal`이 aborted면 오류를 `ApiError`로 감싸지 않고 그대로 다시 던진다. TanStack Query의 쿼리 취소가 그 오류를 보고 동작한다
 - `QueryProvider`가 `ReactQueryDevtools`를 조건 없이 그리는 이유는 프로덕션 빌드에서 패키지가 빈 컴포넌트를 내보내기 때문이다. `import.meta.env.DEV` 분기를 두지 않는다
+- `getSupabase`가 클라이언트를 모듈 로드 시점이 아니라 처음 부를 때 만드는 이유는 `env.supabaseUrl`이 getter라 읽는 순간 던지기 때문이다. 로그인을 쓰지 않는 화면은 Supabase 변수가 없어도 열린다. `env.apiBaseUrl`과 같은 이유다
+- `useSession`이 `useSyncExternalStore`를 쓰는 이유는 세션이 React 밖에서 바뀌기 때문이다. `onAuthStateChange`가 모듈 스코프 저장소를 갱신하고 구독 중인 화면이 함께 다시 그려진다. `theme-store.ts`와 같은 모양이다
+- `fetchTrial`이 400을 `null`로 바꾸는 이유는 살까 말까 지출이 재판 대상이 아니어서 서버가 400을 주기 때문이다. 아직 없는 리소스를 `null`로 바꾸는 것과 같게 다뤄 화면이 재판 없는 카드를 그린다. 그 밖의 400은 그대로 던진다
+- `expenseQueries.listByRoom`이 기간을 `{ from, to }`로 풀어 받는 이유는 `@tanstack/query/exhaustive-deps`가 queryFn 안의 객체를 키에서 찾지 못하기 때문이다. 키는 `from`과 `to` 문자열로 둔다
+- `monthRange`의 끝이 다음 달 1일 00:00이 아니라 `23:59:59.999`인 이유는 서버 조회가 양끝을 포함하는 `between`이기 때문이다. 00:00을 그대로 넘기면 그 순간의 지출이 두 달에 걸린다
+- `useCastVote`가 이어 부르는 판결 요청의 실패를 오류로 올리지 않는 이유는 투표가 이미 성공했기 때문이다. 재판 캐시만 무효화하고 화면은 방으로 돌아간다
+- `VerdictCardPage`가 카드를 감싼 `div`를 캡처하는 이유는 `Card`가 `ref`를 받지 않기 때문이다. 그림자는 캡처 범위 밖이라 PNG에 들어가지 않는다
 
 ## 완료 기준
 

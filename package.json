@@ -42,9 +42,11 @@
 		"prepare": "lefthook install && pnpm link:agents"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.116.0",
 		"@tanstack/react-query": "^5.102.8",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"html-to-image": "^1.11.13",
 		"lucide-react": "^1.41.0",
 		"motion": "^13.2.0",
 		"react": "^19.2.8",

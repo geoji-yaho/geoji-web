@@ -1,15 +1,36 @@
 import { MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { LogoIcon } from "@/shared/components/LogoIcon";
+import { useSession } from "@/shared/hooks/useSession";
 import { Button } from "@/shared/ui/Button";
 import { Reveal } from "@/shared/ui/Reveal";
 import { Toast } from "@/shared/ui/Toast";
 
+import { useKakaoLogin } from "../hooks/useKakaoLogin";
+
 const LOGIN_POINTS = ["피고 = 나", "배심원 = 친구", "판사 = AI"];
+
+function hasOauthErrorInUrl() {
+	const fromHash = new URLSearchParams(globalThis.location.hash.replace(/^#/, ""));
+	const fromSearch = new URLSearchParams(globalThis.location.search);
+	return fromHash.has("error") || fromSearch.has("error");
+}
 
 export function LoginPage() {
 	const navigate = useNavigate();
+	const { session } = useSession();
+	const login = useKakaoLogin();
+	const [cancelledInUrl] = useState(hasOauthErrorInUrl);
+
+	useEffect(() => {
+		if (session) {
+			void navigate("/", { replace: true });
+		}
+	}, [session, navigate]);
+
+	const showCancelToast = cancelledInUrl || login.isError;
 
 	return (
 		<div className="flex flex-1 flex-col px-5 pb-8.5">
@@ -33,12 +54,14 @@ export function LoginPage() {
 				</Reveal>
 			</div>
 
-			<Reveal index={5} className="mb-8.5">
-				<Toast>로그인이 취소되었습니다</Toast>
-			</Reveal>
+			{showCancelToast && (
+				<Reveal index={5} className="mb-8.5">
+					<Toast>로그인이 취소되었습니다</Toast>
+				</Reveal>
+			)}
 
 			<Reveal index={6} className="flex flex-col gap-3.5">
-				<Button variant="kakao" className="gap-2" onClick={() => navigate("/onboarding/budget")}>
+				<Button variant="kakao" className="gap-2" disabled={login.isPending} onClick={() => login.mutate()}>
 					<MessageCircle className="size-5" fill="currentColor" strokeWidth={0} aria-hidden="true" />
 					카카오로 시작하기
 				</Button>

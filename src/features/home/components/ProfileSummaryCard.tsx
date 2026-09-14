@@ -6,7 +6,6 @@ import type { Imprisonment } from "@/shared/domain/verdict";
 import { cn } from "@/shared/lib/cn";
 import { AnimatedAmount } from "@/shared/ui/AnimatedAmount";
 import { Avatar } from "@/shared/ui/Avatar";
-import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { MeterBar } from "@/shared/ui/MeterBar";
 import { formatAmount } from "@/shared/utils/format";
@@ -20,7 +19,7 @@ type ProfileSummaryCardProps = {
 	spent: number;
 	budget: number;
 	baseline?: number;
-	noSpendDays: number;
+	noSpendDays?: number;
 	imprisonment?: Imprisonment;
 	className?: string;
 };
@@ -39,6 +38,7 @@ export function ProfileSummaryCard({
 	className
 }: ProfileSummaryCardProps) {
 	const overBudget = spent > budget;
+	const hasStats = noSpendDays !== undefined || imprisonment !== undefined;
 
 	return (
 		<Card className={cn("flex flex-col gap-3.5 p-4.5", className)}>
@@ -72,23 +72,25 @@ export function ProfileSummaryCard({
 				<MeterBar value={spent} max={budget} tone={overBudget ? "red" : "cta"} markerValue={baseline} />
 			</div>
 
-			<div className="flex gap-2">
-				<div className="flex-1 rounded-xl bg-fill px-3 py-2.5">
-					<span className="text-caption text-mute">무지출</span>
-					<p className="text-title text-ink">{noSpendDays}일</p>
-				</div>
-				{imprisonment && (
-					<div className="flex flex-1 flex-col gap-1.5 rounded-xl bg-red/10 px-3 py-2.5">
-						<div className="flex items-center justify-between text-caption text-red">
-							<span className="font-extrabold">수감 중</span>
-							<span className="font-black">D-{imprisonment.daysLeft}</span>
+			{hasStats && (
+				<div className="flex gap-2">
+					{noSpendDays !== undefined && (
+						<div className="flex-1 rounded-xl bg-fill px-3 py-2.5">
+							<span className="text-caption text-mute">무지출</span>
+							<p className="text-title text-ink">{noSpendDays}일</p>
 						</div>
-						<ExecutionMeter {...imprisonment} />
-					</div>
-				)}
-			</div>
-
-			<Button variant="secondary">오늘 0원 썼어요</Button>
+					)}
+					{imprisonment !== undefined && (
+						<div className="flex flex-1 flex-col gap-1.5 rounded-xl bg-red/10 px-3 py-2.5">
+							<div className="flex items-center justify-between text-caption text-red">
+								<span className="font-extrabold">수감 중</span>
+								<span className="font-black">D-{imprisonment.daysLeft}</span>
+							</div>
+							<ExecutionMeter {...imprisonment} />
+						</div>
+					)}
+				</div>
+			)}
 		</Card>
 	);
 }

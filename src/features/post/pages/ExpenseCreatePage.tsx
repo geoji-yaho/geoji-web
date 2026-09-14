@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { EXPENSE_SOURCE_BY_POST_TYPE } from "@/shared/api/expenses";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { EXPENSE_CATEGORIES } from "@/shared/constants/expense-categories";
@@ -15,7 +16,6 @@ import { TabSegment } from "@/shared/ui/TabSegment";
 import { TextField } from "@/shared/ui/TextField";
 import { parseAmount } from "@/shared/utils/format";
 
-import { EXPENSE_SOURCE_BY_POST_TYPE } from "../api/expenses";
 import { useCreateExpense } from "../hooks/useCreateExpense";
 
 const TITLE_MAX_LENGTH = 30;

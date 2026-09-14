@@ -28,11 +28,11 @@ Node 24와 pnpm 11이 필요하다. 버전은 `.nvmrc`와 `package.json`의 `eng
 
 ```bash
 pnpm install                 # 의존성 설치. Git 훅(lefthook)과 에이전트 룰 링크도 함께 설치된다
-cp .env.example .env.local   # 백엔드 주소. 기본값은 로컬 geoji-server의 http://localhost:8080
+cp .env.example .env.local   # 백엔드 주소와 Supabase 값. 기본값은 로컬 geoji-server의 http://localhost:8080
 pnpm dev                     # 개발 서버. http://localhost:3800
 ```
 
-백엔드를 부르는 화면은 `VITE_API_BASE_URL`이 필요하고 로그인이 붙기 전까지는 `VITE_DEV_ACCESS_TOKEN`의 토큰으로 API를 부른다. 로컬 값은 `.env.local`에 두고 커밋하지 않는다. 토큰 받는 절차와 배포에 넣는 방법, 변수가 없을 때 앱이 어떻게 되는지는 `docs/release/RUNBOOK.md`의 환경 변수 절에 있다.
+백엔드를 부르는 화면은 `VITE_API_BASE_URL`, 카카오 로그인과 세션은 `VITE_SUPABASE_URL`과 `VITE_SUPABASE_ANON_KEY`가 필요하다. 셋 다 `.env.example`에 기본값이 있다. 로그인하지 않고 API를 부르려면 `VITE_DEV_ACCESS_TOKEN`에 토큰을 직접 넣는다. 로컬 값은 `.env.local`에 두고 커밋하지 않는다. 토큰 받는 절차와 배포에 넣는 방법, 변수가 없을 때 앱이 어떻게 되는지는 `docs/release/RUNBOOK.md`의 환경 변수 절에 있다.
 
 | 명령                | 하는 일                                                |
 | ------------------- | ------------------------------------------------------ |
@@ -56,7 +56,7 @@ pnpm dev                     # 개발 서버. http://localhost:3800
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) 개발 환경, 브랜치와 커밋 흐름, 완료 기준
 - [AGENTS.md](./AGENTS.md) AI 에이전트 지침
-- [docs/](./docs/) 제품, 디자인, 운영 문서. 배치 기준은 `docs/CLAUDE.md`
+- [docs/](./docs/) 제품, 디자인, 운영 문서. 배치 기준은 `docs/README.md`
 
 ## 라이선스
 
