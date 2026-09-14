@@ -34,19 +34,24 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 ## 환경 변수
 
-| 변수                    | 쓰는 곳                                                                            | 값                                                                                                                                                                                                               |
-| ----------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_BASE_URL`     | `src/shared/lib/env.ts`가 읽어 `http` 요청의 기준 주소로 쓴다                      | 로컬 서버는 `http://localhost:8080`(`.env.example`), 배포된 서버는 `http://geoji-server-env.eba-wpbw3dvr.ap-northeast-2.elasticbeanstalk.com`. 배포 서버가 HTTPS가 아니라 GitHub Pages(https)에서는 부를 수 없다 |
-| `VITE_DEV_ACCESS_TOKEN` | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다 | 로컬 전용. 로그인이 붙기 전까지 Supabase access token을 직접 넣는다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                                                                                   |
-| `VITE_DEV_NICKNAME`     | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                       | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                                                                                               |
+| 변수                     | 쓰는 곳                                                                                           | 값                                                                                                                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`      | `src/shared/lib/env.ts`가 읽어 `http` 요청의 기준 주소로 쓴다                                     | 로컬 서버는 `http://localhost:8080`(`.env.example`), 배포된 서버는 `http://geoji-server-env.eba-wpbw3dvr.ap-northeast-2.elasticbeanstalk.com`. 배포 서버가 HTTPS가 아니라 GitHub Pages(https)에서는 부를 수 없다 |
+| `VITE_SUPABASE_URL`      | `env.supabaseUrl`. `shared/lib/supabase.ts`의 `getSupabase()`가 읽어 Supabase 클라이언트를 만든다 | `https://wfovlprcxmsanfuzbfvd.supabase.co`(`.env.example`). 카카오 로그인과 세션에 쓰므로 배포에도 넣는다                                                                                                        |
+| `VITE_SUPABASE_ANON_KEY` | `env.supabaseAnonKey`. 같은 자리에서 함께 읽는다                                                  | 공개 값이라 저장소와 배포에 넣어도 된다. 브라우저가 어차피 받아 가고 Supabase의 행 수준 보안이 권한을 가른다. access token과는 다른 값이다                                                                       |
+| `VITE_DEV_ACCESS_TOKEN`  | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다                | 로컬 전용. Supabase 세션이 없을 때만 쓰이는 대체 토큰이다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                                                                                             |
+| `VITE_DEV_NICKNAME`      | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                                      | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                                                                                               |
 
-`VITE_` 접두사 변수는 빌드 시점에 번들에 박힌다. GitHub Pages는 정적 호스팅이라 배포 뒤에 바꿀 수 없고 값을 바꾸면 다시 빌드해 배포한다. Deploy 워크플로(`.github/workflows/deploy.yaml`)에는 아직 이 변수가 없다. 없어도 타입 검사와 빌드는 통과하고 앱은 뜬다. `env.apiBaseUrl`을 읽는 순간에만 던지므로 API를 부르는 화면에서만 오류가 나고 API를 안 쓰는 화면은 그대로 열린다.
+`VITE_` 접두사 변수는 빌드 시점에 번들에 박힌다. GitHub Pages는 정적 호스팅이라 배포 뒤에 바꿀 수 없고 값을 바꾸면 다시 빌드해 배포한다. Deploy 워크플로(`.github/workflows/deploy.yaml`)에는 아직 이 변수가 없다. 없어도 타입 검사와 빌드는 통과하고 앱은 뜬다. `env.apiBaseUrl`을 읽는 순간에만 던지므로 API를 부르는 화면에서만 오류가 나고 API를 안 쓰는 화면은 그대로 열린다. 로그인도 같은 방식이라 Supabase 두 변수가 없으면 카카오 버튼을 누르는 순간에만 오류가 난다.
+
+배포에 넣어야 하는 것은 셋이다. `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`다. 개발용 토큰과 닉네임 둘은 로컬 전용이라 넣지 않는다.
 
 프로덕션 주소가 정해지면 이렇게 한다.
 
-1. 저장소 Settings의 Actions variables에 `VITE_API_BASE_URL`을 넣는다
-2. `deploy.yaml`의 빌드 단계에 `env`로 `VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}`를 붙인다. CI(`ci.yaml`)는 값이 없어도 통과하므로 붙이지 않아도 된다
-3. 배포 뒤 프로덕션 URL에서 API를 부르는 화면이 실제 응답을 받는지 확인한다
+1. 저장소 Settings의 Actions variables에 `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 셋을 넣는다. 셋 다 공개 값이라 secrets가 아니라 variables다
+2. `deploy.yaml`의 빌드 단계에 `env`로 `VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}`처럼 셋을 붙인다. CI(`ci.yaml`)는 값이 없어도 통과하므로 붙이지 않아도 된다
+3. Supabase 대시보드의 Authentication URL 설정에 리다이렉트 주소를 등록한다. 배포 주소 `https://geoji-yaho.github.io/geoji-web/`와 로컬 주소 `http://localhost:3800/` 둘 다 있어야 한다. `useKakaoLogin`이 `redirectTo`를 실행 중인 주소와 Vite의 base 경로로 만들어 보내므로 둘 중 하나가 빠지면 그 환경의 로그인만 콜백에서 막힌다
+4. 배포 뒤 프로덕션 URL에서 API를 부르는 화면이 실제 응답을 받는지, 카카오 로그인이 돌아오는지 확인한다
 
 - 비밀값은 프론트엔드에 두지 않는다. VAPID 개인키와 카카오 시크릿은 백엔드에만 둔다
 - 로컬 값은 `.env.local`에 둔다. `.gitignore`의 `*.local` 규칙이 걸러 주고 `.env`는 걸리지 않으니 `.env`를 만들지 않는다. 커밋하는 예시는 `.env.example` 하나다
@@ -54,10 +59,10 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 백엔드는 슬립 없는 구성이 요건이다. 무료 플랜은 유휴 시 슬립되어 심사 기간 첫 접속이 실패할 수 있다.
 
-로그인이 붙기 전까지 로컬에서는 개발용 토큰으로 API를 부른다.
+로컬에서 개발용 토큰을 쓰는 절차다. 카카오 로그인이 붙어 있으므로 이 토큰은 Supabase 세션이 없을 때만 쓰인다. `App.tsx`의 토큰 공급자가 세션의 `access_token`을 먼저 보고 없을 때 `env.devAccessToken`으로 떨어진다. 로그인해서 쓸 것이면 이 절을 건너뛴다.
 
 1. `cp .env.example .env.local`로 만들고 `VITE_API_BASE_URL`에 로컬 서버 주소나 배포된 서버 주소를 넣는다
-2. `VITE_DEV_ACCESS_TOKEN`에는 Supabase Auth의 access token을 넣는다. 로그인 화면이 없으니 이메일과 비밀번호로 가입된 Supabase 계정으로 직접 받는다. 프로젝트 주소는 geoji-server `application.yml`의 issuer와 같고 anon key는 백엔드 담당에게 받는다. 테스트 계정은 팀 위키에 있고 이 저장소에는 적지 않는다
+2. `VITE_DEV_ACCESS_TOKEN`에는 Supabase Auth의 access token을 넣는다. 카카오 계정 대신 이메일과 비밀번호로 가입된 Supabase 계정을 쓸 때 이렇게 직접 받는다. 프로젝트 주소는 geoji-server `application.yml`의 issuer와 같고 anon key는 백엔드 담당에게 받는다. 테스트 계정은 팀 위키에 있고 이 저장소에는 적지 않는다
 
    ```bash
    curl -s 'https://wfovlprcxmsanfuzbfvd.supabase.co/auth/v1/token?grant_type=password' \
@@ -89,5 +94,6 @@ DNS 설정과 GitHub Pages 커스텀 도메인 연결 절차는 정해지면 여
 1. 프로덕션 URL 접속. 화면이 뜨는지, 흰 화면이면 브라우저 콘솔에 무엇이 찍히는지
 2. Actions 탭의 Deploy 로그. 어느 게이트에서 실패했는지, 어느 커밋이 마지막으로 배포됐는지
 3. 백엔드 상태. API를 부르는 화면만 오류면 브라우저 콘솔에서 `VITE_API_BASE_URL` 환경 변수가 없다는 Error인지 백엔드 응답 실패인지 가른다. 백엔드 헬스체크는 API 주소의 `/actuator/health`이고 토큰 없이 열린다
-4. base 경로. 자산 404가 나면 `vite.config.ts`의 `base`와 배포 경로가 맞는지 본다
-5. Service Worker 캐시 (도입 뒤). 배포는 성공했는데 옛 화면이 보이면 브라우저 개발자 도구의 Application 탭에서 등록된 Service Worker와 캐시를 본다. 갱신 절차는 Service Worker를 도입할 때 여기에 적는다
+4. 배포된 서버 버전. 방 만들기나 투표가 본문 없는 400이면 배포 서버의 열거형 값이 `API.md`보다 오래된 것이다. 서버가 배포된 커밋을 확인한다(`../product/ROADMAP.md` 미결정 절의 배포 서버 재배포 행)
+5. base 경로. 자산 404가 나면 `vite.config.ts`의 `base`와 배포 경로가 맞는지 본다
+6. Service Worker 캐시 (도입 뒤). 배포는 성공했는데 옛 화면이 보이면 브라우저 개발자 도구의 Application 탭에서 등록된 Service Worker와 캐시를 본다. 갱신 절차는 Service Worker를 도입할 때 여기에 적는다
