@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { env } from "@/shared/lib/env";
+import { clearOnboardingSkip, skipOnboarding } from "@/shared/lib/onboarding-skip";
 import { Alert } from "@/shared/ui/Alert";
 import { AmountField } from "@/shared/ui/AmountField";
 import { Chip } from "@/shared/ui/Chip";
@@ -41,14 +42,23 @@ export function BudgetOnboardingPage() {
 		onboarding.mutate(
 			{ nickname: env.devNickname ?? undefined, monthlyBudget: parsed },
 			{
-				onSuccess: () => void navigate("/"),
+				onSuccess: () => {
+					clearOnboardingSkip();
+					void navigate("/");
+				},
 				onError: (error) => {
 					if (error.kind === "conflict") {
+						clearOnboardingSkip();
 						void navigate("/");
 					}
 				}
 			}
 		);
+	};
+
+	const skip = () => {
+		skipOnboarding();
+		void navigate("/");
 	};
 
 	return (
@@ -89,7 +99,7 @@ export function BudgetOnboardingPage() {
 					onClick={submit}
 					disabled={onboarding.isPending}
 				/>
-				<button type="button" onClick={() => navigate("/")} className="text-control text-mute underline">
+				<button type="button" onClick={skip} className="text-control text-mute underline">
 					나중에 할게요
 				</button>
 			</div>
