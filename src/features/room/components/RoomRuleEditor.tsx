@@ -17,7 +17,9 @@ export function RoomRuleEditor({ rules, onChange }: RoomRuleEditorProps) {
 
 	const addRule = (rule: string) => {
 		const trimmed = rule.trim();
-		if (full || !trimmed || rules.includes(trimmed)) return;
+		if (full || !trimmed || rules.includes(trimmed)) {
+			return;
+		}
 		onChange([...rules, trimmed]);
 	};
 

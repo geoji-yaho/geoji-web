@@ -27,7 +27,9 @@ export function RoomJoinPage() {
 	const expired = join.error?.kind === "badRequest";
 
 	const submit = () => {
-		if (!code) return;
+		if (!code) {
+			return;
+		}
 		join.mutate(code, { onSuccess: (room) => void navigate(`/rooms/${room.id}`) });
 	};
 
