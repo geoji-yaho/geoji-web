@@ -5,7 +5,7 @@ import { cn } from "../lib/cn";
 
 const SEGMENT_SPRING = { type: "spring", stiffness: 500, damping: 40 } as const;
 
-type TabSegmentProps<T extends string> = {
+type TabSegmentProps<T extends string | number> = {
 	tabs: readonly T[];
 	value: T;
 	onChange: (tab: T) => void;
@@ -13,7 +13,13 @@ type TabSegmentProps<T extends string> = {
 	className?: string;
 };
 
-export function TabSegment<T extends string>({ tabs, value, onChange, renderLabel, className }: TabSegmentProps<T>) {
+export function TabSegment<T extends string | number>({
+	tabs,
+	value,
+	onChange,
+	renderLabel,
+	className
+}: TabSegmentProps<T>) {
 	const layoutId = useId();
 
 	return (

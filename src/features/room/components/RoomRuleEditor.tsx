@@ -4,6 +4,8 @@ import { Chip } from "@/shared/ui/Chip";
 
 const RULE_PRESETS = ["한 달에 배달음식 1번", "한 달에 택시 1번", "커피는 하루 1잔", "주말 외식 금지", "충동구매 금지"];
 
+const RULE_MAX_COUNT = 10;
+
 type RoomRuleEditorProps = {
 	rules: string[];
 	onChange: (rules: string[]) => void;
@@ -11,22 +13,25 @@ type RoomRuleEditorProps = {
 
 export function RoomRuleEditor({ rules, onChange }: RoomRuleEditorProps) {
 	const presets = RULE_PRESETS.filter((preset) => !rules.includes(preset));
+	const full = rules.length >= RULE_MAX_COUNT;
+
+	const addRule = (rule: string) => {
+		const trimmed = rule.trim();
+		if (full || !trimmed || rules.includes(trimmed)) return;
+		onChange([...rules, trimmed]);
+	};
 
 	return (
 		<div className="flex flex-col gap-2">
-			<span className="text-label text-mute">방 규칙, 선택, 최대 10</span>
+			<span className="text-label text-mute">
+				방 규칙, 선택, 최대 {RULE_MAX_COUNT} ({rules.length}/{RULE_MAX_COUNT})
+			</span>
 			<div className="flex flex-wrap gap-1.5">
 				{presets.map((preset) => (
-					<Chip key={preset} onClick={() => onChange([...rules, preset])}>
+					<Chip key={preset} disabled={full} onClick={() => addRule(preset)}>
 						+ {preset}
 					</Chip>
 				))}
-				<button
-					type="button"
-					className="inline-flex shrink-0 items-center justify-center rounded-full border border-dashed border-dim px-3.5 py-2 text-chip font-extrabold text-ink"
-				>
-					직접 입력
-				</button>
 			</div>
 			{rules.length > 0 && (
 				<ol className="flex flex-col gap-1.5">
