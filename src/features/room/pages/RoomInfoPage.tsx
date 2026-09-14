@@ -1,121 +1,91 @@
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useParams } from "react-router";
 
+import { memberQueries } from "@/shared/api/members";
+import { profileQueries } from "@/shared/api/profile";
+import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
-import { TierBadge } from "@/shared/components/TierBadge";
-import type { Tier } from "@/shared/domain/tier";
-import { Avatar } from "@/shared/ui/Avatar";
+import { formatVoteDeadlineLabel } from "@/shared/domain/room";
+import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { InfoTable } from "@/shared/ui/InfoTable";
 import { Reveal } from "@/shared/ui/Reveal";
 
 import { InviteSheet } from "../components/InviteSheet";
+import { MemberList } from "../components/MemberList";
 import { RoomRuleList } from "../components/RoomRuleList";
-
-const INVITE_URL = "ttegeoji.app/i/K7X2M";
-
-const ROOM_INFO = {
-	createdAt: "2026.08.28",
-	owner: "소윤 (나)",
-	intensity: "spicy",
-	deadlineLabel: "12시간",
-	memberCount: 5
-} as const;
-
-const ROOM_RULES = ["한 달에 배달음식 1번", "커피는 하루 1잔", "충동구매 금지"];
-
-const MEMBERS: { name: string; tier: Tier; score: number }[] = [
-	{ name: "소윤", tier: "flower", score: 71 },
-	{ name: "지민", tier: "hardcore", score: 38 },
-	{ name: "현우", tier: "flower", score: 65 }
-];
-
-const CHANGE_LINK_STYLES = "whitespace-nowrap font-black text-red";
+import { buildInviteUrl } from "../utils/buildInviteUrl";
 
 export function RoomInfoPage() {
+	const { roomId = "" } = useParams();
 	const [inviteOpen, setInviteOpen] = useState(false);
+	const room = useQuery(roomQueries.detail(roomId));
+	const members = useQuery(memberQueries.list(roomId));
+	const me = useQuery(profileQueries.me());
+
+	const myUserId = me.data?.id ?? null;
+	const owner = members.data?.find((member) => member.userId === room.data?.createdBy);
 
 	return (
 		<>
 			<div className="flex flex-1 flex-col gap-3.5 px-5 pt-3 pb-8.5">
-				<Reveal>
-					<InfoTable
-						rows={[
-							{ label: "생성일", value: ROOM_INFO.createdAt },
-							{ label: "방장", value: ROOM_INFO.owner, strong: true },
-							{
-								label: "잔소리 강도",
-								value: (
-									<span className="flex items-center justify-end gap-1.5">
-										<IntensityTag intensity={ROOM_INFO.intensity} />
-										<button type="button" aria-label="잔소리 강도 변경" className={CHANGE_LINK_STYLES}>
-											변경 <span aria-hidden="true">›</span>
-										</button>
-									</span>
-								)
-							},
-							{
-								label: "투표 마감",
-								value: (
-									<span className="whitespace-nowrap">
-										{ROOM_INFO.deadlineLabel}&nbsp;
-										<button type="button" aria-label="투표 마감 변경" className={CHANGE_LINK_STYLES}>
-											변경 <span aria-hidden="true">›</span>
-										</button>
-									</span>
-								)
-							}
-						]}
-					/>
-				</Reveal>
-
-				<Reveal as="section" index={1} className="flex flex-col gap-2">
-					<div className="flex items-baseline justify-between">
-						<h2 className="text-sm font-black text-ink">방 규칙</h2>
-						<button type="button" className="text-xs font-black text-red">
-							편집
-						</button>
-					</div>
-					<Card className="px-4 py-1">
-						<RoomRuleList rules={ROOM_RULES} />
+				{(room.isPending || members.isPending) && (
+					<Card role="status" className="p-4.5 text-chip text-mute">
+						방 정보를 불러오는 중
 					</Card>
-				</Reveal>
+				)}
+				{room.isError && <Alert>{room.error.message}</Alert>}
+				{members.isError && <Alert>{members.error.message}</Alert>}
 
-				<Reveal as="section" index={2} className="flex flex-col gap-2">
-					<div className="flex items-baseline justify-between">
-						<h2 className="text-sm font-black text-ink">멤버 {ROOM_INFO.memberCount}</h2>
-						<span className="text-xs text-dim">이번 달 거지력</span>
-					</div>
-					<ul className="flex flex-col gap-1.5">
-						{MEMBERS.map((member) => (
-							<li
-								key={member.name}
-								className="flex items-center gap-2.5 rounded-2xl bg-card px-3.5 py-2.25 text-control"
-							>
-								<Avatar name={member.name} size="sm" />
-								<span className="font-extrabold text-ink">{member.name}</span>
-								<TierBadge tier={member.tier} />
-								<span className="ml-auto font-black text-ink">{member.score}</span>
-							</li>
-						))}
-					</ul>
-				</Reveal>
+				{room.isSuccess && members.isSuccess && (
+					<>
+						<Reveal>
+							<InfoTable
+								rows={[
+									{ label: "방 이름", value: room.data.name },
+									...(owner ? [{ label: "방장", value: owner.nickname, strong: true }] : []),
+									{
+										label: "잔소리 강도",
+										value: <IntensityTag intensity={INTENSITY_BY_SPICE_LEVEL[room.data.spiceLevel]} />
+									},
+									{ label: "투표 마감", value: formatVoteDeadlineLabel(room.data.voteDeadlineMinutes) }
+								]}
+							/>
+						</Reveal>
 
-				<Button variant="secondary" onClick={() => setInviteOpen(true)}>
-					초대 링크 공유
-				</Button>
+						{room.data.rules.length > 0 && (
+							<Reveal as="section" index={1} className="flex flex-col gap-2">
+								<h2 className="text-sm font-black text-ink">방 규칙</h2>
+								<Card className="px-4 py-1">
+									<RoomRuleList rules={room.data.rules} />
+								</Card>
+							</Reveal>
+						)}
 
-				<div className="mt-auto flex gap-2.5">
-					<Button variant="outline" className="flex-1">
-						방 나가기
-					</Button>
-					<Button variant="danger" className="flex-1">
-						방 삭제
-					</Button>
-				</div>
+						<Reveal as="section" index={2} className="flex flex-col gap-2">
+							<div className="flex items-baseline justify-between">
+								<h2 className="text-sm font-black text-ink">멤버 {members.data.length}</h2>
+								<span className="text-xs text-dim">이번 달 거지력</span>
+							</div>
+							<MemberList members={members.data} myUserId={myUserId} />
+						</Reveal>
+
+						<Button variant="secondary" onClick={() => setInviteOpen(true)}>
+							초대 링크 공유
+						</Button>
+					</>
+				)}
 			</div>
 
-			<InviteSheet open={inviteOpen} onClose={() => setInviteOpen(false)} inviteUrl={INVITE_URL} />
+			{room.isSuccess && (
+				<InviteSheet
+					open={inviteOpen}
+					onClose={() => setInviteOpen(false)}
+					inviteUrl={buildInviteUrl(room.data.inviteCode)}
+				/>
+			)}
 		</>
 	);
 }

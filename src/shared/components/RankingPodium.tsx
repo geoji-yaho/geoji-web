@@ -1,14 +1,19 @@
+import type { Tier } from "../domain/tier";
 import { cn } from "../lib/cn";
 import { Avatar } from "../ui/Avatar";
+import { TierBadge } from "./TierBadge";
+
+export type PodiumPlace = 1 | 2 | 3;
 
 export type PodiumEntry = {
-	place: 1 | 2 | 3;
+	place: PodiumPlace;
 	name: string;
+	tier: Tier;
 	value: string;
 	isMe?: boolean;
 };
 
-const PODIUM_ORDER: Record<PodiumEntry["place"], string> = {
+const PODIUM_ORDER: Record<PodiumPlace, string> = {
 	1: "order-2",
 	2: "order-1",
 	3: "order-3"
@@ -36,6 +41,7 @@ export function RankingPodium({ entries, className }: RankingPodiumProps) {
 				>
 					<Avatar name={entry.name} size={entry.place === 1 ? "lg" : "md"} />
 					<span className="text-control font-black">{entry.name}</span>
+					<TierBadge tier={entry.tier} className={cn(entry.isMe && "ring-1 ring-card")} />
 					<span className={cn("text-base font-black", entry.isMe ? "text-cta" : "text-ink")}>{entry.value}</span>
 					<span className={cn("text-tag", entry.isMe ? "text-cta" : "text-dim")}>{entry.place}위</span>
 				</li>

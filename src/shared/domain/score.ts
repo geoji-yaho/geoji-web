@@ -12,6 +12,8 @@ export type DebtScoreInput = {
 	judged: JudgedCount;
 };
 
+export const DEBT_SCORE_PENDING_LABEL = "집계 전";
+
 const BUDGET_SCORE_MAX = 50;
 const VERDICT_SCORE_MAX = 10;
 const VERDICT_SCORE_NEUTRAL = 5;
