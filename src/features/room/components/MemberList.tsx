@@ -1,4 +1,4 @@
-import type { RoomMember } from "@/shared/api/members";
+import { memberName, type RoomMember } from "@/shared/api/members";
 import { TierBadge } from "@/shared/components/TierBadge";
 import { DEBT_SCORE_PENDING_LABEL } from "@/shared/domain/score";
 import { tierFromScore } from "@/shared/domain/tier";
@@ -21,8 +21,8 @@ export function MemberList({ members, myUserId }: MemberListProps) {
 						member.userId === myUserId && "bg-fill"
 					)}
 				>
-					<Avatar name={member.nickname} size="sm" />
-					<span className="flex-1 truncate font-extrabold text-ink">{member.nickname}</span>
+					<Avatar name={memberName(member)} size="sm" />
+					<span className="flex-1 truncate font-extrabold text-ink">{memberName(member)}</span>
 					{member.debtScore === null ? (
 						<span className="text-tag text-dim">{DEBT_SCORE_PENDING_LABEL}</span>
 					) : (

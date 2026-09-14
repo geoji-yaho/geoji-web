@@ -4,9 +4,10 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { expenseQueries } from "@/shared/api/expenses";
-import { memberQueries } from "@/shared/api/members";
-import { sentenceFromDays, trialQueries } from "@/shared/api/trials";
+import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
+import { headlineFromVerdictText, sentenceFromDays, trialQueries, verdictFromTrial } from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
+import { verdictPath } from "@/shared/constants/routes";
 import { VERDICT_LABELS } from "@/shared/domain/verdict";
 import { downloadDataUrl, shareContent } from "@/shared/lib/platform";
 import { Alert } from "@/shared/ui/Alert";
@@ -17,9 +18,7 @@ import { Toast } from "@/shared/ui/Toast";
 
 import { RoomMissingNotice } from "../components/RoomMissingNotice";
 import { ShareCardPreview } from "../components/ShareCardPreview";
-import { findMember, memberName, memberTier } from "../utils/members";
-import { verdictPath } from "../utils/paths";
-import { headlineFromVerdictText, TRIAL_MESSAGES, verdictFromTrial } from "../utils/trial";
+import { TRIAL_MESSAGES } from "../utils/trial";
 
 const IMAGE_FILENAME = "geoji-verdict.png";
 const IMAGE_PIXEL_RATIO = 2;

@@ -1,25 +1,9 @@
 import { type Expense, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
-import type { RoomMember } from "@/shared/api/members";
-import { sentenceFromDays, type Trial, VERDICT_BY_TRIAL_VERDICT } from "@/shared/api/trials";
+import { memberName, memberTier, type RoomMember } from "@/shared/api/members";
+import { headlineFromVerdictText, sentenceFromDays, type Trial, verdictFromTrial } from "@/shared/api/trials";
 import { ExpenseCard } from "@/shared/components/ExpenseCard";
-import { type Tier, tierFromScore } from "@/shared/domain/tier";
+import type { Tier } from "@/shared/domain/tier";
 import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
-
-const QUORUM_VOTES = 2;
-const HEADLINE_MAX_LENGTH = 30;
-const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
-
-function headlineFrom(verdictText: string | null) {
-	const text = verdictText?.trim();
-
-	if (!text) {
-		return undefined;
-	}
-
-	const sentence = (FIRST_SENTENCE.exec(text)?.[0] ?? text).trim();
-
-	return sentence.length > HEADLINE_MAX_LENGTH ? `${sentence.slice(0, HEADLINE_MAX_LENGTH)}…` : sentence;
-}
 
 function voteDeadlineLabel(deadline: string) {
 	const remaining = formatRemaining(deadline);
@@ -66,9 +50,9 @@ export function TrialExpenseCard({
 	onOpenVerdict,
 	onComments
 }: TrialExpenseCardProps) {
-	const tier: Tier | undefined = author && author.debtScore !== null ? tierFromScore(author.debtScore) : undefined;
+	const tier: Tier | undefined = memberTier(author);
 	const base = {
-		name: author?.nickname ?? "",
+		name: memberName(author),
 		tier,
 		timeAgo: formatRelativeTime(expense.spentAt),
 		postType: POST_TYPE_BY_EXPENSE_SOURCE[expense.source],
@@ -84,14 +68,13 @@ export function TrialExpenseCard({
 	}
 
 	const tally = { oppose: trial.guiltyVotes, support: trial.notGuiltyVotes };
+	const verdict = verdictFromTrial(trial);
 
-	if (trial.verdict !== null) {
-		const verdict = VERDICT_BY_TRIAL_VERDICT[trial.verdict];
+	if (verdict === "dismissed") {
+		return <ExpenseCard {...base} state="dismissed" />;
+	}
 
-		if (verdict === "dismissed") {
-			return <ExpenseCard {...base} state="dismissed" />;
-		}
-
+	if (verdict !== null) {
 		return (
 			<ExpenseCard
 				{...base}
@@ -99,17 +82,13 @@ export function TrialExpenseCard({
 				verdict={verdict}
 				tally={tally}
 				sentence={verdict === "guilty" ? sentenceFromDays(trial.sentenceDays) : undefined}
-				headline={headlineFrom(trial.verdictText)}
+				headline={headlineFromVerdictText(trial.verdictText) ?? undefined}
 				onOpenVerdict={onOpenVerdict}
 			/>
 		);
 	}
 
 	const closed = isPast(trial.votingDeadline);
-
-	if (closed && tally.oppose + tally.support < QUORUM_VOTES) {
-		return <ExpenseCard {...base} state="dismissed" />;
-	}
 
 	return (
 		<ExpenseCard

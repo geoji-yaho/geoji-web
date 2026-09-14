@@ -3,14 +3,13 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { type Expense, expenseQueries } from "../api/expenses";
 import { profileQueries } from "../api/profile";
 import { roomQueries } from "../api/rooms";
-import { type Trial, trialQueries } from "../api/trials";
+import { type Trial, TRIAL_QUORUM, trialQueries, voteCount } from "../api/trials";
 import { baselineSpend, calculateDebtScore } from "../domain/score";
 import { type Tier, TIER_LABELS, TIER_MIN_SCORES, tierFromScore } from "../domain/tier";
 import { isPast, monthRange } from "../utils/date";
 
 const TIER_ORDER: Tier[] = ["penniless", "hardcore", "flower", "king"];
 const KING_LABEL = "이 방의 지배자";
-const MIN_VOTES_TO_JUDGE = 2;
 
 type MyExpense = {
 	id: string;
@@ -70,7 +69,7 @@ function countJudged(trials: (Trial | null | undefined)[], now: Date) {
 			guilty += 1;
 		} else if (trial.verdict === "NOT_GUILTY") {
 			notGuilty += 1;
-		} else if (isPast(trial.votingDeadline, now) && trial.votes.length < MIN_VOTES_TO_JUDGE) {
+		} else if (isPast(trial.votingDeadline, now) && voteCount(trial) < TRIAL_QUORUM) {
 			dismissed += 1;
 		}
 	}

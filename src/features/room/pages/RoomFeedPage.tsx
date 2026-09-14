@@ -5,11 +5,13 @@ import { useNavigate, useParams } from "react-router";
 import type { ApiError } from "@/shared/api/api-error";
 import { type Comment, commentQueries } from "@/shared/api/comments";
 import { expenseQueries } from "@/shared/api/expenses";
-import { memberQueries, type RoomMember } from "@/shared/api/members";
+import { memberName, memberQueries, type RoomMember } from "@/shared/api/members";
 import { profileQueries } from "@/shared/api/profile";
 import { trialQueries } from "@/shared/api/trials";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { EmptyState } from "@/shared/components/EmptyState";
+import { verdictPath, votePath } from "@/shared/constants/routes";
+import { useCreateComment } from "@/shared/hooks/useCreateComment";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Fab } from "@/shared/ui/Fab";
@@ -17,7 +19,6 @@ import { Reveal } from "@/shared/ui/Reveal";
 import { formatRelativeTime, recentRange } from "@/shared/utils/date";
 
 import { TrialExpenseCard } from "../components/TrialExpenseCard";
-import { useCreateComment } from "../hooks/useCreateComment";
 
 const RECENT_DAYS = 30;
 
@@ -38,7 +39,7 @@ function firstErrorOf(queries: QueryFailure[]) {
 function toCommentItems(comments: Comment[], membersById: Map<string, RoomMember>) {
 	return comments.map((comment) => ({
 		id: comment.id,
-		authorName: membersById.get(comment.userId)?.nickname ?? "",
+		authorName: memberName(membersById.get(comment.userId)),
 		content: comment.content,
 		createdAtLabel: formatRelativeTime(comment.createdAt)
 	}));
@@ -67,7 +68,6 @@ export function RoomFeedPage() {
 	const commentsByExpenseId = new Map(expenseList.map((expense, index) => [expense.id, comments[index]] as const));
 	const membersById = new Map(members.data?.map((member) => [member.userId, member] as const));
 	const eligibleCount = members.data ? Math.max(0, members.data.length - 1) : 0;
-	const roomQuery = `room=${encodeURIComponent(roomId)}`;
 
 	const isPending =
 		me.isPending ||
@@ -109,8 +109,8 @@ export function RoomFeedPage() {
 								myUserId={me.data?.id}
 								eligibleCount={eligibleCount}
 								commentCount={commentsByExpenseId.get(expense.id)?.data?.length ?? 0}
-								onVote={() => void navigate(`/posts/${expense.id}/vote?${roomQuery}`)}
-								onOpenVerdict={() => void navigate(`/posts/${expense.id}?${roomQuery}`)}
+								onVote={() => void navigate(votePath(expense.id, roomId))}
+								onOpenVerdict={() => void navigate(verdictPath(expense.id, roomId))}
 								onComments={() => openSheet(expense.id)}
 							/>
 						</Reveal>
@@ -131,7 +131,7 @@ export function RoomFeedPage() {
 					comments={toCommentItems(sheetComments?.data ?? [], membersById)}
 					isLoading={sheetComments?.isPending ?? false}
 					error={sheetComments?.error?.message ?? null}
-					onSubmit={(content) => createComment.mutateAsync({ roomId, expenseId: sheet.expenseId, input: { content } })}
+					onSubmit={(content) => createComment.mutateAsync({ roomId, expenseId: sheet.expenseId, content })}
 					isSubmitting={createComment.isPending}
 					submitError={createComment.error?.message ?? null}
 				/>

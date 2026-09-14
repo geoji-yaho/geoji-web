@@ -1,6 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import { tierFromScore } from "../domain/tier";
 import { http } from "./http";
+
+const UNKNOWN_MEMBER_NAME = "알 수 없는 멤버";
 
 export type RoomMember = {
 	userId: string;
@@ -9,6 +12,22 @@ export type RoomMember = {
 	debtScore: number | null;
 	joinedAt: string;
 };
+
+export function findMember(members: RoomMember[] | undefined, userId: string) {
+	return members?.find((member) => member.userId === userId) ?? null;
+}
+
+export function memberName(member: RoomMember | null | undefined) {
+	return member?.nickname ?? UNKNOWN_MEMBER_NAME;
+}
+
+export function memberTier(member: RoomMember | null | undefined) {
+	if (!member || member.debtScore === null) {
+		return undefined;
+	}
+
+	return tierFromScore(member.debtScore);
+}
 
 export function fetchRoomMembers(roomId: string, signal?: AbortSignal) {
 	return http.get<RoomMember[]>(`/api/rooms/${encodeURIComponent(roomId)}/members`, { signal });

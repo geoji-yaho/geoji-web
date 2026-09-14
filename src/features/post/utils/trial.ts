@@ -1,11 +1,7 @@
-import { type Trial, VERDICT_BY_TRIAL_VERDICT } from "@/shared/api/trials";
+import type { Trial } from "@/shared/api/trials";
 import type { Execution } from "@/shared/domain/verdict";
-import { isPast } from "@/shared/utils/date";
 
-const QUORUM = 2;
-const HEADLINE_MAX_LENGTH = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
 
 const spentAtFormatter = new Intl.DateTimeFormat("ko-KR", {
 	month: "long",
@@ -15,34 +11,6 @@ const spentAtFormatter = new Intl.DateTimeFormat("ko-KR", {
 	hourCycle: "h23",
 	timeZone: "Asia/Seoul"
 });
-
-export function voteCount(trial: Trial) {
-	return trial.guiltyVotes + trial.notGuiltyVotes;
-}
-
-export function verdictFromTrial(trial: Trial, now = new Date()) {
-	if (trial.verdict !== null) {
-		return VERDICT_BY_TRIAL_VERDICT[trial.verdict];
-	}
-
-	if (isPast(trial.votingDeadline, now) && voteCount(trial) < QUORUM) {
-		return "dismissed";
-	}
-
-	return null;
-}
-
-export function headlineFromVerdictText(verdictText: string | null) {
-	const text = verdictText?.trim();
-
-	if (!text) {
-		return null;
-	}
-
-	const sentence = (FIRST_SENTENCE.exec(text)?.[0] ?? text).trim();
-
-	return sentence.length > HEADLINE_MAX_LENGTH ? `${sentence.slice(0, HEADLINE_MAX_LENGTH)}…` : sentence;
-}
 
 export function executionFromTrial(trial: Trial, now = new Date()) {
 	if (trial.verdict !== "GUILTY" || !trial.sentenceDays || !trial.sentenceEndedAt) {

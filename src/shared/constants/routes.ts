@@ -9,3 +9,7 @@ export function verdictPath(expenseId: string, roomId: string) {
 export function verdictCardPath(expenseId: string, roomId: string) {
 	return `/posts/${encodeURIComponent(expenseId)}/card?${roomSearch(roomId)}`;
 }
+
+export function votePath(expenseId: string, roomId: string) {
+	return `/posts/${encodeURIComponent(expenseId)}/vote?${roomSearch(roomId)}`;
+}

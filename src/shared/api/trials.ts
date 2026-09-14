@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import type { Verdict } from "../domain/verdict";
+import { isPast } from "../utils/date";
 import { isApiError } from "./api-error";
 import { http } from "./http";
 
@@ -36,6 +37,11 @@ export type CastVoteInput = {
 	reason: string;
 };
 
+export const TRIAL_QUORUM = 2;
+
+const HEADLINE_MAX_LENGTH = 30;
+const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
+
 export const VERDICT_BY_TRIAL_VERDICT: Record<TrialVerdict, Verdict> = {
 	GUILTY: "guilty",
 	NOT_GUILTY: "notGuilty"
@@ -56,6 +62,34 @@ export function sentenceFromDays(days: number | null) {
 	}
 
 	return "life";
+}
+
+export function voteCount(trial: Trial) {
+	return trial.guiltyVotes + trial.notGuiltyVotes;
+}
+
+export function verdictFromTrial(trial: Trial, now = new Date()) {
+	if (trial.verdict !== null) {
+		return VERDICT_BY_TRIAL_VERDICT[trial.verdict];
+	}
+
+	if (isPast(trial.votingDeadline, now) && voteCount(trial) < TRIAL_QUORUM) {
+		return "dismissed";
+	}
+
+	return null;
+}
+
+export function headlineFromVerdictText(verdictText: string | null) {
+	const text = verdictText?.trim();
+
+	if (!text) {
+		return null;
+	}
+
+	const sentence = (FIRST_SENTENCE.exec(text)?.[0] ?? text).trim();
+
+	return sentence.length > HEADLINE_MAX_LENGTH ? `${sentence.slice(0, HEADLINE_MAX_LENGTH)}…` : sentence;
 }
 
 function trialPath(roomId: string, expenseId: string) {

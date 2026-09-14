@@ -3,11 +3,10 @@ import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
-import { memberQueries } from "@/shared/api/members";
+import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
 import { TRIAL_VERDICT_BY_VERDICT, trialQueries } from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
-import { tierFromScore } from "@/shared/domain/tier";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
@@ -63,13 +62,9 @@ export function VotePage() {
 					expense: currentExpense,
 					trial: currentTrial,
 					postType: POST_TYPE_BY_EXPENSE_SOURCE[currentExpense.source],
-					defendant: members.data?.find((member) => member.userId === currentExpense.userId)
+					defendant: findMember(members.data, currentExpense.userId)
 				}
 			: null;
-	const defendantTier =
-		trialCase?.defendant && trialCase.defendant.debtScore !== null
-			? tierFromScore(trialCase.defendant.debtScore)
-			: undefined;
 	const chosenVerdict = trialCase === null ? null : VOTE_VERDICTS[trialCase.postType][side];
 	const trialVerdict = chosenVerdict === null ? undefined : TRIAL_VERDICT_BY_VERDICT[chosenVerdict];
 	const trimmedReason = reason.trim();
@@ -117,8 +112,8 @@ export function VotePage() {
 					<>
 						<Reveal>
 							<CaseSummaryCard
-								name={trialCase.defendant?.nickname ?? ""}
-								tier={defendantTier}
+								name={memberName(trialCase.defendant)}
+								tier={memberTier(trialCase.defendant)}
 								timeAgo={formatRelativeTime(trialCase.expense.spentAt)}
 								category={trialCase.expense.category ?? undefined}
 								amount={trialCase.expense.amount}

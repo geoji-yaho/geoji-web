@@ -5,12 +5,20 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { commentQueries } from "@/shared/api/comments";
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
-import { memberQueries } from "@/shared/api/members";
+import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
 import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
-import { sentenceFromDays, trialQueries, VERDICT_BY_TRIAL_VERDICT } from "@/shared/api/trials";
+import {
+	headlineFromVerdictText,
+	sentenceFromDays,
+	trialQueries,
+	VERDICT_BY_TRIAL_VERDICT,
+	verdictFromTrial
+} from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { ExecutionCard } from "@/shared/components/ExecutionCard";
+import { verdictCardPath } from "@/shared/constants/routes";
+import { useCreateComment } from "@/shared/hooks/useCreateComment";
 import { playStampSound, primeStampSound } from "@/shared/lib/stamp-sound";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
@@ -25,11 +33,8 @@ import { JurorTallyCard } from "../components/JurorTallyCard";
 import { RoomMissingNotice } from "../components/RoomMissingNotice";
 import { SoundToggle } from "../components/SoundToggle";
 import { VerdictHeadlineBlock } from "../components/VerdictHeadlineBlock";
-import { useCreateComment } from "../hooks/useCreateComment";
 import { useJudgeTrial } from "../hooks/useJudgeTrial";
-import { findMember, memberName, memberTier } from "../utils/members";
-import { verdictCardPath } from "../utils/paths";
-import { executionFromTrial, headlineFromVerdictText, TRIAL_MESSAGES, verdictFromTrial } from "../utils/trial";
+import { executionFromTrial, TRIAL_MESSAGES } from "../utils/trial";
 
 const SHAKE_X = [0, -5, 5, -3, 0];
 const SHAKE_DURATION = 0.24;
