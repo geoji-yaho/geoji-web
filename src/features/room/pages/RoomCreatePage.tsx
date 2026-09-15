@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SPICE_LEVEL_BY_INTENSITY } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import {
 	type Intensity,
@@ -57,7 +56,7 @@ export function RoomCreatePage() {
 		}
 		createRoom.mutate({
 			name: trimmedName,
-			spiceLevel: SPICE_LEVEL_BY_INTENSITY[intensity],
+			spiceLevel: intensity,
 			voteDeadlineMinutes: deadlineMinutes,
 			rules
 		});

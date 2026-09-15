@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 
 import { memberQueries } from "@/shared/api/members";
 import { profileQueries } from "@/shared/api/profile";
-import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
+import { roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
 import { formatVoteDeadlineLabel } from "@/shared/domain/room";
 import { Alert } from "@/shared/ui/Alert";
@@ -48,7 +48,7 @@ export function RoomInfoPage() {
 									...(owner ? [{ label: "방장", value: owner.nickname, strong: true }] : []),
 									{
 										label: "잔소리 강도",
-										value: <IntensityTag intensity={INTENSITY_BY_SPICE_LEVEL[room.data.spiceLevel]} />
+										value: <IntensityTag intensity={room.data.spiceLevel} />
 									},
 									{ label: "투표 마감", value: formatVoteDeadlineLabel(room.data.voteDeadlineMinutes) }
 								]}

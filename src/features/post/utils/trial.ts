@@ -13,7 +13,7 @@ const spentAtFormatter = new Intl.DateTimeFormat("ko-KR", {
 });
 
 export function executionFromTrial(trial: Trial, now = new Date()) {
-	if (trial.verdict !== "GUILTY" || !trial.sentenceDays || !trial.sentenceEndedAt) {
+	if (trial.verdict !== "guilty" || !trial.sentenceDays || !trial.sentenceEndedAt) {
 		return null;
 	}
 
