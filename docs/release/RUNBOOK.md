@@ -34,19 +34,22 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 ## 환경 변수
 
-| 변수                     | 쓰는 곳                                                                                           | 값                                                                                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `VITE_API_BASE_URL`      | `src/shared/lib/env.ts`가 읽어 `http` 요청의 기준 주소로 쓴다                                     | 로컬 서버는 `http://localhost:8080`, 배포는 저장소 Actions variables에 들어 있다                                                           |
-| `VITE_SUPABASE_URL`      | `env.supabaseUrl`. `shared/lib/supabase.ts`의 `getSupabase()`가 읽어 Supabase 클라이언트를 만든다 | 값은 팀 위키의 테스트 계정 문서와 저장소 Actions variables에 있다. 카카오 로그인과 세션에 쓰므로 배포에도 넣는다                           |
-| `VITE_SUPABASE_ANON_KEY` | `env.supabaseAnonKey`. 같은 자리에서 함께 읽는다                                                  | 공개 값이라 저장소와 배포에 넣어도 된다. 브라우저가 어차피 받아 가고 Supabase의 행 수준 보안이 권한을 가른다. access token과는 다른 값이다 |
-| `VITE_DEV_ACCESS_TOKEN`  | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다                | 로컬 전용. Supabase 세션이 없을 때만 쓰이는 대체 토큰이다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                       |
-| `VITE_DEV_NICKNAME`      | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                                      | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                         |
+| 변수                     | 쓰는 곳                                                                                                              | 값                                                                                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`      | `src/shared/lib/env.ts`가 읽어 `http` 요청의 기준 주소로 쓴다                                                        | 로컬 서버는 `http://localhost:8080`, 배포는 저장소 Actions variables에 들어 있다                                                                         |
+| `VITE_SUPABASE_URL`      | `env.supabaseUrl`. `shared/lib/supabase.ts`의 `getSupabase()`가 읽어 Supabase 클라이언트를 만든다                    | 값은 팀 위키의 테스트 계정 문서와 저장소 Actions variables에 있다. 카카오 로그인과 세션에 쓰므로 배포에도 넣는다                                         |
+| `VITE_SUPABASE_ANON_KEY` | `env.supabaseAnonKey`. 같은 자리에서 함께 읽는다                                                                     | 공개 값이라 저장소와 배포에 넣어도 된다. 브라우저가 어차피 받아 가고 Supabase의 행 수준 보안이 권한을 가른다. access token과는 다른 값이다               |
+| `VITE_DEV_ACCESS_TOKEN`  | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다                                   | 로컬 전용. Supabase 세션이 없을 때만 쓰이는 대체 토큰이다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                                     |
+| `VITE_DEV_NICKNAME`      | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                                                         | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                                       |
+| `VITE_KAKAO_JS_KEY`      | `env.kakaoJsKey`. `shared/lib/platform.ts`의 `shareToKakao`가 카카오 SDK를 초기화해 초대 시트의 카카오톡 공유에 쓴다 | 카카오 개발자 콘솔 앱 키의 JavaScript 키. 공개 값이라 variables에 둔다. 없으면 카카오톡 공유 버튼이 기기 공유 시트로, 그것도 없으면 링크 복사로 넘어간다 |
 
 `VITE_` 접두사 변수는 빌드 시점에 번들에 박힌다. GitHub Pages는 정적 호스팅이라 배포 뒤에 바꿀 수 없고 값을 바꾸면 다시 빌드해 배포한다. Deploy 워크플로(`.github/workflows/deploy.yaml`)의 빌드 단계가 저장소 Actions variables에서 셋을 읽고, 그 앞의 환경 변수 확인 단계가 비어 있는 값을 찾으면 빌드 전에 멈춘다.
 
 확인 단계를 둔 이유는 값이 없어도 타입 검사와 빌드가 통과하기 때문이다. `env.apiBaseUrl`을 읽는 순간에만 던지므로 API를 부르는 화면에서만 오류가 나고 API를 안 쓰는 화면은 그대로 열린다. 로그인도 같은 방식이라 Supabase 두 변수가 없으면 카카오 버튼을 누르는 순간에만 오류가 난다. 확인 단계가 없으면 이 오류가 배포된 화면에서야 드러난다.
 
-배포에 넣어야 하는 것은 셋이다. `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`다. 개발용 토큰과 닉네임 둘은 로컬 전용이라 넣지 않는다.
+배포에 넣어야 하는 것은 셋이다. `VITE_API_BASE_URL`과 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`다. 개발용 토큰과 닉네임 둘은 로컬 전용이라 넣지 않는다. `VITE_KAKAO_JS_KEY`는 빌드 단계만 읽고 확인 단계는 보지 않는다. 없어도 공유가 다른 길로 넘어가 화면이 깨지지 않기 때문이다.
+
+카카오톡 공유를 켜려면 카카오 개발자 콘솔의 같은 앱에서 두 가지를 한다. 앱 키의 JavaScript 키를 Actions variables의 `VITE_KAKAO_JS_KEY`와 `.env.local`에 넣고, 플랫폼의 Web 사이트 도메인에 `https://geoji-yaho.github.io`와 `http://localhost:3800`을 등록한다. 도메인이 빠지면 SDK가 그 환경에서 공유를 거절하고 메시지 속 링크도 열리지 않는다.
 
 배포에 필요한 준비 넷 가운데 둘은 끝났다.
 
@@ -58,7 +61,7 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 - 비밀값은 프론트엔드에 두지 않는다. VAPID 개인키와 카카오 시크릿은 백엔드에만 둔다
 - 로컬 값은 `.env.local`에 둔다. `.gitignore`의 `*.local` 규칙이 걸러 주고 `.env`는 걸리지 않으니 `.env`를 만들지 않는다. 커밋하는 예시는 `.env.example` 하나이고 거기에는 실제 값을 적지 않는다. anon key가 공개 값이어도 저장소에 박아 두면 공개 여부를 매번 다시 따져야 한다
-- 웹 푸시 VAPID 공개키와 카카오 로그인 앱 키는 후보이고 도입할 때 위 표에 더한다
+- 웹 푸시 VAPID 공개키는 후보이고 도입할 때 위 표에 더한다
 
 백엔드가 HTTPS를 지원하기 전까지 배포된 화면은 API를 부르지 못한다. GitHub Pages는 https로 서비스되고 배포된 서버는 http라 브라우저가 요청 자체를 막는다. `env.ts`가 이 경우를 미리 잡아 화면에 사유를 띄운다. 백엔드에 인증서와 로드밸런서가 붙어 주소가 https로 바뀌면 Actions variables의 `VITE_API_BASE_URL`을 고치고 Deploy를 다시 돌린다.
 
@@ -91,6 +94,7 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 - `public/manifest.webmanifest`의 `id`, `start_url`, `scope`와 아이콘 `src` 3개
 - `index.html`의 `og:image` 절대 주소
 - 카카오 로그인의 리다이렉트 도메인
+- 카카오톡 공유의 Web 사이트 도메인
 
 DNS 설정과 GitHub Pages 커스텀 도메인 연결 절차는 정해지면 여기에 적는다.
 
