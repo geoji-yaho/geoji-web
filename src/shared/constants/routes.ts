@@ -10,6 +10,10 @@ export function verdictCardPath(expenseId: string, roomId: string) {
 	return `/posts/${encodeURIComponent(expenseId)}/card?${roomSearch(roomId)}`;
 }
 
+export function invitePath(inviteCode: string) {
+	return `/invite/${encodeURIComponent(inviteCode)}`;
+}
+
 export function votePath(expenseId: string, roomId: string) {
 	return `/posts/${encodeURIComponent(expenseId)}/vote?${roomSearch(roomId)}`;
 }

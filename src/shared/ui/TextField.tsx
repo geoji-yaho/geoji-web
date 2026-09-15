@@ -9,6 +9,8 @@ type TextFieldProps = {
 	hint?: string;
 	placeholder?: string;
 	multiline?: boolean;
+	autoCapitalize?: string;
+	autoComplete?: string;
 	className?: string;
 };
 
@@ -25,6 +27,8 @@ export function TextField({
 	hint,
 	placeholder,
 	multiline = false,
+	autoCapitalize,
+	autoComplete,
 	className
 }: TextFieldProps) {
 	const count = maxLength !== undefined && (
@@ -58,6 +62,8 @@ export function TextField({
 							value={value}
 							maxLength={maxLength}
 							placeholder={placeholder}
+							autoCapitalize={autoCapitalize}
+							autoComplete={autoComplete}
 							onChange={(event) => onChange(event.target.value)}
 							className={INPUT_STYLES}
 						/>
