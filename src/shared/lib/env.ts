@@ -36,13 +36,17 @@ function readSupabaseAnonKey() {
 	return value;
 }
 
+function readOptionalValue(value: string | undefined) {
+	const trimmed = value?.trim();
+	return trimmed ? trimmed : null;
+}
+
 function readDevValue(value: string | undefined) {
 	if (!import.meta.env.DEV) {
 		return null;
 	}
 
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : null;
+	return readOptionalValue(value);
 }
 
 export const env = {
@@ -60,5 +64,8 @@ export const env = {
 	},
 	get devNickname() {
 		return readDevValue(import.meta.env.VITE_DEV_NICKNAME);
+	},
+	get kakaoJsKey() {
+		return readOptionalValue(import.meta.env.VITE_KAKAO_JS_KEY);
 	}
 };
