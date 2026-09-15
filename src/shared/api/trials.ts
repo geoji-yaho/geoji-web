@@ -5,7 +5,7 @@ import { isPast } from "../utils/date";
 import { isApiError } from "./api-error";
 import { http } from "./http";
 
-export type TrialVerdict = "GUILTY" | "NOT_GUILTY";
+export type TrialVerdict = Extract<Verdict, "guilty" | "notGuilty">;
 
 export type TrialVote = {
 	id: string;
@@ -42,15 +42,9 @@ export const TRIAL_QUORUM = 2;
 const HEADLINE_MAX_LENGTH = 30;
 const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
 
-export const VERDICT_BY_TRIAL_VERDICT: Record<TrialVerdict, Verdict> = {
-	GUILTY: "guilty",
-	NOT_GUILTY: "notGuilty"
-};
-
-export const TRIAL_VERDICT_BY_VERDICT: Partial<Record<Verdict, TrialVerdict>> = {
-	guilty: "GUILTY",
-	notGuilty: "NOT_GUILTY"
-};
+export function toTrialVerdict(verdict: Verdict) {
+	return verdict === "guilty" || verdict === "notGuilty" ? verdict : undefined;
+}
 
 export function sentenceFromDays(days: number | null) {
 	if (days === null || days === 0) {
@@ -70,7 +64,7 @@ export function voteCount(trial: Trial) {
 
 export function verdictFromTrial(trial: Trial, now = new Date()) {
 	if (trial.verdict !== null) {
-		return VERDICT_BY_TRIAL_VERDICT[trial.verdict];
+		return trial.verdict;
 	}
 
 	if (isPast(trial.votingDeadline, now) && voteCount(trial) < TRIAL_QUORUM) {

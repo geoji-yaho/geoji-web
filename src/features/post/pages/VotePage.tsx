@@ -5,7 +5,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
 import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
-import { TRIAL_VERDICT_BY_VERDICT, trialQueries } from "@/shared/api/trials";
+import { toTrialVerdict, trialQueries } from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { Alert } from "@/shared/ui/Alert";
@@ -66,7 +66,7 @@ export function VotePage() {
 				}
 			: null;
 	const chosenVerdict = trialCase === null ? null : VOTE_VERDICTS[trialCase.postType][side];
-	const trialVerdict = chosenVerdict === null ? undefined : TRIAL_VERDICT_BY_VERDICT[chosenVerdict];
+	const trialVerdict = chosenVerdict === null ? undefined : toTrialVerdict(chosenVerdict);
 	const trimmedReason = reason.trim();
 	const canSubmit =
 		trialVerdict !== undefined && eligibleCount !== null && trimmedReason.length > 0 && !castVote.isPending;

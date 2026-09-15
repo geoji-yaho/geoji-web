@@ -65,9 +65,9 @@ function countJudged(trials: (Trial | null | undefined)[], now: Date) {
 			continue;
 		}
 
-		if (trial.verdict === "GUILTY") {
+		if (trial.verdict === "guilty") {
 			guilty += 1;
-		} else if (trial.verdict === "NOT_GUILTY") {
+		} else if (trial.verdict === "notGuilty") {
 			notGuilty += 1;
 		} else if (isPast(trial.votingDeadline, now) && voteCount(trial) < TRIAL_QUORUM) {
 			dismissed += 1;
