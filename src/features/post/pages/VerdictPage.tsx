@@ -108,6 +108,7 @@ export function VerdictPage() {
 		} else if (!expenseData) {
 			content = <Alert>{TRIAL_MESSAGES.noExpense}</Alert>;
 		} else {
+			const postType = POST_TYPE_BY_EXPENSE_SOURCE[expenseData.source];
 			const verdict = verdictFromTrial(trialData);
 			const judged = trialData.verdict !== null;
 			const defendant = findMember(members.data, expenseData.userId);
@@ -133,11 +134,7 @@ export function VerdictPage() {
 						defendantTier={memberTier(defendant)}
 					/>
 
-					<JurorTallyCard
-						postType={POST_TYPE_BY_EXPENSE_SOURCE[expenseData.source]}
-						tally={tallyFromTrial(trialData)}
-						voters={voters}
-					/>
+					<JurorTallyCard postType={postType} tally={tallyFromTrial(trialData, postType)} voters={voters} />
 
 					{judged && trialData.verdictText && (
 						<JudgeSentenceCard intensity={room.data.spiceLevel} message={trialData.verdictText} />

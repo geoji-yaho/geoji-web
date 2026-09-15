@@ -11,8 +11,6 @@ import { ExpenseCard } from "@/shared/components/ExpenseCard";
 import type { Tier } from "@/shared/domain/tier";
 import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
 
-const EMPTY_TALLY = { oppose: 0, support: 0 };
-
 function voteDeadlineLabel(deadline: string) {
 	const remaining = formatRemaining(deadline);
 
@@ -72,16 +70,10 @@ export function TrialExpenseCard({
 	};
 
 	if (!trial) {
-		if (base.postType !== "considering") {
-			return <ExpenseCard {...base} state="plain" />;
-		}
-
-		return (
-			<ExpenseCard {...base} state="voting" tally={EMPTY_TALLY} eligibleCount={eligibleCount} voteState="unavailable" />
-		);
+		return <ExpenseCard {...base} state="plain" />;
 	}
 
-	const tally = tallyFromTrial(trial);
+	const tally = tallyFromTrial(trial, base.postType);
 	const verdict = verdictFromTrial(trial);
 
 	if (verdict === "dismissed") {

@@ -35,24 +35,22 @@ type ExpenseCardBase = {
 	onComments?: () => void;
 };
 
-export type ExpenseVoteState = "open" | "voted" | "own" | "closed" | "unavailable";
+export type ExpenseVoteState = "open" | "voted" | "own" | "closed";
 
 const VOTE_BUTTON_LABELS: Record<ExpenseVoteState, string> = {
 	open: "투표하기",
 	voted: "투표 완료",
 	own: "투표하기",
-	closed: "투표하기",
-	unavailable: "투표 준비 중"
+	closed: "투표하기"
 };
 
 const VOTE_NOTES: Partial<Record<ExpenseVoteState, string>> = {
-	own: "본인의 재판에는 투표할 수 없습니다",
-	unavailable: "서버가 살까 말까 재판을 열면 투표할 수 있습니다"
+	own: "본인의 재판에는 투표할 수 없습니다"
 };
 
 type VotingProps = {
 	state: "voting";
-	deadlineLabel?: string;
+	deadlineLabel: string;
 	tally: VoteTally;
 	eligibleCount: number;
 	voteState: ExpenseVoteState;
@@ -114,12 +112,10 @@ export function ExpenseCard(props: ExpenseCardProps) {
 				{props.state === "voting" && (
 					<>
 						<div className="flex items-center justify-between text-xs">
-							{props.deadlineLabel && (
-								<span className="font-extrabold text-red">
-									<span aria-hidden="true">◷</span>&nbsp;{props.deadlineLabel}
-								</span>
-							)}
-							<span className="ml-auto text-dim">
+							<span className="font-extrabold text-red">
+								<span aria-hidden="true">◷</span>&nbsp;{props.deadlineLabel}
+							</span>
+							<span className="text-dim">
 								{props.tally.oppose + props.tally.support}/{props.eligibleCount} 투표
 							</span>
 						</div>
