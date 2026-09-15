@@ -6,14 +6,8 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import { commentQueries } from "@/shared/api/comments";
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
 import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
-import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
-import {
-	headlineFromVerdictText,
-	sentenceFromDays,
-	trialQueries,
-	VERDICT_BY_TRIAL_VERDICT,
-	verdictFromTrial
-} from "@/shared/api/trials";
+import { roomQueries } from "@/shared/api/rooms";
+import { headlineFromVerdictText, sentenceFromDays, trialQueries, verdictFromTrial } from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { ExecutionCard } from "@/shared/components/ExecutionCard";
@@ -117,7 +111,7 @@ export function VerdictPage() {
 			const voters = trialData.votes.map((vote) => ({
 				id: vote.id,
 				name: memberName(findMember(members.data, vote.voterUserId)),
-				verdict: VERDICT_BY_TRIAL_VERDICT[vote.verdict],
+				verdict: vote.verdict,
 				reason: judged ? vote.reason : null
 			}));
 
@@ -140,10 +134,7 @@ export function VerdictPage() {
 					/>
 
 					{judged && trialData.verdictText && (
-						<JudgeSentenceCard
-							intensity={INTENSITY_BY_SPICE_LEVEL[room.data.spiceLevel]}
-							message={trialData.verdictText}
-						/>
+						<JudgeSentenceCard intensity={room.data.spiceLevel} message={trialData.verdictText} />
 					)}
 
 					{execution && (

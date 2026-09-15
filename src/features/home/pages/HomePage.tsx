@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
-import { INTENSITY_BY_SPICE_LEVEL, roomQueries } from "@/shared/api/rooms";
+import { roomQueries } from "@/shared/api/rooms";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { HomeHeader } from "@/shared/components/HomeHeader";
 import { RoomCard } from "@/shared/components/RoomCard";
@@ -93,7 +93,7 @@ export function HomePage() {
 					<Reveal key={room.id} index={index + 2}>
 						<RoomCard
 							roomName={room.name}
-							intensity={INTENSITY_BY_SPICE_LEVEL[room.spiceLevel]}
+							intensity={room.spiceLevel}
 							deadlineLabel={`${formatVoteDeadlineLabel(room.voteDeadlineMinutes)} 재판`}
 							onClick={() => void navigate(`/rooms/${room.id}`)}
 						/>
