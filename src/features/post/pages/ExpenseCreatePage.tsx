@@ -25,6 +25,14 @@ const PLEA_PLACEHOLDER: Record<PostType, string> = {
 	spent: "왜 썼는지 변론하세요",
 	considering: "왜 사고 싶은지 말해보세요"
 };
+const AMOUNT_LABEL: Record<PostType, string> = {
+	spent: "얼마 썼어요?",
+	considering: "얼마예요?"
+};
+const SUBJECT_LABEL: Record<PostType, string> = {
+	spent: "무엇을?",
+	considering: "무엇을 살까요?"
+};
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
@@ -68,9 +76,15 @@ export function ExpenseCreatePage() {
 					onChange={setPostType}
 				/>
 
-				<AmountField label="얼마 썼어요?" value={amount} onChange={setAmount} />
+				<AmountField label={AMOUNT_LABEL[postType]} value={amount} onChange={setAmount} />
 
-				<TextField label="무엇을?" required value={title} onChange={setTitle} maxLength={TITLE_MAX_LENGTH} />
+				<TextField
+					label={SUBJECT_LABEL[postType]}
+					required
+					value={title}
+					onChange={setTitle}
+					maxLength={TITLE_MAX_LENGTH}
+				/>
 
 				<div className="flex flex-col gap-2">
 					<span className="text-label text-mute">어디에?</span>

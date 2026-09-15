@@ -61,6 +61,7 @@ type DismissedProps = {
 
 type PlainProps = {
 	state: "plain";
+	note?: string;
 };
 
 type ExpenseCardProps = ExpenseCardBase & (VotingProps | JudgedProps | DismissedProps | PlainProps);
@@ -145,6 +146,8 @@ export function ExpenseCard(props: ExpenseCardProps) {
 						)}
 					</>
 				)}
+
+				{props.state === "plain" && props.note && <span className="text-caption text-dim">{props.note}</span>}
 
 				{props.state === "dismissed" && (
 					<div className="flex items-center gap-3">
