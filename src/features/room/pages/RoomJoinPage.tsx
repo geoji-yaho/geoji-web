@@ -30,7 +30,7 @@ export function RoomJoinPage() {
 		if (!code) {
 			return;
 		}
-		join.mutate(code, { onSuccess: (room) => void navigate(`/rooms/${room.id}`) });
+		join.mutate(code, { onSuccess: (room) => void navigate(`/rooms/${room.id}`, { replace: true }) });
 	};
 
 	if (expired) {

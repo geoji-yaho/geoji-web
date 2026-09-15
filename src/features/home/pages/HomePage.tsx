@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { roomQueries } from "@/shared/api/rooms";
@@ -16,11 +16,13 @@ import { StickyCta } from "@/shared/ui/StickyCta";
 import { kstCalendar } from "@/shared/utils/date";
 
 import { ProfileSummaryCard } from "../components/ProfileSummaryCard";
+import { RoomJoinSheet } from "../components/RoomJoinSheet";
 
 export function HomePage() {
 	const navigate = useNavigate();
 	const stats = useMyMonthStats();
 	const rooms = useQuery(roomQueries.list());
+	const [joinOpen, setJoinOpen] = useState(false);
 
 	const profile = stats.profile;
 	const roomList = rooms.data ?? [];
@@ -101,7 +103,15 @@ export function HomePage() {
 				))}
 			</div>
 
-			<StickyCta label="+ 거지방 만들기" onClick={() => void navigate("/rooms/new")} className="sticky-cta" />
+			<StickyCta
+				label="+ 거지방 만들기"
+				onClick={() => void navigate("/rooms/new")}
+				secondaryLabel="코드로 참여"
+				onSecondaryClick={() => setJoinOpen(true)}
+				className="sticky-cta"
+			/>
+
+			<RoomJoinSheet open={joinOpen} onClose={() => setJoinOpen(false)} />
 		</div>
 	);
 }
