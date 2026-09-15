@@ -5,8 +5,9 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
 import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
-import { toTrialVerdict, trialQueries } from "@/shared/api/trials";
+import { trialQueries, voteCount } from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
+import type { PostType } from "@/shared/domain/post";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
@@ -20,7 +21,10 @@ import { CaseSummaryCard } from "../components/CaseSummaryCard";
 import { VerdictChoice, type VoteSide } from "../components/VerdictChoice";
 import { useCastVote } from "../hooks/useCastVote";
 
-const REASON_PRESETS = ["지하철이 있었잖아요", "라면은 900원", "이건 인정", "다음엔 도시락"];
+const REASON_PRESETS: Record<PostType, string[]> = {
+	spent: ["지하철이 있었잖아요", "라면은 900원", "이건 인정", "다음엔 도시락"],
+	considering: ["이미 비슷한 거 있잖아요", "한 달만 참아봐요", "이건 필요하죠", "살 만해요"]
+};
 const REASON_MAX_LENGTH = 500;
 const MESSAGES = {
 	missingRoom: "방 정보가 없습니다",
@@ -53,7 +57,7 @@ export function VotePage() {
 	const eligibleCount = members.data ? Math.max(0, members.data.length - 1) : null;
 	const progressLabel =
 		currentTrial !== null && eligibleCount !== null
-			? `${currentTrial.guiltyVotes + currentTrial.notGuiltyVotes}/${eligibleCount} 투표, ${formatRemaining(currentTrial.votingDeadline)}`
+			? `${voteCount(currentTrial)}/${eligibleCount} 투표, ${formatRemaining(currentTrial.votingDeadline)}`
 			: undefined;
 
 	const trialCase =
@@ -66,17 +70,15 @@ export function VotePage() {
 				}
 			: null;
 	const chosenVerdict = trialCase === null ? null : VOTE_VERDICTS[trialCase.postType][side];
-	const trialVerdict = chosenVerdict === null ? undefined : toTrialVerdict(chosenVerdict);
 	const trimmedReason = reason.trim();
-	const canSubmit =
-		trialVerdict !== undefined && eligibleCount !== null && trimmedReason.length > 0 && !castVote.isPending;
+	const canSubmit = chosenVerdict !== null && eligibleCount !== null && trimmedReason.length > 0 && !castVote.isPending;
 
 	const appendReason = (preset: string) => {
 		setReason((current) => (current ? `${current} ${preset}` : preset));
 	};
 
 	const submit = () => {
-		if (trialCase === null || trialVerdict === undefined || eligibleCount === null) {
+		if (trialCase === null || chosenVerdict === null || eligibleCount === null) {
 			return;
 		}
 
@@ -85,7 +87,7 @@ export function VotePage() {
 				roomId,
 				expenseId: trialCase.expense.id,
 				eligibleCount,
-				input: { verdict: trialVerdict, reason: trimmedReason }
+				input: { verdict: chosenVerdict, reason: trimmedReason }
 			},
 			{ onSuccess: () => void navigate(`/rooms/${roomId}`) }
 		);
@@ -141,7 +143,7 @@ export function VotePage() {
 						</Reveal>
 
 						<div className="flex flex-wrap gap-1.5">
-							{REASON_PRESETS.map((preset) => (
+							{REASON_PRESETS[trialCase.postType].map((preset) => (
 								<Chip key={preset} onClick={() => appendReason(preset)}>
 									{preset}
 								</Chip>

@@ -7,7 +7,13 @@ import { commentQueries } from "@/shared/api/comments";
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
 import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
-import { headlineFromVerdictText, sentenceFromDays, trialQueries, verdictFromTrial } from "@/shared/api/trials";
+import {
+	headlineFromVerdictText,
+	sentenceFromDays,
+	tallyFromTrial,
+	trialQueries,
+	verdictFromTrial
+} from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { ExecutionCard } from "@/shared/components/ExecutionCard";
@@ -129,7 +135,7 @@ export function VerdictPage() {
 
 					<JurorTallyCard
 						postType={POST_TYPE_BY_EXPENSE_SOURCE[expenseData.source]}
-						tally={{ oppose: trialData.guiltyVotes, support: trialData.notGuiltyVotes }}
+						tally={tallyFromTrial(trialData)}
 						voters={voters}
 					/>
 

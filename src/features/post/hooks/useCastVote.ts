@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { castVote, type CastVoteInput, judgeTrial, trialQueries } from "@/shared/api/trials";
+import { castVote, type CastVoteInput, judgeTrial, trialQueries, voteCount } from "@/shared/api/trials";
 
 type CastVoteVariables = {
 	roomId: string;
@@ -18,7 +18,7 @@ export function useCastVote() {
 			const { queryKey } = trialQueries.detail(roomId, expenseId);
 			queryClient.setQueryData(queryKey, trial);
 
-			if (trial.guiltyVotes + trial.notGuiltyVotes < eligibleCount) {
+			if (voteCount(trial) < eligibleCount) {
 				return;
 			}
 

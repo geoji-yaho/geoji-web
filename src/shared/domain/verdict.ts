@@ -25,7 +25,9 @@ export type VoteTally = {
 	support: number;
 };
 
-export const VOTE_VERDICTS: Record<PostType, { oppose: Verdict; support: Verdict }> = {
+export type VoteVerdict = Exclude<Verdict, "dismissed">;
+
+export const VOTE_VERDICTS: Record<PostType, Record<Exclude<VerdictSide, "none">, VoteVerdict>> = {
 	spent: { oppose: "guilty", support: "notGuilty" },
 	considering: { oppose: "disagree", support: "agree" }
 };

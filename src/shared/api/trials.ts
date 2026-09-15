@@ -1,11 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { Verdict } from "../domain/verdict";
+import type { VoteVerdict } from "../domain/verdict";
 import { isPast } from "../utils/date";
 import { isApiError } from "./api-error";
 import { http } from "./http";
 
-export type TrialVerdict = Extract<Verdict, "guilty" | "notGuilty">;
+export type TrialVerdict = VoteVerdict;
 
 export type TrialVote = {
 	id: string;
@@ -42,8 +42,8 @@ export const TRIAL_QUORUM = 2;
 const HEADLINE_MAX_LENGTH = 30;
 const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
 
-export function toTrialVerdict(verdict: Verdict) {
-	return verdict === "guilty" || verdict === "notGuilty" ? verdict : undefined;
+export function tallyFromTrial(trial: Trial) {
+	return { oppose: trial.guiltyVotes, support: trial.notGuiltyVotes };
 }
 
 export function sentenceFromDays(days: number | null) {
@@ -59,7 +59,8 @@ export function sentenceFromDays(days: number | null) {
 }
 
 export function voteCount(trial: Trial) {
-	return trial.guiltyVotes + trial.notGuiltyVotes;
+	const tally = tallyFromTrial(trial);
+	return tally.oppose + tally.support;
 }
 
 export function verdictFromTrial(trial: Trial, now = new Date()) {
