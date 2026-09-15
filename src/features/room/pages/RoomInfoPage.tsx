@@ -15,6 +15,7 @@ import { Reveal } from "@/shared/ui/Reveal";
 
 import { InviteSheet } from "../components/InviteSheet";
 import { MemberList } from "../components/MemberList";
+import { RoomExitActions } from "../components/RoomExitActions";
 import { RoomRuleList } from "../components/RoomRuleList";
 import { buildInviteUrl } from "../utils/buildInviteUrl";
 
@@ -27,6 +28,7 @@ export function RoomInfoPage() {
 
 	const myUserId = me.data?.id ?? null;
 	const owner = members.data?.find((member) => member.userId === room.data?.createdBy);
+	const canRemoveRoom = myUserId !== null && room.data?.createdBy === myUserId;
 
 	return (
 		<>
@@ -75,6 +77,7 @@ export function RoomInfoPage() {
 						<Button variant="secondary" onClick={() => setInviteOpen(true)}>
 							초대 링크 공유
 						</Button>
+						<RoomExitActions roomId={roomId} canRemoveRoom={canRemoveRoom} />
 					</>
 				)}
 			</div>

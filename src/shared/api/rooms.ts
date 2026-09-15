@@ -32,6 +32,14 @@ export function joinRoom(inviteCode: string) {
 	return http.post<Room>(`/api/rooms/join/${encodeURIComponent(inviteCode)}`);
 }
 
+export function leaveRoom(roomId: string) {
+	return http.delete<void>(`/api/rooms/${encodeURIComponent(roomId)}/members/me`);
+}
+
+export function removeRoom(roomId: string) {
+	return http.delete<void>(`/api/rooms/${encodeURIComponent(roomId)}`);
+}
+
 export const roomQueries = {
 	all: () => ["rooms"] as const,
 	lists: () => [...roomQueries.all(), "list"] as const,
