@@ -37,6 +37,17 @@ type ExpenseCardBase = {
 
 export type ExpenseVoteState = "open" | "voted" | "own" | "closed";
 
+const VOTE_BUTTON_LABELS: Record<ExpenseVoteState, string> = {
+	open: "투표하기",
+	voted: "투표 완료",
+	own: "투표하기",
+	closed: "투표하기"
+};
+
+const VOTE_NOTES: Partial<Record<ExpenseVoteState, string>> = {
+	own: "본인의 재판에는 투표할 수 없습니다"
+};
+
 type VotingProps = {
 	state: "voting";
 	deadlineLabel: string;
@@ -110,10 +121,10 @@ export function ExpenseCard(props: ExpenseCardProps) {
 						</div>
 						<TallyRow tally={props.tally} opposeLabel={VERDICT_LABELS[oppose]} supportLabel={VERDICT_LABELS[support]} />
 						<Button variant="ink" disabled={props.voteState !== "open"} onClick={props.onVote}>
-							{props.voteState === "voted" ? "투표 완료" : "투표하기"}
+							{VOTE_BUTTON_LABELS[props.voteState]}
 						</Button>
-						{props.voteState === "own" && (
-							<span className="text-center text-caption text-dim">본인의 재판에는 투표할 수 없습니다</span>
+						{VOTE_NOTES[props.voteState] && (
+							<span className="text-center text-caption text-dim">{VOTE_NOTES[props.voteState]}</span>
 						)}
 					</>
 				)}

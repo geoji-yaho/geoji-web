@@ -10,7 +10,7 @@ import { profileQueries } from "@/shared/api/profile";
 import { trialQueries } from "@/shared/api/trials";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { verdictPath, votePath } from "@/shared/constants/routes";
+import { expenseCreatePath, verdictPath, votePath } from "@/shared/constants/routes";
 import { useCreateComment } from "@/shared/hooks/useCreateComment";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
@@ -119,7 +119,7 @@ export function RoomFeedPage() {
 
 			<Fab
 				label="+ 지출 등록"
-				onClick={() => void navigate("/posts/new")}
+				onClick={() => void navigate(expenseCreatePath(roomId))}
 				className="sticky bottom-6 z-40 mr-5 self-end"
 			/>
 

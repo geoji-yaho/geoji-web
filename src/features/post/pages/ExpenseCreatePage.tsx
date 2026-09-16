@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { EXPENSE_SOURCE_BY_POST_TYPE } from "@/shared/api/expenses";
 import { roomQueries } from "@/shared/api/rooms";
@@ -25,9 +25,19 @@ const PLEA_PLACEHOLDER: Record<PostType, string> = {
 	spent: "왜 썼는지 변론하세요",
 	considering: "왜 사고 싶은지 말해보세요"
 };
+const AMOUNT_LABEL: Record<PostType, string> = {
+	spent: "얼마 썼어요?",
+	considering: "얼마예요?"
+};
+const SUBJECT_LABEL: Record<PostType, string> = {
+	spent: "무엇을?",
+	considering: "무엇을 살까요?"
+};
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+	const roomId = searchParams.get("room");
 	const [postType, setPostType] = useState<PostType>("spent");
 	const [amount, setAmount] = useState("");
 	const [title, setTitle] = useState("");
@@ -51,7 +61,7 @@ export function ExpenseCreatePage() {
 		if (!draft) {
 			return;
 		}
-		createExpense.mutate(draft, { onSuccess: () => void navigate("/") });
+		createExpense.mutate(draft, { onSuccess: () => void navigate(roomId ? `/rooms/${roomId}` : "/") });
 	};
 
 	return (
@@ -68,9 +78,15 @@ export function ExpenseCreatePage() {
 					onChange={setPostType}
 				/>
 
-				<AmountField label="얼마 썼어요?" value={amount} onChange={setAmount} />
+				<AmountField label={AMOUNT_LABEL[postType]} value={amount} onChange={setAmount} />
 
-				<TextField label="무엇을?" required value={title} onChange={setTitle} maxLength={TITLE_MAX_LENGTH} />
+				<TextField
+					label={SUBJECT_LABEL[postType]}
+					required
+					value={title}
+					onChange={setTitle}
+					maxLength={TITLE_MAX_LENGTH}
+				/>
 
 				<div className="flex flex-col gap-2">
 					<span className="text-label text-mute">어디에?</span>

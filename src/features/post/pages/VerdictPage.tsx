@@ -7,7 +7,13 @@ import { commentQueries } from "@/shared/api/comments";
 import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
 import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
-import { headlineFromVerdictText, sentenceFromDays, trialQueries, verdictFromTrial } from "@/shared/api/trials";
+import {
+	headlineFromVerdictText,
+	sentenceFromDays,
+	tallyFromTrial,
+	trialQueries,
+	verdictFromTrial
+} from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { ExecutionCard } from "@/shared/components/ExecutionCard";
@@ -102,6 +108,7 @@ export function VerdictPage() {
 		} else if (!expenseData) {
 			content = <Alert>{TRIAL_MESSAGES.noExpense}</Alert>;
 		} else {
+			const postType = POST_TYPE_BY_EXPENSE_SOURCE[expenseData.source];
 			const verdict = verdictFromTrial(trialData);
 			const judged = trialData.verdict !== null;
 			const defendant = findMember(members.data, expenseData.userId);
@@ -127,11 +134,7 @@ export function VerdictPage() {
 						defendantTier={memberTier(defendant)}
 					/>
 
-					<JurorTallyCard
-						postType={POST_TYPE_BY_EXPENSE_SOURCE[expenseData.source]}
-						tally={{ oppose: trialData.guiltyVotes, support: trialData.notGuiltyVotes }}
-						voters={voters}
-					/>
+					<JurorTallyCard postType={postType} tally={tallyFromTrial(trialData, postType)} voters={voters} />
 
 					{judged && trialData.verdictText && (
 						<JudgeSentenceCard intensity={room.data.spiceLevel} message={trialData.verdictText} />

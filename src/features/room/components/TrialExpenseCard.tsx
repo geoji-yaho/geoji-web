@@ -1,6 +1,12 @@
 import { type Expense, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
 import { memberName, memberTier, type RoomMember } from "@/shared/api/members";
-import { headlineFromVerdictText, sentenceFromDays, type Trial, verdictFromTrial } from "@/shared/api/trials";
+import {
+	headlineFromVerdictText,
+	sentenceFromDays,
+	tallyFromTrial,
+	type Trial,
+	verdictFromTrial
+} from "@/shared/api/trials";
 import { ExpenseCard } from "@/shared/components/ExpenseCard";
 import type { Tier } from "@/shared/domain/tier";
 import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
@@ -67,7 +73,7 @@ export function TrialExpenseCard({
 		return <ExpenseCard {...base} state="plain" />;
 	}
 
-	const tally = { oppose: trial.guiltyVotes, support: trial.notGuiltyVotes };
+	const tally = tallyFromTrial(trial, base.postType);
 	const verdict = verdictFromTrial(trial);
 
 	if (verdict === "dismissed") {
