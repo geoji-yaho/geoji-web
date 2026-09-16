@@ -45,7 +45,7 @@ export function VerdictPage() {
 
 	const post = useQuery({ ...postQueries.detail(postId), enabled });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled });
-	const comments = useQuery({ ...postQueries.comments(postId), enabled });
+	const comments = useQuery({ ...postQueries.comments(postId, roomId), enabled });
 	const verdict = usePostVerdict(postId, roomId, enabled);
 	const createComment = useCreatePostComment();
 

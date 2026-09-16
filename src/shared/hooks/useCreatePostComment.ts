@@ -7,7 +7,7 @@ export function useCreatePostComment() {
 
 	return useMutation({
 		mutationFn: createPostComment,
-		onSuccess: (_comment, { postId }) =>
-			queryClient.invalidateQueries({ queryKey: postQueries.comments(postId).queryKey })
+		onSuccess: (_comment, { postId, roomId }) =>
+			queryClient.invalidateQueries({ queryKey: postQueries.comments(postId, roomId).queryKey })
 	});
 }
