@@ -2,10 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
-import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
+import { findMember, memberQueries, memberTier } from "@/shared/api/members";
+import { postQueries } from "@/shared/api/posts";
 import { roomQueries } from "@/shared/api/rooms";
-import { toTrialVerdict, trialQueries } from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { Alert } from "@/shared/ui/Alert";
@@ -18,15 +17,16 @@ import { formatRelativeTime, formatRemaining } from "@/shared/utils/date";
 
 import { CaseSummaryCard } from "../components/CaseSummaryCard";
 import { VerdictChoice, type VoteSide } from "../components/VerdictChoice";
-import { useCastVote } from "../hooks/useCastVote";
+import { useCastPostVote } from "../hooks/useCastPostVote";
 
 const REASON_PRESETS = ["지하철이 있었잖아요", "라면은 900원", "이건 인정", "다음엔 도시락"];
 const REASON_MAX_LENGTH = 500;
 const MESSAGES = {
 	missingRoom: "방 정보가 없습니다",
 	loading: "사건을 불러오는 중",
-	noExpense: "지출을 찾을 수 없습니다",
-	noTrial: "재판이 없는 지출입니다"
+	alreadyVoted: "이미 투표했습니다",
+	closed: "투표가 마감되었습니다",
+	ownPost: "본인 게시물에는 투표할 수 없습니다"
 } as const;
 
 export function VotePage() {
@@ -38,55 +38,49 @@ export function VotePage() {
 	const [side, setSide] = useState<VoteSide>("oppose");
 	const [reason, setReason] = useState("");
 
-	const expense = useQuery({ ...expenseQueries.detailInRoom(roomId, postId), enabled: hasRoom });
-	const trial = useQuery({ ...trialQueries.detail(roomId, postId), enabled: hasRoom });
+	const post = useQuery({ ...postQueries.detail(postId), enabled: hasRoom && postId !== "" });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled: hasRoom });
 	const room = useQuery({ ...roomQueries.detail(roomId), enabled: hasRoom });
-	const castVote = useCastVote();
+	const castVote = useCastPostVote();
 
-	const currentExpense = expense.data ?? null;
-	const currentTrial = trial.data ?? null;
-	const isPending = hasRoom && (expense.isPending || trial.isPending || members.isPending || room.isPending);
-	const firstError = [expense, trial, members, room].find((query) => query.isError)?.error ?? null;
-	const notFound = expense.isSuccess && currentExpense === null;
-	const noTrial = !notFound && trial.isSuccess && currentTrial === null;
-	const eligibleCount = members.data ? Math.max(0, members.data.length - 1) : null;
+	const detail = post.data ?? null;
+	const isPending = hasRoom && (post.isPending || members.isPending || room.isPending);
+	const firstError = [post, members, room].find((query) => query.isError)?.error ?? null;
+
+	const voteCount = detail === null ? 0 : detail.tally.oppose + detail.tally.support;
 	const progressLabel =
-		currentTrial !== null && eligibleCount !== null
-			? `${currentTrial.guiltyVotes + currentTrial.notGuiltyVotes}/${eligibleCount} 투표, ${formatRemaining(currentTrial.votingDeadline)}`
-			: undefined;
+		detail === null
+			? undefined
+			: `${voteCount}/${detail.eligibleVoterCount} 투표, ${formatRemaining(detail.voteDeadlineAt)}`;
 
-	const trialCase =
-		currentExpense !== null && currentTrial !== null
-			? {
-					expense: currentExpense,
-					trial: currentTrial,
-					postType: POST_TYPE_BY_EXPENSE_SOURCE[currentExpense.source],
-					defendant: findMember(members.data, currentExpense.userId)
-				}
-			: null;
-	const chosenVerdict = trialCase === null ? null : VOTE_VERDICTS[trialCase.postType][side];
-	const trialVerdict = chosenVerdict === null ? undefined : toTrialVerdict(chosenVerdict);
+	const blockedMessage = (() => {
+		if (detail === null || detail.canVote) {
+			return null;
+		}
+		if (detail.myVote !== null) {
+			return MESSAGES.alreadyVoted;
+		}
+		if (detail.juryStatus !== null) {
+			return MESSAGES.closed;
+		}
+		return MESSAGES.ownPost;
+	})();
+
+	const chosenVerdict = detail === null ? null : VOTE_VERDICTS[detail.postType][side];
 	const trimmedReason = reason.trim();
-	const canSubmit =
-		trialVerdict !== undefined && eligibleCount !== null && trimmedReason.length > 0 && !castVote.isPending;
+	const canSubmit = detail !== null && detail.canVote && trimmedReason.length > 0 && !castVote.isPending;
 
 	const appendReason = (preset: string) => {
 		setReason((current) => (current ? `${current} ${preset}` : preset));
 	};
 
 	const submit = () => {
-		if (trialCase === null || trialVerdict === undefined || eligibleCount === null) {
+		if (detail === null || chosenVerdict === null) {
 			return;
 		}
 
 		castVote.mutate(
-			{
-				roomId,
-				expenseId: trialCase.expense.id,
-				eligibleCount,
-				input: { verdict: trialVerdict, reason: trimmedReason }
-			},
+			{ postId: detail.id, verdict: chosenVerdict, reason: trimmedReason, roomId },
 			{ onSuccess: () => void navigate(`/rooms/${roomId}`) }
 		);
 	};
@@ -105,52 +99,56 @@ export function VotePage() {
 					</Card>
 				)}
 				{firstError && <Alert>{firstError.message}</Alert>}
-				{notFound && <Alert>{MESSAGES.noExpense}</Alert>}
-				{noTrial && <Alert>{MESSAGES.noTrial}</Alert>}
 
-				{trialCase && (
+				{detail && (
 					<>
 						<Reveal>
 							<CaseSummaryCard
-								name={memberName(trialCase.defendant)}
-								tier={memberTier(trialCase.defendant)}
-								timeAgo={formatRelativeTime(trialCase.expense.spentAt)}
-								category={trialCase.expense.category ?? undefined}
-								amount={trialCase.expense.amount}
-								title={trialCase.expense.memo ?? undefined}
+								name={detail.authorNickname}
+								tier={memberTier(findMember(members.data, detail.authorId))}
+								timeAgo={formatRelativeTime(detail.createdAt)}
+								category={detail.category}
+								amount={detail.amountKrw}
+								title={detail.item}
 								rules={room.data?.rules ?? []}
 							/>
 						</Reveal>
 
-						<Reveal index={1} className="flex flex-col gap-2.5">
-							<span className="text-label text-mute">
-								평결<span className="text-red"> *</span>
-							</span>
-							<VerdictChoice postType={trialCase.postType} value={side} onChange={setSide} />
-						</Reveal>
+						{blockedMessage && <Alert>{blockedMessage}</Alert>}
 
-						<Reveal index={2}>
-							<TextField
-								label="판결 사유"
-								required
-								value={reason}
-								onChange={setReason}
-								maxLength={REASON_MAX_LENGTH}
-								multiline
-							/>
-						</Reveal>
+						{detail.canVote && (
+							<>
+								<Reveal index={1} className="flex flex-col gap-2.5">
+									<span className="text-label text-mute">
+										평결<span className="text-red"> *</span>
+									</span>
+									<VerdictChoice postType={detail.postType} value={side} onChange={setSide} />
+								</Reveal>
 
-						<div className="flex flex-wrap gap-1.5">
-							{REASON_PRESETS.map((preset) => (
-								<Chip key={preset} onClick={() => appendReason(preset)}>
-									{preset}
-								</Chip>
-							))}
-						</div>
+								<Reveal index={2}>
+									<TextField
+										label="판결 사유"
+										required
+										value={reason}
+										onChange={setReason}
+										maxLength={REASON_MAX_LENGTH}
+										multiline
+									/>
+								</Reveal>
 
-						<p className="text-caption leading-normal text-dim">
-							제출 후 수정할 수 없습니다. 사유는 판결 확정 후 피고인에게 공개됩니다
-						</p>
+								<div className="flex flex-wrap gap-1.5">
+									{REASON_PRESETS.map((preset) => (
+										<Chip key={preset} onClick={() => appendReason(preset)}>
+											{preset}
+										</Chip>
+									))}
+								</div>
+
+								<p className="text-caption leading-normal text-dim">
+									제출 후 수정할 수 없습니다. 사유는 판결 확정 후 피고인에게 공개됩니다
+								</p>
+							</>
+						)}
 
 						{castVote.isError && <Alert>{castVote.error.message}</Alert>}
 					</>
@@ -158,7 +156,7 @@ export function VotePage() {
 			</div>
 
 			{!hasRoom && <StickyCta label="홈으로 가기" onClick={() => void navigate("/")} className="sticky-cta" />}
-			{chosenVerdict && (
+			{detail && chosenVerdict && detail.canVote && (
 				<StickyCta
 					label={`${VERDICT_LABELS[chosenVerdict]}로 평결 제출`}
 					onClick={submit}
