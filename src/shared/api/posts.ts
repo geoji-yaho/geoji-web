@@ -220,10 +220,14 @@ export const postQueries = {
 			queryFn: ({ signal }) => http.get<RoomPostSummary[]>(`/api/rooms/${encodeURIComponent(roomId)}/posts`, { signal })
 		}),
 	commentLists: () => [...postQueries.all(), "comments"] as const,
-	comments: (postId: string) =>
+	comments: (postId: string, roomId: string) =>
 		queryOptions({
-			queryKey: [...postQueries.commentLists(), postId] as const,
-			queryFn: ({ signal }) => http.get<PostComment[]>(`/api/posts/${encodeURIComponent(postId)}/comments`, { signal })
+			queryKey: [...postQueries.commentLists(), postId, roomId] as const,
+			queryFn: ({ signal }) =>
+				http.get<PostComment[]>(
+					`/api/posts/${encodeURIComponent(postId)}/comments?room_id=${encodeURIComponent(roomId)}`,
+					{ signal }
+				)
 		}),
 	verdicts: () => [...postQueries.all(), "verdict"] as const,
 	verdict: (postId: string, roomId: string | null = null) =>

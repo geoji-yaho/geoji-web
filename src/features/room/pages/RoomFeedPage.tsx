@@ -55,7 +55,7 @@ export function RoomFeedPage() {
 		queries: judged.map((post) => postQueries.verdict(post.id, roomId))
 	});
 	const comments = useQueries({
-		queries: postList.map((post) => postQueries.comments(post.id))
+		queries: postList.map((post) => postQueries.comments(post.id, roomId))
 	});
 	const createComment = useCreatePostComment();
 
