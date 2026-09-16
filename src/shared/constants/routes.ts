@@ -17,3 +17,7 @@ export function invitePath(inviteCode: string) {
 export function votePath(expenseId: string, roomId: string) {
 	return `/posts/${encodeURIComponent(expenseId)}/vote?${roomSearch(roomId)}`;
 }
+
+export function expenseCreatePath(roomId: string) {
+	return `/posts/new?${roomSearch(roomId)}`;
+}

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { EXPENSE_SOURCE_BY_POST_TYPE } from "@/shared/api/expenses";
 import { roomQueries } from "@/shared/api/rooms";
@@ -36,6 +36,8 @@ const SUBJECT_LABEL: Record<PostType, string> = {
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+	const roomId = searchParams.get("room");
 	const [postType, setPostType] = useState<PostType>("spent");
 	const [amount, setAmount] = useState("");
 	const [title, setTitle] = useState("");
@@ -59,7 +61,7 @@ export function ExpenseCreatePage() {
 		if (!draft) {
 			return;
 		}
-		createExpense.mutate(draft, { onSuccess: () => void navigate("/") });
+		createExpense.mutate(draft, { onSuccess: () => void navigate(roomId ? `/rooms/${roomId}` : "/") });
 	};
 
 	return (
