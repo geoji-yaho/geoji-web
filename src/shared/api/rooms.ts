@@ -17,7 +17,6 @@ export type Room = {
 	createdBy: string;
 };
 
-/** 초대장 화면(참여 전). 아직 멤버가 아니어도 볼 수 있어서 방 안의 지출·댓글은 들어 있지 않다. */
 export type RoomInvitePreview = {
 	id: string;
 	name: string;
@@ -26,7 +25,6 @@ export type RoomInvitePreview = {
 	rules: string[];
 	ownerNickname: string;
 	memberCount: number;
-	/** true 면 이미 참여한 방이다. 참여하기 대신 바로 방으로 보낸다. */
 	alreadyMember: boolean;
 };
 
