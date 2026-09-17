@@ -201,17 +201,18 @@ export function removePost(postId: string) {
 	return http.delete<void>(`/api/posts/${encodeURIComponent(postId)}`);
 }
 
-function verdictSearch(roomId: string | null) {
+function roomSearch(roomId: string | null) {
 	return roomId === null || roomId === "" ? "" : `?room_id=${encodeURIComponent(roomId)}`;
 }
 
 export const postQueries = {
 	all: () => ["posts"] as const,
 	details: () => [...postQueries.all(), "detail"] as const,
-	detail: (postId: string) =>
+	detail: (postId: string, roomId: string) =>
 		queryOptions({
-			queryKey: [...postQueries.details(), postId] as const,
-			queryFn: ({ signal }) => http.get<PostDetail>(`/api/posts/${encodeURIComponent(postId)}`, { signal })
+			queryKey: [...postQueries.details(), postId, roomId] as const,
+			queryFn: ({ signal }) =>
+				http.get<PostDetail>(`/api/posts/${encodeURIComponent(postId)}${roomSearch(roomId)}`, { signal })
 		}),
 	feeds: () => [...postQueries.all(), "feed"] as const,
 	feed: (roomId: string) =>
@@ -234,14 +235,17 @@ export const postQueries = {
 		queryOptions({
 			queryKey: [...postQueries.verdicts(), postId, roomId] as const,
 			queryFn: ({ signal }) =>
-				http.get<PostVerdict>(`/api/posts/${encodeURIComponent(postId)}/verdict${verdictSearch(roomId)}`, {
+				http.get<PostVerdict>(`/api/posts/${encodeURIComponent(postId)}/verdict${roomSearch(roomId)}`, {
 					signal
 				})
 		}),
 	shareCards: () => [...postQueries.all(), "share-card"] as const,
-	shareCard: (postId: string) =>
+	shareCard: (postId: string, roomId: string) =>
 		queryOptions({
-			queryKey: [...postQueries.shareCards(), postId] as const,
-			queryFn: ({ signal }) => http.get<ShareCard>(`/api/posts/${encodeURIComponent(postId)}/share-card`, { signal })
+			queryKey: [...postQueries.shareCards(), postId, roomId] as const,
+			queryFn: ({ signal }) =>
+				http.get<ShareCard>(`/api/posts/${encodeURIComponent(postId)}/share-card${roomSearch(roomId)}`, {
+					signal
+				})
 		})
 };

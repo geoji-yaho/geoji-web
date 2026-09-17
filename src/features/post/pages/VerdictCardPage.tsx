@@ -34,8 +34,8 @@ export function VerdictCardPage() {
 	const navigate = useNavigate();
 	const enabled = roomId !== "" && postId !== "";
 
-	const card = useQuery({ ...postQueries.shareCard(postId), enabled });
-	const post = useQuery({ ...postQueries.detail(postId), enabled });
+	const card = useQuery({ ...postQueries.shareCard(postId, roomId), enabled });
+	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled });
 
 	const cardRef = useRef<HTMLDivElement>(null);
