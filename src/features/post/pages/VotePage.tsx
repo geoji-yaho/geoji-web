@@ -38,7 +38,7 @@ export function VotePage() {
 	const [side, setSide] = useState<VoteSide>("oppose");
 	const [reason, setReason] = useState("");
 
-	const post = useQuery({ ...postQueries.detail(postId), enabled: hasRoom && postId !== "" });
+	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled: hasRoom && postId !== "" });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled: hasRoom });
 	const room = useQuery({ ...roomQueries.detail(roomId), enabled: hasRoom });
 	const castVote = useCastPostVote();
