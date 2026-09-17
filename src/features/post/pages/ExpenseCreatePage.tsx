@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { EXPENSE_SOURCE_BY_POST_TYPE } from "@/shared/api/expenses";
+import type { Category, PostDraft, Submission } from "@/shared/api/posts";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { EXPENSE_CATEGORIES } from "@/shared/constants/expense-categories";
@@ -10,13 +10,15 @@ import { POST_TYPE_LABELS, type PostType } from "@/shared/domain/post";
 import { Alert } from "@/shared/ui/Alert";
 import { AmountField } from "@/shared/ui/AmountField";
 import { AttachmentField } from "@/shared/ui/AttachmentField";
+import { Button } from "@/shared/ui/Button";
+import { Card } from "@/shared/ui/Card";
 import { Chip } from "@/shared/ui/Chip";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { TabSegment } from "@/shared/ui/TabSegment";
 import { TextField } from "@/shared/ui/TextField";
 import { parseAmount } from "@/shared/utils/format";
 
-import { useCreateExpense } from "../hooks/useCreateExpense";
+import { useCompleteSubmission, useSubmitPost } from "../hooks/useSubmitPost";
 
 const TITLE_MAX_LENGTH = 30;
 const PLEA_MAX_LENGTH = 200;
@@ -33,6 +35,7 @@ const SUBJECT_LABEL: Record<PostType, string> = {
 	spent: "무엇을?",
 	considering: "무엇을 살까요?"
 };
+const BLOCKED_FALLBACK = "이대로는 등록할 수 없습니다. 내용을 고쳐 주세요";
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
@@ -45,24 +48,60 @@ export function ExpenseCreatePage() {
 	const [plea, setPlea] = useState("");
 	const [evidence, setEvidence] = useState<File | null>(null);
 	const [capturedAt] = useState(() => new Date());
+	const [submission, setSubmission] = useState<Submission | null>(null);
 
 	const rooms = useQuery(roomQueries.list());
-	const createExpense = useCreateExpense();
+	const submitPost = useSubmitPost();
+	const completeSubmission = useCompleteSubmission();
+
 	const parsedAmount = parseAmount(amount);
 	const trimmedTitle = title.trim();
-	const draft =
-		parsedAmount !== null && trimmedTitle.length > 0 && category.length > 0
-			? { amount: parsedAmount, category, memo: trimmedTitle, source: EXPENSE_SOURCE_BY_POST_TYPE[postType] }
+	const trimmedPlea = plea.trim();
+	const roomIds = rooms.data?.map((room) => room.id) ?? [];
+	const draft: PostDraft | null =
+		parsedAmount !== null && trimmedTitle.length > 0 && category.length > 0 && roomIds.length > 0
+			? {
+					postType,
+					amountKrw: parsedAmount,
+					category: category as Category,
+					item: trimmedTitle,
+					reason: trimmedPlea.length > 0 ? trimmedPlea : null,
+					roomIds
+				}
 			: null;
-	const canSubmit = draft !== null;
+
+	const working = submitPost.isPending || completeSubmission.isPending;
 	const roomCountLabel = rooms.isSuccess ? `(${rooms.data.length}개)` : "";
+	const requestError = submitPost.error ?? completeSubmission.error;
+	const intake = submission?.intakeResult ?? null;
+	const blocked = submission?.status === "BLOCKED";
+	const asking = submission?.status === "NEEDS_INPUT";
+
+	const done = (result: Submission) => {
+		setSubmission(result);
+		if (result.postId) {
+			void navigate(`/rooms/${roomId ?? roomIds[0]}`);
+		}
+	};
 
 	const submit = () => {
 		if (!draft) {
 			return;
 		}
-		createExpense.mutate(draft, { onSuccess: () => void navigate(roomId ? `/rooms/${roomId}` : "/") });
+		submitPost.mutate(draft, { onSuccess: done });
 	};
+
+	const complete = (action: "REVISE" | "PROCEED") => {
+		if (!draft || submission === null) {
+			return;
+		}
+		completeSubmission.mutate(
+			{ ...draft, submissionId: submission.submissionId, action, revision: submission.revision },
+			{ onSuccess: done }
+		);
+	};
+
+	const suggestion = intake?.itemReview?.suggestedItem ?? null;
 
 	return (
 		<div className="relative flex flex-1 flex-col">
@@ -101,7 +140,7 @@ export function ExpenseCreatePage() {
 
 				<TextField
 					label="변론"
-					hint="선택, 지금은 저장되지 않습니다"
+					hint="선택, 판결문에 반영됩니다"
 					value={plea}
 					onChange={setPlea}
 					maxLength={PLEA_MAX_LENGTH}
@@ -116,18 +155,47 @@ export function ExpenseCreatePage() {
 					{postType === "considering" && " (변경 불가)"}
 				</p>
 
-				{createExpense.isError && <Alert>{createExpense.error.message}</Alert>}
+				{(asking || blocked) && (
+					<Card className="flex flex-col gap-2.5 p-4">
+						<span className="text-label text-mute">심문관</span>
+						<p className="text-body text-text">{intake?.message ?? BLOCKED_FALLBACK}</p>
+						{suggestion && (
+							<Chip selected={false} onClick={() => setTitle(suggestion)}>
+								{suggestion}
+							</Chip>
+						)}
+						<div className="flex gap-2.5 pt-1">
+							<Button
+								variant="secondary"
+								className="flex-1"
+								onClick={() => complete("REVISE")}
+								disabled={working || !draft}
+							>
+								고쳐서 다시
+							</Button>
+							{asking && (
+								<Button className="flex-1" onClick={() => complete("PROCEED")} disabled={working}>
+									그대로 등록
+								</Button>
+							)}
+						</div>
+					</Card>
+				)}
+
+				{requestError && <Alert>{requestError.message}</Alert>}
 			</div>
 
 			<div className="sticky-cta flex flex-col gap-2.5">
 				<p className="rounded-xl border border-line bg-card px-3.5 py-2.5 text-center text-chip text-mute">
 					이 지출은 내가 속한 <b className="text-ink">모든 방{roomCountLabel}</b>에 공유됩니다
 				</p>
-				<StickyCta
-					label={createExpense.isPending ? "회부 중" : "재판에 회부하기"}
-					onClick={submit}
-					disabled={!canSubmit || createExpense.isPending}
-				/>
+				{!asking && !blocked && (
+					<StickyCta
+						label={working ? "회부 중" : "재판에 회부하기"}
+						onClick={submit}
+						disabled={draft === null || working}
+					/>
+				)}
 			</div>
 		</div>
 	);

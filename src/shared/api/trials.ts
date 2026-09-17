@@ -1,6 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { PostType } from "../domain/post";
 import type { VoteVerdict } from "../domain/verdict";
 import { isPast } from "../utils/date";
 import { isApiError } from "./api-error";
@@ -44,12 +43,6 @@ export const TRIAL_QUORUM = 2;
 
 const HEADLINE_MAX_LENGTH = 30;
 const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
-
-export function tallyFromTrial(trial: Trial, postType: PostType) {
-	return postType === "considering"
-		? { oppose: trial.disagreeVotes, support: trial.agreeVotes }
-		: { oppose: trial.guiltyVotes, support: trial.notGuiltyVotes };
-}
 
 export function sentenceFromDays(days: number | null) {
 	if (days === null || days === 0) {
