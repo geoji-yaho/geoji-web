@@ -7,13 +7,11 @@ import { postQueries } from "@/shared/api/posts";
 import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
-import type { PostType } from "@/shared/domain/post";
 import { isVotingClosed } from "@/shared/domain/post";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { useNow } from "@/shared/hooks/useNow";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
-import { Chip } from "@/shared/ui/Chip";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { TextField } from "@/shared/ui/TextField";
@@ -23,10 +21,6 @@ import { CaseSummaryCard } from "../components/CaseSummaryCard";
 import { VerdictChoice, type VoteSide } from "../components/VerdictChoice";
 import { useCastPostVote } from "../hooks/useCastPostVote";
 
-const REASON_PRESETS: Record<PostType, string[]> = {
-	spent: ["지하철이 있었잖아요", "라면은 900원", "이건 인정", "다음엔 도시락"],
-	considering: ["이미 비슷한 거 있잖아요", "한 달만 참아봐요", "이건 필요하죠", "살 만해요"]
-};
 const REASON_MAX_LENGTH = 500;
 const SUBMIT_LABEL = "평결 제출";
 const CLOSED_LABEL = "투표 마감";
@@ -37,10 +31,6 @@ const MESSAGES = {
 	closed: "투표가 마감되었습니다",
 	ownPost: "본인 게시물에는 투표할 수 없습니다"
 } as const;
-
-function reasonWithPreset(current: string, preset: string) {
-	return current.trim() === "" ? preset : `${current} ${preset}`;
-}
 
 export function VotePage() {
 	const { postId = "" } = useParams();
@@ -95,13 +85,6 @@ export function VotePage() {
 
 		return chosenVerdict === null ? SUBMIT_LABEL : `${VERDICT_LABELS[chosenVerdict]}로 ${SUBMIT_LABEL}`;
 	})();
-
-	const appendReason = (preset: string) => {
-		setReason((current) => {
-			const next = reasonWithPreset(current, preset);
-			return next.length > REASON_MAX_LENGTH ? current : next;
-		});
-	};
 
 	const submit = () => {
 		if (detail === null || chosenVerdict === null) {
@@ -166,18 +149,6 @@ export function VotePage() {
 										multiline
 									/>
 								</Reveal>
-
-								<div className="flex flex-wrap gap-1.5">
-									{REASON_PRESETS[detail.postType].map((preset) => (
-										<Chip
-											key={preset}
-											disabled={reasonWithPreset(reason, preset).length > REASON_MAX_LENGTH}
-											onClick={() => appendReason(preset)}
-										>
-											{preset}
-										</Chip>
-									))}
-								</div>
 
 								<p className="text-caption leading-normal text-dim">
 									제출 후 수정할 수 없습니다. 사유는 판결 확정 후 피고인에게 공개됩니다
