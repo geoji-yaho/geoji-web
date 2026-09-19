@@ -75,7 +75,7 @@ export function HomePage() {
 	}));
 	const feedsSettled = feeds.every((feed) => !feed.isPending);
 	const sortedRoomItems = feedsSettled ? [...roomItems].sort(compareByRecentPost) : roomItems;
-	const roomDetailError = firstErrorOf(members) ?? firstErrorOf(feeds);
+	const membersError = firstErrorOf(members);
 	const monthLabel = `${kstCalendar(new Date()).month}월 지출`;
 	const needsProfile = !stats.isPending && stats.error === null && profile === null;
 	const needsOnboarding = needsProfile && !isOnboardingSkipped();
@@ -139,7 +139,7 @@ export function HomePage() {
 					</Card>
 				)}
 				{rooms.isError && <Alert>{rooms.error.message}</Alert>}
-				{roomDetailError && <Alert>{roomDetailError.message}</Alert>}
+				{membersError && <Alert>{membersError.message}</Alert>}
 				{rooms.isSuccess && roomList.length === 0 && <EmptyState title="친구들과 거지방을 만들어보세요" />}
 
 				{sortedRoomItems.map(({ room, memberCount, latestPost }, index) => (

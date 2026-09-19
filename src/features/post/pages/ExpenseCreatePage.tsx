@@ -3,10 +3,10 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import type { ApiError } from "@/shared/api/api-error";
-import type { Category, CompleteSubmissionInput, PostDraft, Submission } from "@/shared/api/posts";
+import type { CompleteSubmissionInput, PostDraft, Submission } from "@/shared/api/posts";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
-import { EXPENSE_CATEGORIES } from "@/shared/constants/expense-categories";
+import { type Category, EXPENSE_CATEGORIES } from "@/shared/constants/expense-categories";
 import { POST_TYPE_LABELS, type PostType } from "@/shared/domain/post";
 import { Alert } from "@/shared/ui/Alert";
 import { AmountField } from "@/shared/ui/AmountField";

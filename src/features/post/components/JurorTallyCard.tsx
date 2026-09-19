@@ -64,9 +64,9 @@ export function JurorTallyCard({ postType, tally, voters, rules = [] }: JurorTal
 				</ul>
 			)}
 			{rules.length > 0 && (
-				<div className="flex flex-col gap-1 border-t border-line pt-2.5 text-chip text-mute">
-					<span>참고 규칙</span>
-					<ul className="flex flex-col gap-0.5">
+				<div className="flex flex-col gap-1 border-t border-line pt-2.5">
+					<span className="text-label text-mute">참고 규칙</span>
+					<ul className="flex flex-col gap-0.5 text-chip text-mute">
 						{rules.map((rule, index) => (
 							<li key={`${index}-${rule}`}>{rule}</li>
 						))}

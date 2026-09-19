@@ -1,12 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { EXPENSE_CATEGORIES } from "../constants/expense-categories";
+import type { Category } from "../constants/expense-categories";
 import type { PostType } from "../domain/post";
 import type { Intensity } from "../domain/room";
-import type { Sentence, Verdict } from "../domain/verdict";
+import type { Sentence, Verdict, VoteTally, VoteVerdict } from "../domain/verdict";
 import { http } from "./http";
-
-export type Category = (typeof EXPENSE_CATEGORIES)[number];
 
 export type IntakeStatus = "PASS" | "NEEDS_CLARIFICATION" | "BLOCKED";
 
@@ -100,16 +98,11 @@ export type RoomBrief = {
 	spiceLevel: Intensity;
 };
 
-export type Tally = {
-	oppose: number;
-	support: number;
-};
-
 export type PostVoteBrief = {
 	id: string;
 	voterId: string;
 	voterNickname: string;
-	verdict: Verdict;
+	verdict: VoteVerdict;
 	reason: string | null;
 	createdAt: string;
 };
@@ -127,7 +120,7 @@ export type PostDetail = {
 	createdAt: string;
 	rooms: RoomBrief[];
 	juryStatus: Verdict | null;
-	tally: Tally;
+	tally: VoteTally;
 	votes: PostVoteBrief[];
 	myVote: PostVoteBrief | null;
 	canVote: boolean;
@@ -145,13 +138,13 @@ export type RoomPostSummary = {
 	voteDeadlineAt: string;
 	createdAt: string;
 	juryStatus: Verdict | null;
-	tally: Tally;
+	tally: VoteTally;
 	voted: boolean;
 };
 
 export type CastPostVoteInput = {
 	postId: string;
-	verdict: Verdict;
+	verdict: VoteVerdict;
 	reason: string;
 	roomId: string;
 };

@@ -7,12 +7,11 @@ export function useRemovePost() {
 
 	return useMutation({
 		mutationFn: removePost,
-		onSuccess: () =>
-			Promise.all([
-				queryClient.invalidateQueries({ queryKey: postQueries.feeds() }),
-				queryClient.invalidateQueries({ queryKey: postQueries.details(), refetchType: "none" }),
-				queryClient.invalidateQueries({ queryKey: postQueries.verdicts(), refetchType: "none" }),
-				queryClient.invalidateQueries({ queryKey: postQueries.shareCards(), refetchType: "none" })
-			])
+		onSuccess: async (_result, postId) => {
+			await queryClient.invalidateQueries({ queryKey: postQueries.feeds() });
+			queryClient.removeQueries({ queryKey: [...postQueries.details(), postId] });
+			queryClient.removeQueries({ queryKey: [...postQueries.verdicts(), postId] });
+			queryClient.removeQueries({ queryKey: [...postQueries.shareCards(), postId] });
+		}
 	});
 }

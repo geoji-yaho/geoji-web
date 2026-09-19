@@ -111,6 +111,8 @@ export function CommentSheet({
 				</ul>
 			)}
 
+			{removeError && <Alert>{removeError}</Alert>}
+
 			<div className="flex flex-col gap-2">
 				<TextField
 					label="댓글"
@@ -120,7 +122,7 @@ export function CommentSheet({
 					placeholder="한 마디 남기세요"
 					multiline
 				/>
-				{(submitError ?? removeError) && <Alert>{submitError ?? removeError}</Alert>}
+				{submitError && <Alert>{submitError}</Alert>}
 				<Button onClick={() => void submit()} disabled={!canSubmit}>
 					{isSubmitting ? "등록 중" : "등록"}
 				</Button>

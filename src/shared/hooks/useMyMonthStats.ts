@@ -5,6 +5,7 @@ import { profileQueries } from "../api/profile";
 import { roomQueries } from "../api/rooms";
 import { baselineSpend, calculateDebtScore } from "../domain/score";
 import { type Tier, TIER_LABELS, TIER_MIN_SCORES, tierFromScore } from "../domain/tier";
+import type { Verdict } from "../domain/verdict";
 import { monthRange } from "../utils/date";
 
 const TIER_ORDER: Tier[] = ["penniless", "hardcore", "flower", "king"];
@@ -12,7 +13,7 @@ const KING_LABEL = "이 방의 지배자";
 
 type MyPost = {
 	amountKrw: number;
-	verdicts: Set<string>;
+	verdicts: Set<Verdict>;
 };
 
 function formatNextTier(tier: Tier, score: number) {
@@ -49,7 +50,7 @@ function collectMyPosts(
 				continue;
 			}
 
-			const collected = byPostId.get(post.id) ?? { amountKrw: post.amountKrw, verdicts: new Set<string>() };
+			const collected = byPostId.get(post.id) ?? { amountKrw: post.amountKrw, verdicts: new Set<Verdict>() };
 
 			if (post.juryStatus !== null) {
 				collected.verdicts.add(post.juryStatus);
@@ -77,7 +78,7 @@ function countJudged(posts: Map<string, MyPost>) {
 		}
 	}
 
-	return { guilty, notGuilty, dismissed, total: guilty + notGuilty + dismissed };
+	return { guilty, notGuilty, dismissed };
 }
 
 export function useMyMonthStats() {

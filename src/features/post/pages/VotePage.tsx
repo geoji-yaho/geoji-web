@@ -116,6 +116,7 @@ export function VotePage() {
 								category={detail.category}
 								amount={detail.amountKrw}
 								title={detail.item}
+								reason={detail.reason}
 								rules={room.data?.rules ?? []}
 							/>
 						</Reveal>

@@ -77,7 +77,7 @@ export function VerdictCardPage() {
 			<div className="flex flex-col gap-3">
 				<Alert>{loadError.message}</Alert>
 				{card.isError && (
-					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId))}>
+					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
 						판결로 돌아가기
 					</Button>
 				)}

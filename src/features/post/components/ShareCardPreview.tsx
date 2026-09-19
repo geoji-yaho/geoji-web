@@ -51,7 +51,7 @@ export function ShareCardPreview({
 				{meme && (
 					<div className="relative flex-3 overflow-hidden rounded-card">
 						<MemeThumbnail size="lg" meme={{ src: meme.imageUrl, alt: headline ?? "판결 짤" }} className="size-full" />
-						<VerdictStamp verdict={verdict} size="lg" className="absolute right-2 bottom-2 -rotate-10" />
+						<VerdictStamp verdict={verdict} size="lg" className="absolute right-2 bottom-2" />
 					</div>
 				)}
 
@@ -67,7 +67,7 @@ export function ShareCardPreview({
 							</p>
 						)}
 					</div>
-					{!meme && <VerdictStamp verdict={verdict} size="lg" className="shrink-0 -rotate-10" />}
+					{!meme && <VerdictStamp verdict={verdict} size="lg" className="shrink-0" />}
 				</div>
 
 				<div className="flex items-center justify-between gap-3 border-t border-line pt-2.5">
