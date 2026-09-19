@@ -43,7 +43,7 @@ export function VerdictPage() {
 	const navigate = useNavigate();
 	const enabled = roomId !== "" && postId !== "";
 
-	const post = useQuery({ ...postQueries.detail(postId), enabled });
+	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled });
 	const comments = useQuery({ ...postQueries.comments(postId, roomId), enabled });
 	const verdict = usePostVerdict(postId, roomId, enabled);
