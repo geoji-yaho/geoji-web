@@ -45,18 +45,25 @@ export function ShareCardPreview({
 	return (
 		<div ref={ref} className="w-full">
 			<Card className="flex aspect-square w-full flex-col gap-3 overflow-hidden rounded-3xl p-4.5">
-				<div className="flex items-center justify-between gap-2 text-caption font-bold text-mute">
-					<span className="flex min-w-0 items-center gap-1.5">
-						<span className="truncate">{defendantName}</span>
-						{defendantTier && <TierBadge tier={defendantTier} />}
-					</span>
-					{category && <span className="shrink-0">{category}</span>}
-				</div>
-
-				{meme && (
-					<div className="relative -mx-4.5 min-h-0 flex-1 overflow-hidden">
+				{meme ? (
+					<div className="relative -mx-4.5 -mt-4.5 min-h-0 flex-1 overflow-hidden">
 						<MemeThumbnail size="lg" meme={{ src: meme.imageUrl, alt: headline ?? "판결 짤" }} className="size-full" />
+						<div className="from-black/70 text-white absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-linear-to-b to-transparent px-4.5 pt-4.5 pb-7 text-caption font-bold">
+							<span className="flex min-w-0 items-center gap-1.5">
+								<span className="truncate">{defendantName}</span>
+								{defendantTier && <TierBadge tier={defendantTier} />}
+							</span>
+							{category && <span className="shrink-0">{category}</span>}
+						</div>
 						<VerdictStamp verdict={verdict} size="lg" className="absolute right-2 bottom-2" />
+					</div>
+				) : (
+					<div className="flex items-center justify-between gap-2 text-caption font-bold text-mute">
+						<span className="flex min-w-0 items-center gap-1.5">
+							<span className="truncate">{defendantName}</span>
+							{defendantTier && <TierBadge tier={defendantTier} />}
+						</span>
+						{category && <span className="shrink-0">{category}</span>}
 					</div>
 				)}
 
