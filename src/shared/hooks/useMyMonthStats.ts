@@ -3,13 +3,14 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { postQueries, type RoomPostSummary } from "../api/posts";
 import { profileQueries } from "../api/profile";
 import { roomQueries } from "../api/rooms";
-import { baselineSpend, calculateDebtScore } from "../domain/score";
+import { baselineSpend, calculateDebtScore, DEBT_SCORE_MAX_WITHOUT_API } from "../domain/score";
 import { type Tier, TIER_LABELS, TIER_MIN_SCORES, tierFromScore } from "../domain/tier";
 import type { Verdict } from "../domain/verdict";
 import { monthRange } from "../utils/date";
 
 const TIER_ORDER: Tier[] = ["penniless", "hardcore", "flower", "king"];
 const KING_LABEL = "이 방의 지배자";
+const UNREACHABLE_TIER_LABEL = "무지출과 참여 점수 집계 전";
 
 type MyPost = {
 	amountKrw: number;
@@ -21,6 +22,10 @@ function formatNextTier(tier: Tier, score: number) {
 
 	if (next === undefined) {
 		return KING_LABEL;
+	}
+
+	if (TIER_MIN_SCORES[next] > DEBT_SCORE_MAX_WITHOUT_API) {
+		return UNREACHABLE_TIER_LABEL;
 	}
 
 	return `${TIER_LABELS[next]}까지 ${TIER_MIN_SCORES[next] - score}점`;

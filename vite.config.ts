@@ -8,8 +8,15 @@ const VENDOR_CHUNKS: Record<string, RegExp> = {
 	router: /[\\/]node_modules[\\/]react-router[\\/]/
 };
 
+const DEV_ONLY_ENV_KEYS = ["VITE_DEV_ACCESS_TOKEN", "VITE_DEV_NICKNAME"];
+
+function dropDevOnlyEnv() {
+	return Object.fromEntries(DEV_ONLY_ENV_KEYS.map((key) => [`import.meta.env.${key}`, "undefined"]));
+}
+
 export default defineConfig(({ command }) => ({
 	base: command === "build" ? "/geoji-web/" : "/",
+	define: command === "build" ? dropDevOnlyEnv() : {},
 	plugins: [react(), tailwindcss()],
 	resolve: {
 		tsconfigPaths: true

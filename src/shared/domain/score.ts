@@ -21,6 +21,9 @@ const MIN_ELAPSED_DAYS = 3;
 const NO_SPEND_SCORE_WITHOUT_API = 0;
 const PARTICIPATION_SCORE_WITHOUT_API = 0;
 
+export const DEBT_SCORE_MAX_WITHOUT_API =
+	BUDGET_SCORE_MAX + NO_SPEND_SCORE_WITHOUT_API + PARTICIPATION_SCORE_WITHOUT_API + VERDICT_SCORE_MAX;
+
 export function baselineSpend(monthlyBudget: number, today: Date) {
 	const { day, daysInMonth } = kstCalendar(today);
 	const elapsedDays = Math.max(day, MIN_ELAPSED_DAYS);

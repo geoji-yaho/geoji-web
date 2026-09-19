@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, type Variants } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ScrollRestoration, useLocation, useMatches, useNavigate, useNavigationType, useOutlet } from "react-router";
 
 import { useSession } from "@/shared/hooks/useSession";
@@ -29,6 +29,7 @@ export function AppLayout() {
 	const navigationType = useNavigationType();
 	const matches = useMatches();
 	const { session } = useSession();
+	const hasSessionRef = useRef(false);
 
 	const direction = navigationType === "POP" ? -1 : 1;
 
@@ -39,7 +40,10 @@ export function AppLayout() {
 	}, []);
 
 	useEffect(() => {
-		if (!session) {
+		const hadSession = hasSessionRef.current;
+		hasSessionRef.current = session !== null;
+
+		if (hadSession || session === null) {
 			return;
 		}
 

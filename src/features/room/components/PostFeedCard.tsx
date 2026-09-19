@@ -1,12 +1,13 @@
 import { memberTier, type RoomMember } from "@/shared/api/members";
 import type { PostVerdict, RoomPostSummary } from "@/shared/api/posts";
 import { ExpenseCard } from "@/shared/components/ExpenseCard";
-import type { ImageSource } from "@/shared/domain/post";
+import { type ImageSource, isVotingClosed } from "@/shared/domain/post";
 import type { Tier } from "@/shared/domain/tier";
-import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
+import { useNow } from "@/shared/hooks/useNow";
+import { formatRelativeTime, formatRemaining } from "@/shared/utils/date";
 
-function voteDeadlineLabel(deadline: string) {
-	const remaining = formatRemaining(deadline);
+function voteDeadlineLabel(deadline: string, now: Date) {
+	const remaining = formatRemaining(deadline, now);
 
 	if (remaining === "마감") {
 		return "투표 마감";
@@ -50,11 +51,12 @@ export function PostFeedCard({
 	onOpenVerdict,
 	onComments
 }: PostFeedCardProps) {
+	const now = useNow();
 	const tier: Tier | undefined = memberTier(author);
 	const base = {
 		name: post.authorNickname,
 		tier,
-		timeAgo: formatRelativeTime(post.createdAt),
+		timeAgo: formatRelativeTime(post.createdAt, now),
 		postType: post.postType,
 		category: post.category,
 		title: post.item,
@@ -85,13 +87,13 @@ export function PostFeedCard({
 		);
 	}
 
-	const closed = isPast(post.voteDeadlineAt);
+	const closed = isVotingClosed(post, now);
 
 	return (
 		<ExpenseCard
 			{...base}
 			state="voting"
-			deadlineLabel={voteDeadlineLabel(post.voteDeadlineAt)}
+			deadlineLabel={voteDeadlineLabel(post.voteDeadlineAt, now)}
 			tally={post.tally}
 			eligibleCount={eligibleCount}
 			voteState={voteStateOf(post, myUserId !== undefined && post.authorId === myUserId, closed)}

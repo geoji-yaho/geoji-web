@@ -8,6 +8,7 @@ import { postQueries } from "@/shared/api/posts";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { verdictPath } from "@/shared/constants/routes";
 import { VERDICT_LABELS } from "@/shared/domain/verdict";
+import { getBasename, toAbsoluteUrl } from "@/shared/lib/base-path";
 import { downloadDataUrl, shareContent } from "@/shared/lib/platform";
 import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
@@ -61,9 +62,8 @@ export function VerdictCardPage() {
 		return <RoomMissingNotice title="공유 카드" />;
 	}
 
-	const siteUrl = new URL(import.meta.env.BASE_URL, globalThis.location.origin);
-	const siteLabel = `${siteUrl.host}${siteUrl.pathname}`.replace(/\/$/, "");
-	const verdictUrl = `${siteUrl.href.replace(/\/$/, "")}${verdictPath(postId, roomId)}`;
+	const siteLabel = `${globalThis.location.host}${getBasename()}`;
+	const verdictUrl = toAbsoluteUrl(verdictPath(postId, roomId));
 
 	const pending = card.isPending || post.isPending || members.isPending;
 	const loadError = card.error ?? post.error ?? members.error;
@@ -76,25 +76,6 @@ export function VerdictCardPage() {
 			<Card role="status" className="p-4 text-chip text-mute">
 				{LOADING_MESSAGE}
 			</Card>
-		);
-	} else if (loadError) {
-		const isSentencePending = card.isError && hasPendingSentenceWords(card.error.message);
-		const isPostMissing = card.isError && !isSentencePending;
-
-		content = (
-			<div className="flex flex-col gap-3">
-				<Alert>{loadError.message}</Alert>
-				{isSentencePending && (
-					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
-						판결로 돌아가기
-					</Button>
-				)}
-				{isPostMissing && (
-					<Button variant="outline" onClick={() => void navigate("/", { replace: true })}>
-						홈으로 가기
-					</Button>
-				)}
-			</div>
 		);
 	} else if (card.data && post.data) {
 		const shareCard = card.data;
@@ -167,13 +148,28 @@ export function VerdictCardPage() {
 				</div>
 			</div>
 		);
+	} else if (loadError) {
+		const isSentencePending = card.isError && hasPendingSentenceWords(card.error.message);
+
+		content = isSentencePending ? (
+			<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
+				판결로 돌아가기
+			</Button>
+		) : (
+			<Button variant="outline" onClick={() => void navigate("/", { replace: true })}>
+				홈으로 가기
+			</Button>
+		);
 	}
 
 	return (
 		<div className="flex flex-1 flex-col px-5 pb-8.5">
 			<BackHeader title="공유 카드" onBack={() => void navigate(-1)} />
 
-			<div className="flex flex-1 flex-col justify-center gap-4.5">{content}</div>
+			<div className="flex flex-1 flex-col justify-center gap-4.5">
+				{!pending && loadError && <Alert>{loadError.message}</Alert>}
+				{content}
+			</div>
 
 			{actions}
 

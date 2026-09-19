@@ -3,6 +3,8 @@ import { BottomSheet } from "@/shared/ui/BottomSheet";
 import { Button } from "@/shared/ui/Button";
 import { TextField } from "@/shared/ui/TextField";
 
+const NICKNAME_MAX_LENGTH = 20;
+
 type NicknameSheetProps = {
 	open: boolean;
 	onClose: () => void;
@@ -24,7 +26,7 @@ export function NicknameSheet({
 }: NicknameSheetProps) {
 	return (
 		<BottomSheet open={open} onClose={onClose} title="닉네임">
-			<TextField label="닉네임" value={value} onChange={onChange} />
+			<TextField label="닉네임" value={value} onChange={onChange} maxLength={NICKNAME_MAX_LENGTH} />
 			{errorMessage && <Alert>{errorMessage}</Alert>}
 			<Button onClick={onSubmit} disabled={isPending || value.trim().length === 0}>
 				변경하기

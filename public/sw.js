@@ -1,11 +1,86 @@
 const CACHE_PREFIX = "ttegeoji-app-shell-";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
 const STATIC_ASSET_PATTERN = /\.(?:css|js|png|jpg|jpeg|svg|webp|ico|woff|woff2|webmanifest)$/;
+const HASHED_ASSET_DIR = "assets/";
+const CACHEABLE_STATUS = 200;
+
+let shellUrl = null;
+let hashedAssetPrefix = null;
 
 function getShellUrl() {
-	return new URL(self.registration.scope).href;
+	if (shellUrl === null) {
+		shellUrl = new URL(self.registration.scope).href;
+	}
+
+	return shellUrl;
+}
+
+function getHashedAssetPrefix() {
+	if (hashedAssetPrefix === null) {
+		hashedAssetPrefix = new URL(HASHED_ASSET_DIR, self.registration.scope).pathname;
+	}
+
+	return hashedAssetPrefix;
+}
+
+let cachePromise = null;
+
+async function openCache() {
+	if (cachePromise === null) {
+		cachePromise = caches.open(CACHE_NAME);
+	}
+
+	try {
+		return await cachePromise;
+	} catch {
+		cachePromise = null;
+		return null;
+	}
+}
+
+async function readCache(request) {
+	const cache = await openCache();
+	if (cache === null) {
+		return undefined;
+	}
+
+	try {
+		return await cache.match(request);
+	} catch {
+		return undefined;
+	}
+}
+
+async function putInCache(request, response) {
+	if (response.status !== CACHEABLE_STATUS) {
+		return;
+	}
+
+	const cache = await openCache();
+
+	if (cache === null) {
+		return;
+	}
+
+	await cache.put(request, response).catch(() => undefined);
+}
+
+function writeCacheLater(event, request, response) {
+	if (response.status !== CACHEABLE_STATUS) {
+		return;
+	}
+
+	event.waitUntil(putInCache(request, response.clone()));
+}
+
+function revalidateLater(event, request) {
+	event.waitUntil(
+		fetch(request)
+			.then((response) => putInCache(request, response))
+			.catch(() => undefined)
+	);
 }
 
 async function removeOldCaches() {
@@ -15,19 +90,18 @@ async function removeOldCaches() {
 	await Promise.all(stale.map((name) => caches.delete(name)));
 }
 
-async function handleNavigate(request) {
+async function handleNavigate(event) {
 	const shellUrl = getShellUrl();
-	const cache = await caches.open(CACHE_NAME);
 
 	try {
-		const response = await fetch(request);
-		if (response.status === 200 && request.url === shellUrl) {
-			await cache.put(shellUrl, response.clone());
+		const response = await fetch(event.request);
+		if (event.request.url === shellUrl) {
+			writeCacheLater(event, shellUrl, response);
 		}
 
 		return response;
 	} catch (error) {
-		const cached = await cache.match(shellUrl);
+		const cached = await readCache(shellUrl);
 		if (cached) {
 			return cached;
 		}
@@ -36,17 +110,29 @@ async function handleNavigate(request) {
 	}
 }
 
-async function handleStaticAsset(request) {
-	const cache = await caches.open(CACHE_NAME);
-	const cached = await cache.match(request);
+async function handleHashedAsset(event) {
+	const cached = await readCache(event.request);
 	if (cached) {
 		return cached;
 	}
 
-	const response = await fetch(request);
-	if (response.status === 200) {
-		await cache.put(request, response.clone());
+	const response = await fetch(event.request);
+	writeCacheLater(event, event.request, response);
+
+	return response;
+}
+
+async function handleUnhashedAsset(event) {
+	const cached = await readCache(event.request);
+
+	if (cached) {
+		revalidateLater(event, event.request);
+
+		return cached;
 	}
+
+	const response = await fetch(event.request);
+	writeCacheLater(event, event.request, response);
 
 	return response;
 }
@@ -67,7 +153,7 @@ self.addEventListener("fetch", (event) => {
 	}
 
 	if (request.mode === "navigate") {
-		event.respondWith(handleNavigate(request));
+		event.respondWith(handleNavigate(event));
 		return;
 	}
 
@@ -76,5 +162,10 @@ self.addEventListener("fetch", (event) => {
 		return;
 	}
 
-	event.respondWith(handleStaticAsset(request));
+	if (url.pathname.startsWith(getHashedAssetPrefix())) {
+		event.respondWith(handleHashedAsset(event));
+		return;
+	}
+
+	event.respondWith(handleUnhashedAsset(event));
 });

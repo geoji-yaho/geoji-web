@@ -98,19 +98,46 @@ function toRequestError(error: unknown, signal: AbortSignal | undefined) {
 	return error;
 }
 
+function linkAbortSignals(signal: AbortSignal | undefined, timeoutMs: number) {
+	if (signal?.aborted) {
+		return { signal, release: () => {} };
+	}
+
+	const timeoutSignal = AbortSignal.timeout(timeoutMs);
+
+	if (signal === undefined) {
+		return { signal: timeoutSignal, release: () => {} };
+	}
+
+	const controller = new AbortController();
+	const abortFromCaller = () => controller.abort(signal.reason);
+	const abortFromTimeout = () => controller.abort(timeoutSignal.reason);
+	const release = () => {
+		signal.removeEventListener("abort", abortFromCaller);
+		timeoutSignal.removeEventListener("abort", abortFromTimeout);
+	};
+
+	signal.addEventListener("abort", abortFromCaller);
+	timeoutSignal.addEventListener("abort", abortFromTimeout);
+
+	return { signal: controller.signal, release };
+}
+
 async function request<T>(method: HttpMethod, path: string, options: RequestOptions = {}) {
 	const { query, body, signal, timeoutMs = DEFAULT_TIMEOUT_MS, auth = true } = options;
 	const url = buildUrl(path, query);
 	const headers = await buildHeaders(body, auth);
-	const timeoutSignal = AbortSignal.timeout(timeoutMs);
-	const requestSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+	let releaseSignals = () => {};
 
 	try {
+		const linked = linkAbortSignals(signal, timeoutMs);
+		releaseSignals = linked.release;
+
 		const response = await fetch(url, {
 			method,
 			headers,
 			body: body === undefined ? undefined : JSON.stringify(body),
-			signal: requestSignal
+			signal: linked.signal
 		});
 
 		if (!response.ok) {
@@ -120,6 +147,8 @@ async function request<T>(method: HttpMethod, path: string, options: RequestOpti
 		return await readSuccessBody<T>(response);
 	} catch (error) {
 		throw toRequestError(error, signal);
+	} finally {
+		releaseSignals();
 	}
 }
 
