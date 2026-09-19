@@ -25,13 +25,6 @@ function formatNextTier(tier: Tier, score: number) {
 	return `${TIER_LABELS[next]}까지 ${TIER_MIN_SCORES[next] - score}점`;
 }
 
-/**
- * 이번 달에 내가 올린 지출을 게시물 단위로 모은다.
- *
- * 게시물 하나가 내가 속한 방마다 한 번씩 피드에 나오므로 id 로 합친다. 판결은 방마다 따로 나기
- * 때문에 평결은 게시물당 여러 개가 될 수 있고, 그것을 모아 두었다가 아래에서 하나로 정한다.
- * 살까 말까(considering)는 쓴 돈이 아니라 제외한다.
- */
 function collectMyPosts(
 	feeds: (RoomPostSummary[] | undefined)[],
 	userId: string | null,
@@ -69,10 +62,6 @@ function collectMyPosts(
 	return byPostId;
 }
 
-/**
- * 게시물 단위로 센다. 한 게시물이 방마다 다른 평결을 받았으면 무죄가 하나라도 있으면 무죄로 본다
- * (백엔드 거지력 집계 DebtScoreQueries 와 같은 규칙).
- */
 function countJudged(posts: Map<string, MyPost>) {
 	let guilty = 0;
 	let notGuilty = 0;
