@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
-import { memberQueries, type RoomMember } from "@/shared/api/members";
+import { memberName, memberQueries, type RoomMember } from "@/shared/api/members";
 import { profileQueries } from "@/shared/api/profile";
 import { MyRankRow } from "@/shared/components/MyRankRow";
 import { type PodiumPlace, RankingPodium } from "@/shared/components/RankingPodium";
@@ -58,7 +58,7 @@ export function RoomRankingPage() {
 						<RankingPodium
 							entries={podium.map((entry, index) => ({
 								place: PODIUM_PLACES[index],
-								name: entry.member.nickname,
+								name: memberName(entry.member),
 								tier: tierFromScore(entry.score),
 								value: formatScore(entry.score),
 								isMe: entry.member.userId === myUserId
@@ -73,7 +73,7 @@ export function RoomRankingPage() {
 							<Reveal key={entry.member.userId} as="li" index={ROW_REVEAL_FROM + index}>
 								<RankingRow
 									rank={entry.rank}
-									name={entry.member.nickname}
+									name={memberName(entry.member)}
 									tier={tierFromScore(entry.score)}
 									value={formatScore(entry.score)}
 									isMe={entry.member.userId === myUserId}
@@ -84,7 +84,7 @@ export function RoomRankingPage() {
 							<Reveal key={member.userId} as="li" index={ROW_REVEAL_FROM + rows.length + index}>
 								<RankingRow
 									rank={null}
-									name={member.nickname}
+									name={memberName(member)}
 									tier={null}
 									value={null}
 									isMe={member.userId === myUserId}
@@ -95,7 +95,7 @@ export function RoomRankingPage() {
 				)}
 			</div>
 
-			{mine && <MyRankRow name={mine.nickname} rank={myRank} className="sticky bottom-0 z-40 rounded-none" />}
+			{mine && <MyRankRow name={memberName(mine)} rank={myRank} className="sticky bottom-0 z-40 rounded-none" />}
 		</>
 	);
 }

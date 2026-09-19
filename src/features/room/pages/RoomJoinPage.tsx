@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
+import { UNKNOWN_MEMBER_NAME } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
 import { formatVoteDeadlineLabel } from "@/shared/domain/room";
@@ -58,7 +59,7 @@ export function RoomJoinPage() {
 	const summary =
 		room === null
 			? ""
-			: `방장 ${room.ownerNickname}, 멤버 ${room.memberCount}, 마감 ${formatVoteDeadlineLabel(room.voteDeadlineMinutes)}`;
+			: `방장 ${room.ownerNickname ?? UNKNOWN_MEMBER_NAME}, 멤버 ${room.memberCount}, 마감 ${formatVoteDeadlineLabel(room.voteDeadlineMinutes)}`;
 
 	return (
 		<div className="flex flex-1 flex-col gap-4.5 px-5 pt-4 pb-8.5">

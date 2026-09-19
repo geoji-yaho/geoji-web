@@ -116,13 +116,15 @@ export function useMyMonthStats() {
 	const tier: Tier = tierFromScore(score);
 
 	const isPending = me.isPending || rooms.isPending || feeds.some((result) => result.isPending);
-	const errors = [me.error, rooms.error, ...feeds.map((result) => result.error)];
-	const error = errors.find((candidate) => candidate !== null) ?? null;
+	const summaryErrors = [me.error, ...feeds.map((result) => result.error)];
+	const summaryError = summaryErrors.find((candidate) => candidate !== null) ?? null;
+	const error = summaryError ?? rooms.error;
 
 	return {
 		isPending,
 		isError: error !== null,
 		error,
+		summaryError,
 		profile,
 		spentThisMonth,
 		baseline: profile === null ? null : baselineSpend(profile.monthlyBudget, now),

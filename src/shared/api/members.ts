@@ -3,11 +3,11 @@ import { queryOptions } from "@tanstack/react-query";
 import { tierFromScore } from "../domain/tier";
 import { http } from "./http";
 
-const UNKNOWN_MEMBER_NAME = "알 수 없는 멤버";
+export const UNKNOWN_MEMBER_NAME = "알 수 없는 멤버";
 
 export type RoomMember = {
 	userId: string;
-	nickname: string;
+	nickname: string | null;
 	avatarUrl: string | null;
 	debtScore: number | null;
 	joinedAt: string;

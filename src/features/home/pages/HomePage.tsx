@@ -98,7 +98,7 @@ export function HomePage() {
 						프로필을 불러오는 중
 					</Card>
 				)}
-				{stats.error && <Alert>{stats.error.message}</Alert>}
+				{stats.summaryError && <Alert>{stats.summaryError.message}</Alert>}
 
 				{!stats.isPending && profile && (
 					<Reveal>
