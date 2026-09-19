@@ -39,7 +39,8 @@ const MESSAGES = {
 	loading: "판결을 불러오는 중",
 	voting: "배심원들이 투표하고 있습니다",
 	generating: "AI 판사가 심리 중입니다",
-	dismissed: "배심원이 모이지 않아 각하되었습니다"
+	dismissed: "배심원이 모이지 않아 각하되었습니다",
+	retry: "다시 시도"
 } as const;
 const REMOVE_COPY = {
 	title: "게시물 삭제",
@@ -157,8 +158,6 @@ export function VerdictPage() {
 
 		content = (
 			<>
-				{loadError && <Alert>{loadError.message}</Alert>}
-
 				{isDismissed && <VerdictHeadlineBlock verdict="dismissed" headline={MESSAGES.dismissed} onLand={handleLand} />}
 
 				{view && state?.juryStatus && !isDismissed && (
@@ -228,15 +227,6 @@ export function VerdictPage() {
 				className="sticky-cta"
 			/>
 		);
-	} else if (loadError) {
-		content = (
-			<>
-				<Alert>{loadError.message}</Alert>
-				<Button variant="outline" onClick={retryLoad}>
-					다시 시도
-				</Button>
-			</>
-		);
 	}
 
 	const commentItems = comments.isSuccess
@@ -258,6 +248,14 @@ export function VerdictPage() {
 			</div>
 
 			<div ref={scope} className="flex flex-col gap-3 px-5 pt-1.5 pb-10">
+				{!pending && loadError && (
+					<>
+						<Alert>{loadError.message}</Alert>
+						<Button variant="outline" onClick={retryLoad}>
+							{MESSAGES.retry}
+						</Button>
+					</>
+				)}
 				{content}
 			</div>
 
