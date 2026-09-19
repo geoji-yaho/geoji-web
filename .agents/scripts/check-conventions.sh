@@ -155,7 +155,7 @@ check "globals.css에 @import와 @source 밖의 줄이 있다" \
 printf '\n=== 데이터 층 (api.md) ===\n\n'
 
 check "화면이나 훅이 fetch를 직접 부른다" \
-	'grep -rn "fetch(" src/features src/app --include="*.ts" --include="*.tsx"'
+	'grep -rnE "(^|[^[:alnum:]_])fetch\(" src/features src/app --include="*.ts" --include="*.tsx"'
 
 check "화면이 http를 직접 가져온다" \
 	'grep -rn "shared/api/http" src/features/*/pages src/features/*/components src/app --include="*.ts" --include="*.tsx"'
