@@ -1,10 +1,10 @@
 import { memberTier, type RoomMember } from "@/shared/api/members";
 import type { PostVerdict, RoomPostSummary } from "@/shared/api/posts";
 import { ExpenseCard } from "@/shared/components/ExpenseCard";
-import type { ImageSource } from "@/shared/domain/post";
+import { type ImageSource, isVotingClosed } from "@/shared/domain/post";
 import type { Tier } from "@/shared/domain/tier";
 import { useNow } from "@/shared/hooks/useNow";
-import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
+import { formatRelativeTime, formatRemaining } from "@/shared/utils/date";
 
 function voteDeadlineLabel(deadline: string, now: Date) {
 	const remaining = formatRemaining(deadline, now);
@@ -87,7 +87,7 @@ export function PostFeedCard({
 		);
 	}
 
-	const closed = isPast(post.voteDeadlineAt, now);
+	const closed = isVotingClosed(post, now);
 
 	return (
 		<ExpenseCard

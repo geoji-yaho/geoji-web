@@ -8,6 +8,7 @@ import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import type { PostType } from "@/shared/domain/post";
+import { isVotingClosed } from "@/shared/domain/post";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { useNow } from "@/shared/hooks/useNow";
 import { Alert } from "@/shared/ui/Alert";
@@ -76,7 +77,7 @@ export function VotePage() {
 		if (detail.authorId === myUserId) {
 			return MESSAGES.ownPost;
 		}
-		if (isDeadlinePast || detail.juryStatus !== null) {
+		if (isVotingClosed(detail, now)) {
 			return MESSAGES.closed;
 		}
 		return detail.canVote ? null : MESSAGES.alreadyVoted;
