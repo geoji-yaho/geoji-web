@@ -14,6 +14,7 @@ import { useJoinRoom } from "../hooks/useJoinRoom";
 
 const EXPIRED_MESSAGE = "만료된 초대 링크입니다";
 const LOADING_MESSAGE = "초대장을 불러오는 중";
+const ALREADY_MEMBER_NOTICE = "이미 참여 중인 방입니다";
 
 export function RoomJoinPage() {
 	const navigate = useNavigate();
@@ -30,7 +31,7 @@ export function RoomJoinPage() {
 
 	useEffect(() => {
 		if (alreadyMember && joinedRoomId) {
-			void navigate(`/rooms/${joinedRoomId}`, { replace: true });
+			void navigate(`/rooms/${joinedRoomId}`, { replace: true, state: { notice: ALREADY_MEMBER_NOTICE } });
 		}
 	}, [alreadyMember, joinedRoomId, navigate]);
 

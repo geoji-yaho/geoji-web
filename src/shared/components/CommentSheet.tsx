@@ -14,6 +14,7 @@ export type CommentItem = {
 	authorName: string;
 	content: string;
 	createdAtLabel: string;
+	isMine?: boolean;
 };
 
 type CommentSheetProps = {
@@ -25,6 +26,9 @@ type CommentSheetProps = {
 	onSubmit: (content: string) => Promise<unknown>;
 	isSubmitting: boolean;
 	submitError: string | null;
+	onRemove?: (commentId: string) => Promise<unknown>;
+	removingId?: string | null;
+	removeError?: string | null;
 };
 
 export function CommentSheet({
@@ -35,7 +39,10 @@ export function CommentSheet({
 	error,
 	onSubmit,
 	isSubmitting,
-	submitError
+	submitError,
+	onRemove,
+	removingId = null,
+	removeError = null
 }: CommentSheetProps) {
 	const [draft, setDraft] = useState("");
 	const trimmed = draft.trim();
@@ -49,6 +56,18 @@ export function CommentSheet({
 		try {
 			await onSubmit(trimmed);
 			setDraft("");
+		} catch {
+			return;
+		}
+	};
+
+	const remove = async (commentId: string) => {
+		if (!onRemove || removingId !== null) {
+			return;
+		}
+
+		try {
+			await onRemove(commentId);
 		} catch {
 			return;
 		}
@@ -76,6 +95,17 @@ export function CommentSheet({
 								</div>
 								<p className="text-chip whitespace-pre-line text-text">{comment.content}</p>
 							</div>
+							{comment.isMine && onRemove && (
+								<button
+									type="button"
+									aria-label="댓글 삭제"
+									onClick={() => void remove(comment.id)}
+									disabled={removingId === comment.id}
+									className="shrink-0 pressable text-caption text-mute disabled:text-dim"
+								>
+									{removingId === comment.id ? "삭제 중" : "삭제"}
+								</button>
+							)}
 						</li>
 					))}
 				</ul>
@@ -90,7 +120,7 @@ export function CommentSheet({
 					placeholder="한 마디 남기세요"
 					multiline
 				/>
-				{submitError && <Alert>{submitError}</Alert>}
+				{(submitError ?? removeError) && <Alert>{submitError ?? removeError}</Alert>}
 				<Button onClick={() => void submit()} disabled={!canSubmit}>
 					{isSubmitting ? "등록 중" : "등록"}
 				</Button>

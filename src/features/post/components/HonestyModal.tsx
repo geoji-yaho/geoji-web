@@ -1,24 +1,59 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import { type SubmitEvent, useState } from "react";
 
 import { DURATION, EASE_OUT } from "@/shared/lib/motion";
+import { Alert } from "@/shared/ui/Alert";
 import { Avatar } from "@/shared/ui/Avatar";
 import { Button } from "@/shared/ui/Button";
 
-const ROOM_PATH = "/rooms/1";
-const INITIAL_REVISED_TITLE = "아이스크림 구매";
 const HEADLINE_LINES = ["저기요.", "그럴싸한 이름 붙이지 마시고", "솔직히 얘기하세요."];
 const CARD_SCALE_FROM = 0.96;
+const TITLE_MAX_LENGTH = 30;
 
 type HonestyModalProps = {
 	open: boolean;
 	originalTitle: string;
+	message: string | null;
+	suggestedTitle: string | null;
+	canProceed: boolean;
+	isPending: boolean;
+	errorMessage: string | null;
+	onRevise: (title: string) => void;
+	onProceed: () => void;
 };
 
-export function HonestyModal({ open, originalTitle }: HonestyModalProps) {
-	const navigate = useNavigate();
-	const [revisedTitle, setRevisedTitle] = useState(INITIAL_REVISED_TITLE);
+export function HonestyModal({
+	open,
+	originalTitle,
+	message,
+	suggestedTitle,
+	canProceed,
+	isPending,
+	errorMessage,
+	onRevise,
+	onProceed
+}: HonestyModalProps) {
+	const initialTitle = suggestedTitle ?? originalTitle;
+	const [revisedTitle, setRevisedTitle] = useState(initialTitle);
+	const [prevOpen, setPrevOpen] = useState(open);
+
+	if (open !== prevOpen) {
+		setPrevOpen(open);
+		if (open) {
+			setRevisedTitle(initialTitle);
+		}
+	}
+
+	const trimmedTitle = revisedTitle.trim();
+	const isTitleValid = trimmedTitle.length > 0 && trimmedTitle.length <= TITLE_MAX_LENGTH;
+	const canRevise = isTitleValid && !isPending;
+
+	const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		if (canRevise) {
+			onRevise(trimmedTitle);
+		}
+	};
 
 	return (
 		<AnimatePresence>
@@ -54,22 +89,39 @@ export function HonestyModal({ open, originalTitle }: HonestyModalProps) {
 							))}
 						</h2>
 
+						{message && <p className="text-chip text-mute">{message}</p>}
+
 						<p className="rounded-2xl bg-fill px-3.5 py-3 text-chip leading-normal text-mute line-through">
 							{originalTitle}
 						</p>
 
-						<input
-							aria-label="솔직하게 고친 내용"
-							value={revisedTitle}
-							onChange={(event) => setRevisedTitle(event.target.value)}
-							className="rounded-2xl border-2 border-red bg-card px-3.5 py-3 text-subtitle font-extrabold text-ink outline-none"
-						/>
+						<form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+							<input
+								aria-label="솔직하게 고친 내용"
+								autoFocus
+								value={revisedTitle}
+								maxLength={TITLE_MAX_LENGTH}
+								onChange={(event) => setRevisedTitle(event.target.value)}
+								className="rounded-2xl border-2 border-red bg-card px-3.5 py-3 text-subtitle font-extrabold text-ink outline-none"
+							/>
 
-						<Button onClick={() => navigate(ROOM_PATH)}>솔직하게 고쳤어요</Button>
+							{errorMessage && <Alert>{errorMessage}</Alert>}
 
-						<button type="button" onClick={() => navigate(ROOM_PATH)} className="text-center text-control text-mute">
-							이대로 회부 (가중처벌 가능)
-						</button>
+							<Button type="submit" disabled={!canRevise}>
+								솔직하게 고쳤어요
+							</Button>
+
+							{canProceed && (
+								<button
+									type="button"
+									onClick={onProceed}
+									disabled={isPending}
+									className="text-center text-control text-mute disabled:text-dim"
+								>
+									이대로 회부 (가중처벌 가능)
+								</button>
+							)}
+						</form>
 					</motion.div>
 				</motion.div>
 			)}

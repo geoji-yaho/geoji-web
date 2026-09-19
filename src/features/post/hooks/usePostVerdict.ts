@@ -38,6 +38,9 @@ export function usePostVerdict(postId: string, roomId: string | null, enabled = 
 			return before && after.textVersion < before.textVersion ? before : after;
 		},
 		refetchInterval: (query) => {
+			if (query.state.status === "error") {
+				return false;
+			}
 			const verdict = query.state.data;
 			if (!verdict) {
 				return FAST_INTERVAL_MS;

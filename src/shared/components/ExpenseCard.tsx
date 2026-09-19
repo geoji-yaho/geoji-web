@@ -12,6 +12,7 @@ import {
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { formatAmount } from "../utils/format";
+import { MemeThumbnail } from "./MemeThumbnail";
 import { PostTypeTag } from "./PostTypeTag";
 import { ReactionRow } from "./ReactionRow";
 import { StatusTag } from "./StatusTag";
@@ -63,6 +64,7 @@ type JudgedProps = {
 	tally: VoteTally;
 	sentence?: Sentence;
 	headline?: string;
+	meme?: ImageSource;
 	onOpenVerdict?: () => void;
 };
 
@@ -148,6 +150,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 								)}
 								{props.headline && <span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>}
 							</div>
+							{props.meme && <MemeThumbnail meme={props.meme} size="sm" />}
 						</div>
 						{props.onOpenVerdict && (
 							<Button variant="outline" onClick={props.onOpenVerdict}>

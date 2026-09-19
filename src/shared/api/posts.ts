@@ -201,6 +201,10 @@ export function removePost(postId: string) {
 	return http.delete<void>(`/api/posts/${encodeURIComponent(postId)}`);
 }
 
+export function removePostComment(postId: string, commentId: string) {
+	return http.delete<void>(`/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}`);
+}
+
 function roomSearch(roomId: string | null) {
 	return roomId === null || roomId === "" ? "" : `?room_id=${encodeURIComponent(roomId)}`;
 }

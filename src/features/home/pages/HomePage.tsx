@@ -1,8 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { roomQueries } from "@/shared/api/rooms";
+import type { ApiError } from "@/shared/api/api-error";
+import { memberQueries } from "@/shared/api/members";
+import { postQueries, type RoomPostSummary } from "@/shared/api/posts";
+import { type Room, roomQueries } from "@/shared/api/rooms";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { HomeHeader } from "@/shared/components/HomeHeader";
 import { RoomCard } from "@/shared/components/RoomCard";
@@ -14,9 +17,41 @@ import { Card } from "@/shared/ui/Card";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { kstCalendar } from "@/shared/utils/date";
+import { formatAmount } from "@/shared/utils/format";
 
 import { ProfileSummaryCard } from "../components/ProfileSummaryCard";
 import { RoomJoinSheet } from "../components/RoomJoinSheet";
+
+type QueryFailure = {
+	isError: boolean;
+	error: ApiError | null;
+};
+
+type RoomCardItem = {
+	room: Room;
+	memberCount: number | undefined;
+	latestPost: RoomPostSummary | null;
+};
+
+function firstErrorOf(queries: QueryFailure[]) {
+	return queries.find((query) => query.isError)?.error ?? null;
+}
+
+function formatRecentPost(post: RoomPostSummary) {
+	return `${post.authorNickname}: ${post.item} ${formatAmount(post.amountKrw)}원`;
+}
+
+function compareByRecentPost(a: RoomCardItem, b: RoomCardItem) {
+	if (a.latestPost === null) {
+		return b.latestPost === null ? 0 : 1;
+	}
+
+	if (b.latestPost === null) {
+		return -1;
+	}
+
+	return new Date(b.latestPost.createdAt).getTime() - new Date(a.latestPost.createdAt).getTime();
+}
 
 export function HomePage() {
 	const navigate = useNavigate();
@@ -26,6 +61,21 @@ export function HomePage() {
 
 	const profile = stats.profile;
 	const roomList = rooms.data ?? [];
+	const members = useQueries({
+		queries: roomList.map((room) => memberQueries.list(room.id))
+	});
+	const feeds = useQueries({
+		queries: roomList.map((room) => postQueries.feed(room.id))
+	});
+
+	const roomItems: RoomCardItem[] = roomList.map((room, index) => ({
+		room,
+		memberCount: members[index].data?.length,
+		latestPost: feeds[index].data?.[0] ?? null
+	}));
+	const feedsSettled = feeds.every((feed) => !feed.isPending);
+	const sortedRoomItems = feedsSettled ? [...roomItems].sort(compareByRecentPost) : roomItems;
+	const roomDetailError = firstErrorOf(members) ?? firstErrorOf(feeds);
 	const monthLabel = `${kstCalendar(new Date()).month}월 지출`;
 	const needsProfile = !stats.isPending && stats.error === null && profile === null;
 	const needsOnboarding = needsProfile && !isOnboardingSkipped();
@@ -89,14 +139,17 @@ export function HomePage() {
 					</Card>
 				)}
 				{rooms.isError && <Alert>{rooms.error.message}</Alert>}
+				{roomDetailError && <Alert>{roomDetailError.message}</Alert>}
 				{rooms.isSuccess && roomList.length === 0 && <EmptyState title="친구들과 거지방을 만들어보세요" />}
 
-				{roomList.map((room, index) => (
+				{sortedRoomItems.map(({ room, memberCount, latestPost }, index) => (
 					<Reveal key={room.id} index={index + 2}>
 						<RoomCard
 							roomName={room.name}
 							intensity={room.spiceLevel}
 							deadlineLabel={`${formatVoteDeadlineLabel(room.voteDeadlineMinutes)} 재판`}
+							memberCount={memberCount}
+							recentActivity={latestPost ? formatRecentPost(latestPost) : undefined}
 							onClick={() => void navigate(`/rooms/${room.id}`)}
 						/>
 					</Reveal>

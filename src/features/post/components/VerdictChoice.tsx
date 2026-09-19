@@ -18,7 +18,7 @@ const SIDES: VoteSide[] = ["oppose", "support"];
 
 type VerdictChoiceProps = {
 	postType: PostType;
-	value: VoteSide;
+	value: VoteSide | null;
 	onChange: (side: VoteSide) => void;
 };
 

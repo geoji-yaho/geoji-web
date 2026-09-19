@@ -25,6 +25,7 @@ const REASON_PRESETS: Record<PostType, string[]> = {
 	considering: ["이미 비슷한 거 있잖아요", "한 달만 참아봐요", "이건 필요하죠", "살 만해요"]
 };
 const REASON_MAX_LENGTH = 500;
+const SUBMIT_LABEL = "평결 제출";
 const MESSAGES = {
 	missingRoom: "방 정보가 없습니다",
 	loading: "사건을 불러오는 중",
@@ -39,7 +40,7 @@ export function VotePage() {
 	const navigate = useNavigate();
 	const roomId = searchParams.get("room") ?? "";
 	const hasRoom = roomId !== "";
-	const [side, setSide] = useState<VoteSide>("oppose");
+	const [side, setSide] = useState<VoteSide | null>(null);
 	const [reason, setReason] = useState("");
 
 	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled: hasRoom && postId !== "" });
@@ -70,9 +71,10 @@ export function VotePage() {
 		return MESSAGES.ownPost;
 	})();
 
-	const chosenVerdict = detail === null ? null : VOTE_VERDICTS[detail.postType][side];
+	const chosenVerdict = detail === null || side === null ? null : VOTE_VERDICTS[detail.postType][side];
 	const trimmedReason = reason.trim();
-	const canSubmit = detail !== null && detail.canVote && trimmedReason.length > 0 && !castVote.isPending;
+	const canSubmit =
+		detail !== null && detail.canVote && chosenVerdict !== null && trimmedReason.length > 0 && !castVote.isPending;
 
 	const appendReason = (preset: string) => {
 		setReason((current) => (current ? `${current} ${preset}` : preset));
@@ -160,9 +162,9 @@ export function VotePage() {
 			</div>
 
 			{!hasRoom && <StickyCta label="홈으로 가기" onClick={() => void navigate("/")} className="sticky-cta" />}
-			{detail && chosenVerdict && detail.canVote && (
+			{detail && detail.canVote && (
 				<StickyCta
-					label={`${VERDICT_LABELS[chosenVerdict]}로 평결 제출`}
+					label={chosenVerdict === null ? SUBMIT_LABEL : `${VERDICT_LABELS[chosenVerdict]}로 ${SUBMIT_LABEL}`}
 					onClick={submit}
 					disabled={!canSubmit}
 					className="sticky-cta"
