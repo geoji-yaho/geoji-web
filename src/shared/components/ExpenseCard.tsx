@@ -1,6 +1,7 @@
 import type { ImageSource, PostType, Reaction } from "../domain/post";
 import type { Tier } from "../domain/tier";
 import {
+	isSupportFirst,
 	type Sentence,
 	SENTENCE_LABELS,
 	SENTENCE_NOTES,
@@ -131,7 +132,12 @@ export function ExpenseCard(props: ExpenseCardProps) {
 								{props.tally.oppose + props.tally.support}/{props.eligibleCount} 투표
 							</span>
 						</div>
-						<TallyRow tally={props.tally} opposeLabel={VERDICT_LABELS[oppose]} supportLabel={VERDICT_LABELS[support]} />
+						<TallyRow
+							tally={props.tally}
+							opposeLabel={VERDICT_LABELS[oppose]}
+							supportLabel={VERDICT_LABELS[support]}
+							supportFirst={isSupportFirst(props.postType)}
+						/>
 						<Button variant="ink" disabled={props.voteState !== "open"} onClick={props.onVote}>
 							{VOTE_BUTTON_LABELS[props.voteState]}
 						</Button>

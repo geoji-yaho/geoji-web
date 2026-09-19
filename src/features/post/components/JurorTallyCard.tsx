@@ -1,7 +1,14 @@
 import { cva } from "class-variance-authority";
 
 import type { PostType } from "@/shared/domain/post";
-import { type Verdict, VERDICT_LABELS, VERDICT_SIDES, VOTE_VERDICTS, type VoteTally } from "@/shared/domain/verdict";
+import {
+	isSupportFirst,
+	type Verdict,
+	VERDICT_LABELS,
+	VERDICT_SIDES,
+	VOTE_VERDICTS,
+	type VoteTally
+} from "@/shared/domain/verdict";
 import { Avatar } from "@/shared/ui/Avatar";
 import { Card } from "@/shared/ui/Card";
 import { SplitBar } from "@/shared/ui/SplitBar";
@@ -32,18 +39,25 @@ type JurorTallyCardProps = {
 
 export function JurorTallyCard({ postType, tally, voters, rules = [] }: JurorTallyCardProps) {
 	const { oppose, support } = VOTE_VERDICTS[postType];
+	const supportFirst = isSupportFirst(postType);
+	const opposeCount = (
+		<span className="font-black text-red">
+			{VERDICT_LABELS[oppose]} {tally.oppose}
+		</span>
+	);
+	const supportCount = (
+		<span className="font-black text-green">
+			{VERDICT_LABELS[support]} {tally.support}
+		</span>
+	);
 
 	return (
 		<Card className="flex flex-col gap-2.5 p-4">
 			<h2 className="text-label text-mute">배심원 평결</h2>
-			<SplitBar opposeValue={tally.oppose} supportValue={tally.support} className="h-2.5" />
+			<SplitBar opposeValue={tally.oppose} supportValue={tally.support} supportFirst={supportFirst} className="h-2.5" />
 			<div className="flex justify-between text-xs">
-				<span className="font-black text-red">
-					{VERDICT_LABELS[oppose]} {tally.oppose}
-				</span>
-				<span className="font-black text-green">
-					{VERDICT_LABELS[support]} {tally.support}
-				</span>
+				{supportFirst ? supportCount : opposeCount}
+				{supportFirst ? opposeCount : supportCount}
 			</div>
 			{voters.length > 0 && (
 				<ul className="flex flex-col gap-2.5 border-t border-line pt-2.5">

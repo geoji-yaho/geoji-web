@@ -1,5 +1,5 @@
 import type { PostType } from "@/shared/domain/post";
-import { VERDICT_LABELS, type VerdictSide, VOTE_VERDICTS } from "@/shared/domain/verdict";
+import { VERDICT_LABELS, type VerdictSide, VOTE_SIDE_ORDER, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { cn } from "@/shared/lib/cn";
 
 export type VoteSide = Exclude<VerdictSide, "none">;
@@ -14,8 +14,6 @@ const CHOICE_NOTES: Record<PostType, Record<VoteSide, string>> = {
 	considering: { oppose: "사지 마세요", support: "사도 됩니다" }
 };
 
-const SIDES: VoteSide[] = ["oppose", "support"];
-
 type VerdictChoiceProps = {
 	postType: PostType;
 	value: VoteSide | null;
@@ -24,11 +22,12 @@ type VerdictChoiceProps = {
 
 export function VerdictChoice({ postType, value, onChange }: VerdictChoiceProps) {
 	const verdicts = VOTE_VERDICTS[postType];
+	const sides = VOTE_SIDE_ORDER[postType];
 	const notes = CHOICE_NOTES[postType];
 
 	return (
 		<div className="flex gap-2.5">
-			{SIDES.map((side) => {
+			{sides.map((side) => {
 				const selected = side === value;
 
 				return (
