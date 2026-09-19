@@ -14,6 +14,7 @@
 | `release/RUNBOOK.md`    | 배포와 장애 대응, 운영 절차를 어떻게 하는가               |
 | `release/PRIVACY.md`    | 어떤 정보를 모으고 어떻게 다루는가                        |
 | `release/TC.md`         | 어떤 단계를 밟으면 무엇이 보여야 하는가. QA 테스트 케이스 |
+| `release/STATUS.md`     | 지금 무엇이 되고 어디까지 확인했는가                      |
 
 ## 한 정보 한 자리
 

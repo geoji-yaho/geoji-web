@@ -14,6 +14,8 @@ import { useKakaoLogin } from "../hooks/useKakaoLogin";
 import { oauthError } from "../utils/oauthError";
 
 const LOGIN_POINTS = ["피고 = 나", "배심원 = 친구", "판사 = AI"];
+const PRIVACY_LABEL = "개인정보처리방침";
+const PRIVACY_HREF = "https://github.com/geoji-yaho/geoji-web/blob/main/docs/release/PRIVACY.md";
 const CANCELLED_MESSAGE = "로그인이 취소되었습니다";
 const FAILED_MESSAGE = "로그인에 실패했습니다";
 
@@ -87,13 +89,14 @@ export function LoginPage() {
 					카카오로 시작하기
 				</Button>
 				<p className="text-center text-caption text-dim">
-					<button type="button" className="underline">
-						이용약관
-					</button>
-					&nbsp;
-					<button type="button" className="underline">
-						개인정보처리방침
-					</button>
+					<a
+						href={PRIVACY_HREF}
+						target="_blank"
+						rel="noreferrer"
+						className="inline-flex min-h-11 pressable items-center px-3 underline"
+					>
+						{PRIVACY_LABEL}
+					</a>
 				</p>
 			</Reveal>
 		</div>
