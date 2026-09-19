@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 
 import type { ApiError } from "@/shared/api/api-error";
 import { memberQueries, type RoomMember } from "@/shared/api/members";
-import { type PostComment, postQueries } from "@/shared/api/posts";
+import { type PostComment, postQueries, type RoomPostSummary } from "@/shared/api/posts";
 import { profileQueries } from "@/shared/api/profile";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -33,6 +33,10 @@ type QueryFailure = {
 
 function firstErrorOf(queries: QueryFailure[]) {
 	return queries.find((query) => query.isError)?.error ?? null;
+}
+
+function countFailedPosts(posts: RoomPostSummary[], details: Map<string, QueryFailure | undefined>[]) {
+	return posts.filter((post) => details.some((detail) => detail.get(post.id)?.isError === true)).length;
 }
 
 function toCommentItems(comments: PostComment[], myUserId: string | undefined) {
@@ -71,7 +75,8 @@ export function RoomFeedPage() {
 	const eligibleCount = members.data ? Math.max(0, members.data.length - 1) : 0;
 
 	const isPending = me.isPending || members.isPending || feed.isPending;
-	const firstError = firstErrorOf([me, members, feed]) ?? firstErrorOf(verdicts) ?? firstErrorOf(comments);
+	const feedError = firstErrorOf([me, members, feed]);
+	const failedDetailCount = countFailedPosts(postList, [verdictByPostId, commentsByPostId]);
 	const isEmpty = feed.isSuccess && postList.length === 0;
 	const sheetComments = sheet ? commentsByPostId.get(sheet.postId) : undefined;
 
@@ -93,7 +98,13 @@ export function RoomFeedPage() {
 						피드를 불러오는 중
 					</Card>
 				)}
-				{firstError && <Alert>{firstError.message}</Alert>}
+				{feedError && <Alert>{feedError.message}</Alert>}
+				{!feedError && failedDetailCount > 0 && (
+					<Alert tone="fill">
+						게시물 {failedDetailCount}건의 판결과 댓글을 불러오지 못했습니다. 그 카드의 도장과 댓글 수가 실제와 다를 수
+						있습니다.
+					</Alert>
+				)}
 				{isEmpty && <EmptyState title="아직 아무도 돈을 쓰지 않았습니다. 평화롭네요." />}
 
 				{!isPending &&
