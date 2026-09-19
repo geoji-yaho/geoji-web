@@ -1,5 +1,5 @@
 import { LogoIcon } from "@/shared/components/LogoIcon";
-import { buttonVariants } from "@/shared/ui/button-variants";
+import { Button } from "@/shared/ui/Button";
 
 const HOME_HREF = import.meta.env.BASE_URL;
 const ERROR_TITLE = "화면을 열지 못했습니다";
@@ -14,9 +14,7 @@ export function RouteErrorPage() {
 				<h1 className="text-title text-ink">{ERROR_TITLE}</h1>
 				<p className="text-chip text-mute">{ERROR_DESCRIPTION}</p>
 			</div>
-			<a href={HOME_HREF} className={buttonVariants()}>
-				{HOME_LABEL}
-			</a>
+			<Button onClick={() => globalThis.location.assign(HOME_HREF)}>{HOME_LABEL}</Button>
 		</div>
 	);
 }
