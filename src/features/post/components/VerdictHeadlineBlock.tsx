@@ -7,12 +7,20 @@ type VerdictHeadlineBlockProps = {
 	verdict: Verdict;
 	headline: string | null;
 	sentence?: Sentence;
+	sentenceLabel?: string | null;
 	onLand?: () => void;
 };
 
-export function VerdictHeadlineBlock({ verdict, headline, sentence, onLand }: VerdictHeadlineBlockProps) {
+export function VerdictHeadlineBlock({
+	verdict,
+	headline,
+	sentence,
+	sentenceLabel,
+	onLand
+}: VerdictHeadlineBlockProps) {
 	const side = VERDICT_SIDES[verdict];
-	const note = sentence ? SENTENCE_NOTES[sentence] : null;
+	const label = sentence ? (sentenceLabel ?? SENTENCE_LABELS[sentence]) : null;
+	const note = sentence && !sentenceLabel ? SENTENCE_NOTES[sentence] : null;
 
 	return (
 		<div className="flex items-center justify-between gap-4 py-1">
@@ -20,10 +28,10 @@ export function VerdictHeadlineBlock({ verdict, headline, sentence, onLand }: Ve
 				{headline && (
 					<h2 className={cn(side === "none" ? "text-subtitle text-mute" : "text-headline text-ink")}>{headline}</h2>
 				)}
-				{sentence && (
+				{label && (
 					<p className="flex flex-wrap items-baseline gap-1.5">
 						<span className="text-caption text-mute">형량</span>
-						<span className="text-xl font-black text-red">{SENTENCE_LABELS[sentence]}</span>
+						<span className="text-xl font-black text-red">{label}</span>
 						{note && <span className="text-xs text-mute">{note}</span>}
 					</p>
 				)}

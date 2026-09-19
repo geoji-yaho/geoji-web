@@ -158,6 +158,7 @@ export function VerdictPage() {
 						verdict={state.juryStatus}
 						headline={view.headline}
 						sentence={view.sentence ?? undefined}
+						sentenceLabel={view.sentenceLabel}
 						onLand={handleLand}
 					/>
 				)}

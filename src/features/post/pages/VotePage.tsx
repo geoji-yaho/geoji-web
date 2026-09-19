@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { findMember, memberQueries, memberTier } from "@/shared/api/members";
 import { postQueries } from "@/shared/api/posts";
+import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import type { PostType } from "@/shared/domain/post";
@@ -46,11 +47,13 @@ export function VotePage() {
 	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled: hasRoom && postId !== "" });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled: hasRoom });
 	const room = useQuery({ ...roomQueries.detail(roomId), enabled: hasRoom });
+	const me = useQuery(profileQueries.me());
 	const castVote = useCastPostVote();
 
 	const detail = post.data ?? null;
-	const isPending = hasRoom && (post.isPending || members.isPending || room.isPending);
-	const firstError = [post, members, room].find((query) => query.isError)?.error ?? null;
+	const myUserId = me.data?.id;
+	const isPending = hasRoom && (post.isPending || members.isPending || room.isPending || me.isPending);
+	const firstError = [post, members, room, me].find((query) => query.isError)?.error ?? null;
 
 	const voteCount = detail === null ? 0 : detail.tally.oppose + detail.tally.support;
 	const progressLabel =
@@ -59,16 +62,16 @@ export function VotePage() {
 			: `${voteCount}/${detail.eligibleVoterCount} 투표, ${formatRemaining(detail.voteDeadlineAt)}`;
 
 	const blockedMessage = (() => {
-		if (detail === null || detail.canVote) {
+		if (detail === null || detail.canVote || myUserId === undefined) {
 			return null;
 		}
-		if (detail.myVote !== null) {
-			return MESSAGES.alreadyVoted;
+		if (detail.authorId === myUserId) {
+			return MESSAGES.ownPost;
 		}
 		if (detail.juryStatus !== null) {
 			return MESSAGES.closed;
 		}
-		return MESSAGES.ownPost;
+		return MESSAGES.alreadyVoted;
 	})();
 
 	const chosenVerdict = detail === null || side === null ? null : VOTE_VERDICTS[detail.postType][side];

@@ -77,6 +77,7 @@ export function PostFeedCard({
 				verdict={post.juryStatus}
 				tally={post.tally}
 				sentence={view?.sentence ?? undefined}
+				sentenceLabel={view?.sentenceLabel ?? undefined}
 				headline={view?.headline ?? undefined}
 				meme={meme}
 				onOpenVerdict={onOpenVerdict}

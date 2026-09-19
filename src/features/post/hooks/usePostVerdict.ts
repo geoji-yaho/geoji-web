@@ -9,6 +9,7 @@ const FAST_INTERVAL_MS = 1000;
 const SLOW_INTERVAL_MS = 5000;
 const SLOW_DOWN_AFTER_MS = 15000;
 const TEMPLATE_RECHECK_MS = 30000;
+const STOP_RETRY_AFTER_MS = 120000;
 const POLL_THROUGH_KINDS: readonly ApiErrorKind[] = ["network", "timeout", "server"];
 
 function settled(verdict: PostVerdict) {
@@ -21,6 +22,13 @@ function intervalFor(verdict: PostVerdict, elapsedMs: number) {
 	}
 	if (verdict.textStatus === "TEMPLATE_READY") {
 		return TEMPLATE_RECHECK_MS;
+	}
+	return elapsedMs > SLOW_DOWN_AFTER_MS ? SLOW_INTERVAL_MS : FAST_INTERVAL_MS;
+}
+
+function retryIntervalFor(elapsedMs: number) {
+	if (elapsedMs > STOP_RETRY_AFTER_MS) {
+		return false as const;
 	}
 	return elapsedMs > SLOW_DOWN_AFTER_MS ? SLOW_INTERVAL_MS : FAST_INTERVAL_MS;
 }
@@ -60,11 +68,12 @@ export function usePostVerdict(postId: string, roomId: string, enabled = true) {
 			if (status === "error" && !shouldKeepPolling(error)) {
 				return false;
 			}
-			if (!data) {
-				return FAST_INTERVAL_MS;
-			}
 			const startMs = startedAt.current;
-			return intervalFor(data, startMs === null ? 0 : Date.now() - startMs);
+			const elapsedMs = startMs === null ? 0 : Date.now() - startMs;
+			if (!data) {
+				return status === "error" ? retryIntervalFor(elapsedMs) : FAST_INTERVAL_MS;
+			}
+			return intervalFor(data, elapsedMs);
 		}
 	});
 

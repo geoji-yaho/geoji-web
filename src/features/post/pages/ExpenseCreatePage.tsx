@@ -49,6 +49,7 @@ export function ExpenseCreatePage() {
 	const [capturedAt] = useState(() => new Date());
 	const [submission, setSubmission] = useState<Submission | null>(null);
 	const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+	const amountRef = useRef<HTMLDivElement>(null);
 	const ctaRef = useRef<HTMLDivElement>(null);
 	const prevModalOpenRef = useRef(false);
 
@@ -59,6 +60,7 @@ export function ExpenseCreatePage() {
 	const parsedAmount = parseAmount(amount);
 	const trimmedTitle = title.trim();
 	const trimmedPlea = plea.trim();
+	const capturedAtLabel = `일시 오늘 ${capturedAt.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })} (변경 불가)`;
 	const roomIds = rooms.data?.map((room) => room.id) ?? [];
 	const hasNoRoom = rooms.isSuccess && rooms.data.length === 0;
 	const canBuildDraft = parsedAmount !== null && trimmedTitle.length > 0 && category !== null && roomIds.length > 0;
@@ -77,6 +79,10 @@ export function ExpenseCreatePage() {
 	const isModalOpen = submission !== null;
 	const intake = submission?.intakeResult ?? null;
 	const requestError = submitPost.error ?? completeSubmission.error;
+
+	useEffect(() => {
+		amountRef.current?.querySelector("input")?.focus();
+	}, []);
 
 	useEffect(() => {
 		if (isModalOpen) {
@@ -178,7 +184,9 @@ export function ExpenseCreatePage() {
 					onChange={setPostType}
 				/>
 
-				<AmountField label={AMOUNT_LABEL[postType]} value={amount} onChange={setAmount} />
+				<div ref={amountRef}>
+					<AmountField label={AMOUNT_LABEL[postType]} value={amount} onChange={setAmount} />
+				</div>
 
 				<TextField
 					label={SUBJECT_LABEL[postType]}
@@ -209,10 +217,7 @@ export function ExpenseCreatePage() {
 					multiline
 				/>
 
-				<p className="text-chip text-mute">
-					일시 오늘 {capturedAt.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
-					{postType === "considering" && " (변경 불가)"}
-				</p>
+				<p className="text-chip text-mute">{capturedAtLabel}</p>
 
 				{blockedMessage && <Alert>{blockedMessage}</Alert>}
 				{!isModalOpen && requestError && <Alert>{requestError.message}</Alert>}

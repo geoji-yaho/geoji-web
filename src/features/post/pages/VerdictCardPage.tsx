@@ -130,6 +130,7 @@ export function VerdictCardPage() {
 						category={detail.category}
 						headline={shareCard.headline}
 						sentence={shareCard.sentence ?? undefined}
+						sentenceLabel={shareCard.sentenceLabel}
 						defendantName={detail.authorNickname}
 						defendantTier={memberTier(defendant)}
 						siteLabel={siteLabel}
