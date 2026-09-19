@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import type { ApiError } from "@/shared/api/api-error";
@@ -35,6 +35,7 @@ const SUBJECT_LABEL: Record<PostType, string> = {
 	considering: "무엇을 살까요?"
 };
 const BLOCKED_MESSAGE = "이대로는 등록할 수 없습니다. 내용을 고쳐 다시 회부해 주세요";
+const NO_ROOM_MESSAGE = "먼저 거지방을 만들어야 지출을 회부할 수 있습니다";
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
@@ -48,6 +49,8 @@ export function ExpenseCreatePage() {
 	const [capturedAt] = useState(() => new Date());
 	const [submission, setSubmission] = useState<Submission | null>(null);
 	const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+	const ctaRef = useRef<HTMLDivElement>(null);
+	const prevModalOpenRef = useRef(false);
 
 	const rooms = useQuery(roomQueries.list());
 	const submitPost = useSubmitPost();
@@ -57,6 +60,7 @@ export function ExpenseCreatePage() {
 	const trimmedTitle = title.trim();
 	const trimmedPlea = plea.trim();
 	const roomIds = rooms.data?.map((room) => room.id) ?? [];
+	const hasNoRoom = rooms.isSuccess && rooms.data.length === 0;
 	const canBuildDraft = parsedAmount !== null && trimmedTitle.length > 0 && category !== null && roomIds.length > 0;
 	const draft: PostDraft | null = canBuildDraft
 		? {
@@ -72,8 +76,21 @@ export function ExpenseCreatePage() {
 	const isSubmitting = submitPost.isPending;
 	const isModalOpen = submission !== null;
 	const intake = submission?.intakeResult ?? null;
-	const roomCountLabel = rooms.isSuccess ? `(${rooms.data.length}개)` : "";
 	const requestError = submitPost.error ?? completeSubmission.error;
+
+	useEffect(() => {
+		if (isModalOpen) {
+			prevModalOpenRef.current = true;
+			return;
+		}
+
+		if (!prevModalOpenRef.current) {
+			return;
+		}
+
+		prevModalOpenRef.current = false;
+		ctaRef.current?.querySelector("button")?.focus();
+	}, [isModalOpen]);
 
 	const handleResult = (result: Submission) => {
 		if (result.status === "COMPLETED") {
@@ -142,6 +159,11 @@ export function ExpenseCreatePage() {
 		completeSubmission.mutate(input, { onSuccess: handleResult, onError: handleCompleteError });
 	};
 
+	const handleClose = () => {
+		setSubmission(null);
+		completeSubmission.reset();
+	};
+
 	return (
 		<div className="relative flex flex-1 flex-col">
 			<div className="px-5">
@@ -196,10 +218,16 @@ export function ExpenseCreatePage() {
 				{!isModalOpen && requestError && <Alert>{requestError.message}</Alert>}
 			</div>
 
-			<div className="sticky-cta flex flex-col gap-2.5">
-				<p className="rounded-xl border border-line bg-card px-3.5 py-2.5 text-center text-chip text-mute">
-					이 지출은 내가 속한 <b className="text-ink">모든 방{roomCountLabel}</b>에 공유됩니다
-				</p>
+			<div ref={ctaRef} className="sticky-cta flex flex-col gap-2.5">
+				{rooms.isError ? (
+					<Alert>{rooms.error.message}</Alert>
+				) : hasNoRoom ? (
+					<Alert tone="fill">{NO_ROOM_MESSAGE}</Alert>
+				) : (
+					<p className="rounded-xl border border-line bg-card px-3.5 py-2.5 text-center text-chip text-mute">
+						이 지출은 내가 속한 <b className="text-ink">모든 방</b>에 공유됩니다
+					</p>
+				)}
 				{!isModalOpen && (
 					<StickyCta
 						label={isSubmitting ? "회부 중" : "재판에 회부하기"}
@@ -212,13 +240,15 @@ export function ExpenseCreatePage() {
 			<HonestyModal
 				open={isModalOpen}
 				originalTitle={trimmedTitle}
-				message={intake?.message ?? null}
+				question={intake?.message ?? null}
 				suggestedTitle={intake?.itemReview?.suggestedItem ?? null}
+				maxLength={TITLE_MAX_LENGTH}
 				canProceed={submission?.status === "NEEDS_INPUT"}
 				isPending={completeSubmission.isPending}
 				errorMessage={completeSubmission.error?.message ?? null}
 				onRevise={handleRevise}
 				onProceed={handleProceed}
+				onClose={handleClose}
 			/>
 		</div>
 	);
