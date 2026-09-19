@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { PropsWithChildren } from "react";
 
 import { toAppPath } from "@/shared/lib/base-path";
+import { clearOnboardingSkip } from "@/shared/lib/onboarding-skip";
 import { setPathAfterLogin } from "@/shared/lib/path-after-login";
 import { createQueryClient } from "@/shared/lib/query-client";
 import { getSupabase } from "@/shared/lib/supabase";
@@ -10,19 +11,15 @@ import { getSupabase } from "@/shared/lib/supabase";
 import { router } from "../router/routes";
 
 const LOGIN_PATH = "/login";
+const EXPIRED_STATE = { notice: "세션이 만료되어 로그아웃되었습니다. 다시 로그인해 주세요" };
 
 let isHandlingUnauthorized = false;
 
-async function signOutAndGoToLogin() {
+async function signOutQuietly() {
 	try {
-		const supabase = getSupabase();
-		const { data } = await supabase.auth.getSession();
-
-		if (data.session) {
-			await supabase.auth.signOut();
-		}
-	} finally {
-		await router.navigate(LOGIN_PATH, { replace: true });
+		await getSupabase().auth.signOut();
+	} catch {
+		return;
 	}
 }
 
@@ -41,7 +38,10 @@ const queryClient = createQueryClient({
 		isHandlingUnauthorized = true;
 		setPathAfterLogin(pathname + search);
 
-		void signOutAndGoToLogin().finally(() => {
+		void signOutQuietly();
+		void router.navigate(LOGIN_PATH, { replace: true, state: EXPIRED_STATE }).finally(() => {
+			clearOnboardingSkip();
+			queryClient.clear();
 			isHandlingUnauthorized = false;
 		});
 	}
