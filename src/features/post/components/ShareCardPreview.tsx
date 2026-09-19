@@ -16,6 +16,7 @@ type ShareCardPreviewProps = {
 	amount: number;
 	category: string | null;
 	headline: string | null;
+	statement: string[];
 	sentence?: Sentence;
 	sentenceLabel?: string | null;
 	defendantName: string;
@@ -30,6 +31,7 @@ export function ShareCardPreview({
 	amount,
 	category,
 	headline,
+	statement,
 	sentence,
 	sentenceLabel,
 	defendantName,
@@ -62,6 +64,11 @@ export function ShareCardPreview({
 					<div className="flex min-w-0 flex-1 flex-col gap-2">
 						<span className="text-amount text-ink">{formatAmount(amount)}원</span>
 						{headline && <p className="text-subtitle text-text">{headline}</p>}
+						{statement.map((line) => (
+							<p key={line} className="text-caption text-mute">
+								{line}
+							</p>
+						))}
 						{label && (
 							<p className="flex flex-wrap items-baseline gap-1.5">
 								<span className="text-caption text-mute">형량</span>
