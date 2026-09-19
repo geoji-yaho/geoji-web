@@ -54,13 +54,13 @@ export function ShareCardPreview({
 				</div>
 
 				{meme && (
-					<div className="relative flex-3 overflow-hidden rounded-card">
+					<div className="relative -mx-4.5 min-h-0 flex-1 overflow-hidden">
 						<MemeThumbnail size="lg" meme={{ src: meme.imageUrl, alt: headline ?? "판결 짤" }} className="size-full" />
 						<VerdictStamp verdict={verdict} size="lg" className="absolute right-2 bottom-2" />
 					</div>
 				)}
 
-				<div className="flex flex-2 items-center gap-3">
+				<div className="flex shrink-0 items-center gap-3">
 					<div className="flex min-w-0 flex-1 flex-col gap-2">
 						<span className="text-amount text-ink">{formatAmount(amount)}원</span>
 						{headline && <p className="text-subtitle text-text">{headline}</p>}
