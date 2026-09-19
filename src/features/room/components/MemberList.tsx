@@ -21,7 +21,7 @@ export function MemberList({ members, myUserId }: MemberListProps) {
 						member.userId === myUserId && "bg-fill"
 					)}
 				>
-					<Avatar name={memberName(member)} size="sm" />
+					<Avatar name={memberName(member)} src={member.avatarUrl} size="sm" />
 					<span className="flex-1 truncate font-extrabold text-ink">{memberName(member)}</span>
 					{member.debtScore === null ? (
 						<span className="text-tag text-dim">{DEBT_SCORE_PENDING_LABEL}</span>
