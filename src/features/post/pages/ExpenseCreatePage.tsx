@@ -8,6 +8,7 @@ import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { type Category, EXPENSE_CATEGORIES } from "@/shared/constants/expense-categories";
 import { POST_TYPE_LABELS, type PostType } from "@/shared/domain/post";
+import { formatVoteDeadlineLabel } from "@/shared/domain/room";
 import { Alert } from "@/shared/ui/Alert";
 import { AmountField } from "@/shared/ui/AmountField";
 import { Chip } from "@/shared/ui/Chip";
@@ -70,6 +71,10 @@ export function ExpenseCreatePage() {
 	const capturedAtLabel = `일시 오늘 ${capturedAt.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })} (변경 불가)`;
 	const roomIds = rooms.data?.map((room) => room.id) ?? [];
 	const hasNoRoom = rooms.isSuccess && rooms.data.length === 0;
+	const deadlineMinutesList = rooms.data?.map((room) => room.voteDeadlineMinutes) ?? [];
+	const sharedDeadlineLabel =
+		deadlineMinutesList.length > 0 ? formatVoteDeadlineLabel(Math.min(...deadlineMinutesList)) : null;
+	const hasMixedDeadlines = new Set(deadlineMinutesList).size > 1;
 	const isAmountInRange = parsedAmount !== null && parsedAmount >= MIN_AMOUNT_KRW && parsedAmount <= MAX_AMOUNT_KRW;
 	const amountMessage = (() => {
 		if (parsedAmount === null || isAmountInRange) {
@@ -257,6 +262,13 @@ export function ExpenseCreatePage() {
 				) : (
 					<p className="rounded-xl border border-line bg-card px-3.5 py-2.5 text-center text-chip text-mute">
 						이 지출은 내가 속한 <b className="text-ink">모든 방</b>에 공유됩니다
+						{sharedDeadlineLabel !== null && (
+							<>
+								<br />
+								투표는 {hasMixedDeadlines && "마감이 가장 짧은 방에 맞춰 "}
+								<b className="text-ink">{sharedDeadlineLabel}</b> 뒤에 끝납니다
+							</>
+						)}
 					</p>
 				)}
 				{!isModalOpen && (
