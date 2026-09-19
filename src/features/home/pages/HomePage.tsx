@@ -89,7 +89,11 @@ export function HomePage() {
 	return (
 		<div className="flex flex-1 flex-col pb-11">
 			<div className="px-5">
-				<HomeHeader profileName={profile?.nickname ?? ""} onProfile={() => void navigate("/me")} />
+				<HomeHeader
+					profileName={profile?.nickname ?? ""}
+					profileImageUrl={profile?.avatarUrl}
+					onProfile={() => void navigate("/me")}
+				/>
 			</div>
 
 			<div className="flex flex-1 flex-col gap-3.5 px-5 pt-1.5">
@@ -104,6 +108,7 @@ export function HomePage() {
 					<Reveal>
 						<ProfileSummaryCard
 							name={profile.nickname}
+							imageUrl={profile.avatarUrl}
 							tier={stats.tier}
 							nextTierLabel={stats.nextTierLabel}
 							score={stats.score}

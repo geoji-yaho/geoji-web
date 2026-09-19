@@ -12,6 +12,7 @@ import { formatAmount } from "@/shared/utils/format";
 
 type ProfileSummaryCardProps = {
 	name: string;
+	imageUrl?: string | null;
 	tier: Tier;
 	nextTierLabel: string;
 	score: number;
@@ -26,6 +27,7 @@ type ProfileSummaryCardProps = {
 
 export function ProfileSummaryCard({
 	name,
+	imageUrl,
 	tier,
 	nextTierLabel,
 	score,
@@ -44,7 +46,7 @@ export function ProfileSummaryCard({
 		<Card className={cn("flex flex-col gap-3.5 p-4.5", className)}>
 			<div className="flex items-start justify-between gap-3">
 				<div className="flex min-w-0 items-center gap-2.5">
-					<Avatar name={name} size="lg" />
+					<Avatar name={name} src={imageUrl} size="lg" />
 					<div className="min-w-0">
 						<div className="flex flex-wrap items-center gap-1.5">
 							<span className="text-base font-black text-ink">{name}</span>

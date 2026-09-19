@@ -6,16 +6,17 @@ import { Card } from "@/shared/ui/Card";
 
 type ProfileHeaderCardProps = {
 	name: string;
+	imageUrl?: string | null;
 	tier: Tier;
 	nextTierLabel: string;
 	onNicknameEdit: () => void;
 };
 
-export function ProfileHeaderCard({ name, tier, nextTierLabel, onNicknameEdit }: ProfileHeaderCardProps) {
+export function ProfileHeaderCard({ name, imageUrl, tier, nextTierLabel, onNicknameEdit }: ProfileHeaderCardProps) {
 	return (
 		<Card className="flex flex-col gap-3.5 rounded-3xl p-4.5">
 			<div className="flex items-center gap-3.5">
-				<Avatar name={name} size="xl" />
+				<Avatar name={name} src={imageUrl} size="xl" />
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
 						<span className="truncate text-xl font-black text-ink">{name}</span>

@@ -22,18 +22,23 @@ const avatarVariants = cva(
 
 type AvatarProps = VariantProps<typeof avatarVariants> & {
 	name: string;
+	src?: string | null;
 	className?: string;
 };
 
-export function Avatar({ name, size, className }: AvatarProps) {
+export function Avatar({ name, src, size, className }: AvatarProps) {
 	return (
 		<span
 			role={name ? "img" : undefined}
 			aria-label={name || undefined}
 			aria-hidden={name ? undefined : true}
-			className={cn(avatarVariants({ size }), className)}
+			className={cn(avatarVariants({ size }), "overflow-hidden", className)}
 		>
-			<span aria-hidden="true">{name.slice(0, 1)}</span>
+			{src ? (
+				<img src={src} alt="" className="size-full object-cover" />
+			) : (
+				<span aria-hidden="true">{name.slice(0, 1)}</span>
+			)}
 		</span>
 	);
 }

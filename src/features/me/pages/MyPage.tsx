@@ -60,6 +60,7 @@ export function MyPage() {
 						<Reveal>
 							<ProfileHeaderCard
 								name={profile.nickname}
+								imageUrl={profile.avatarUrl}
 								tier={stats.tier}
 								nextTierLabel={stats.nextTierLabel}
 								onNicknameEdit={openNickname}
