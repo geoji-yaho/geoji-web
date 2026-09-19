@@ -39,7 +39,7 @@ const MESSAGES = {
 } as const;
 
 function reasonWithPreset(current: string, preset: string) {
-	return current === "" ? preset : `${current} ${preset}`;
+	return current.trim() === "" ? preset : `${current} ${preset}`;
 }
 
 export function VotePage() {
