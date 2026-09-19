@@ -4,6 +4,7 @@ export type ShareInput = {
 	title: string;
 	text: string;
 	url: string;
+	files?: File[];
 };
 
 const KAKAO_SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js";
@@ -84,10 +85,16 @@ export async function copyText(text: string) {
 	}
 }
 
+function toSharePayload({ title, text, url, files }: ShareInput) {
+	const canShareFiles = files !== undefined && files.length > 0 && navigator.canShare?.({ files }) === true;
+
+	return canShareFiles ? { title, text, url, files } : { title, text, url };
+}
+
 export async function shareContent(input: ShareInput) {
 	if (typeof navigator.share === "function") {
 		try {
-			await navigator.share(input);
+			await navigator.share(toSharePayload(input));
 			return "shared";
 		} catch (error) {
 			if (isAbortError(error)) {
@@ -97,6 +104,13 @@ export async function shareContent(input: ShareInput) {
 	}
 
 	return (await copyText(input.url)) ? "copied" : "failed";
+}
+
+export async function toPngFile(dataUrl: string, filename: string) {
+	const response = await fetch(dataUrl);
+	const blob = await response.blob();
+
+	return new File([blob], filename, { type: blob.type });
 }
 
 export function downloadDataUrl(dataUrl: string, filename: string) {
