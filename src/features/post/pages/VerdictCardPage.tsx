@@ -26,6 +26,11 @@ const LOADING_MESSAGE = "판결 카드를 불러오는 중";
 const SAVE_FAILED_MESSAGE = "이미지를 만들지 못했습니다";
 const COPIED_MESSAGE = "링크를 복사했습니다";
 const COPY_FAILED_MESSAGE = "링크를 복사하지 못했습니다";
+const PENDING_SENTENCE_WORDS = ["판결", "확정"];
+
+function hasPendingSentenceWords(message: string) {
+	return PENDING_SENTENCE_WORDS.every((word) => message.includes(word));
+}
 
 export function VerdictCardPage() {
 	const { postId = "" } = useParams();
@@ -73,12 +78,20 @@ export function VerdictCardPage() {
 			</Card>
 		);
 	} else if (loadError) {
+		const isSentencePending = card.isError && hasPendingSentenceWords(card.error.message);
+		const isPostMissing = card.isError && !isSentencePending;
+
 		content = (
 			<div className="flex flex-col gap-3">
 				<Alert>{loadError.message}</Alert>
-				{card.isError && (
+				{isSentencePending && (
 					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
 						판결로 돌아가기
+					</Button>
+				)}
+				{isPostMissing && (
+					<Button variant="outline" onClick={() => void navigate("/", { replace: true })}>
+						홈으로 가기
 					</Button>
 				)}
 			</div>
