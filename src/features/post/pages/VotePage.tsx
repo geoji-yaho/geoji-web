@@ -8,14 +8,16 @@ import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import type { PostType } from "@/shared/domain/post";
+import { isVotingClosed } from "@/shared/domain/post";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
+import { useNow } from "@/shared/hooks/useNow";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Chip } from "@/shared/ui/Chip";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { TextField } from "@/shared/ui/TextField";
-import { formatRelativeTime, formatRemaining } from "@/shared/utils/date";
+import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
 
 import { CaseSummaryCard } from "../components/CaseSummaryCard";
 import { VerdictChoice, type VoteSide } from "../components/VerdictChoice";
@@ -27,6 +29,7 @@ const REASON_PRESETS: Record<PostType, string[]> = {
 };
 const REASON_MAX_LENGTH = 500;
 const SUBMIT_LABEL = "평결 제출";
+const CLOSED_LABEL = "투표 마감";
 const MESSAGES = {
 	missingRoom: "방 정보가 없습니다",
 	loading: "사건을 불러오는 중",
@@ -34,6 +37,10 @@ const MESSAGES = {
 	closed: "투표가 마감되었습니다",
 	ownPost: "본인 게시물에는 투표할 수 없습니다"
 } as const;
+
+function reasonWithPreset(current: string, preset: string) {
+	return current === "" ? preset : `${current} ${preset}`;
+}
 
 export function VotePage() {
 	const { postId = "" } = useParams();
@@ -49,6 +56,7 @@ export function VotePage() {
 	const room = useQuery({ ...roomQueries.detail(roomId), enabled: hasRoom });
 	const me = useQuery(profileQueries.me());
 	const castVote = useCastPostVote();
+	const now = useNow();
 
 	const detail = post.data ?? null;
 	const myUserId = me.data?.id;
@@ -56,31 +64,43 @@ export function VotePage() {
 	const firstError = [post, members, room, me].find((query) => query.isError)?.error ?? null;
 
 	const voteCount = detail === null ? 0 : detail.tally.oppose + detail.tally.support;
+	const isDeadlinePast = detail !== null && isPast(detail.voteDeadlineAt, now);
 	const progressLabel =
 		detail === null
 			? undefined
-			: `${voteCount}/${detail.eligibleVoterCount} 투표, ${formatRemaining(detail.voteDeadlineAt)}`;
+			: `${voteCount}/${detail.eligibleVoterCount} 투표, ${formatRemaining(detail.voteDeadlineAt, now)}`;
 
 	const blockedMessage = (() => {
-		if (detail === null || detail.canVote || myUserId === undefined) {
+		if (detail === null || myUserId === undefined) {
 			return null;
 		}
 		if (detail.authorId === myUserId) {
 			return MESSAGES.ownPost;
 		}
-		if (detail.juryStatus !== null) {
+		if (isVotingClosed(detail, now)) {
 			return MESSAGES.closed;
 		}
-		return MESSAGES.alreadyVoted;
+		return detail.canVote ? null : MESSAGES.alreadyVoted;
 	})();
 
 	const chosenVerdict = detail === null || side === null ? null : VOTE_VERDICTS[detail.postType][side];
 	const trimmedReason = reason.trim();
-	const canSubmit =
-		detail !== null && detail.canVote && chosenVerdict !== null && trimmedReason.length > 0 && !castVote.isPending;
+	const canVote = detail !== null && detail.canVote && !isDeadlinePast;
+	const hasVerdictInput = chosenVerdict !== null && trimmedReason.length > 0;
+	const canSubmit = canVote && hasVerdictInput && !castVote.isPending;
+	const submitLabel = (() => {
+		if (isDeadlinePast) {
+			return CLOSED_LABEL;
+		}
+
+		return chosenVerdict === null ? SUBMIT_LABEL : `${VERDICT_LABELS[chosenVerdict]}로 ${SUBMIT_LABEL}`;
+	})();
 
 	const appendReason = (preset: string) => {
-		setReason((current) => (current ? `${current} ${preset}` : preset));
+		setReason((current) => {
+			const next = reasonWithPreset(current, preset);
+			return next.length > REASON_MAX_LENGTH ? current : next;
+		});
 	};
 
 	const submit = () => {
@@ -148,7 +168,11 @@ export function VotePage() {
 
 								<div className="flex flex-wrap gap-1.5">
 									{REASON_PRESETS[detail.postType].map((preset) => (
-										<Chip key={preset} onClick={() => appendReason(preset)}>
+										<Chip
+											key={preset}
+											disabled={reasonWithPreset(reason, preset).length > REASON_MAX_LENGTH}
+											onClick={() => appendReason(preset)}
+										>
 											{preset}
 										</Chip>
 									))}
@@ -166,13 +190,8 @@ export function VotePage() {
 			</div>
 
 			{!hasRoom && <StickyCta label="홈으로 가기" onClick={() => void navigate("/")} className="sticky-cta" />}
-			{detail && detail.canVote && (
-				<StickyCta
-					label={chosenVerdict === null ? SUBMIT_LABEL : `${VERDICT_LABELS[chosenVerdict]}로 ${SUBMIT_LABEL}`}
-					onClick={submit}
-					disabled={!canSubmit}
-					className="sticky-cta"
-				/>
+			{detail?.canVote && (
+				<StickyCta label={submitLabel} onClick={submit} disabled={!canSubmit} className="sticky-cta" />
 			)}
 		</div>
 	);

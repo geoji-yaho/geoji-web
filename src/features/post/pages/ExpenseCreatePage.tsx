@@ -14,13 +14,15 @@ import { Chip } from "@/shared/ui/Chip";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { TabSegment } from "@/shared/ui/TabSegment";
 import { TextField } from "@/shared/ui/TextField";
-import { parseAmount } from "@/shared/utils/format";
+import { formatAmount, parseAmount } from "@/shared/utils/format";
 
 import { HonestyModal } from "../components/HonestyModal";
 import { useCompleteSubmission, useSubmitPost } from "../hooks/useSubmitPost";
 
 const TITLE_MAX_LENGTH = 30;
 const PLEA_MAX_LENGTH = 200;
+const MIN_AMOUNT_KRW = 1;
+const MAX_AMOUNT_KRW = 2_147_483_647;
 const POST_TYPES = ["spent", "considering"] as const satisfies readonly PostType[];
 const PLEA_PLACEHOLDER: Record<PostType, string> = {
 	spent: "왜 썼는지 변론하세요",
@@ -35,6 +37,8 @@ const SUBJECT_LABEL: Record<PostType, string> = {
 	considering: "무엇을 살까요?"
 };
 const BLOCKED_MESSAGE = "이대로는 등록할 수 없습니다. 내용을 고쳐 다시 회부해 주세요";
+const BELOW_MIN_AMOUNT_MESSAGE = `금액은 ${formatAmount(MIN_AMOUNT_KRW)}원 이상이어야 합니다`;
+const ABOVE_MAX_AMOUNT_MESSAGE = `금액은 ${formatAmount(MAX_AMOUNT_KRW)}원까지 넣을 수 있습니다`;
 const NO_ROOM_MESSAGE = "먼저 거지방을 만들어야 지출을 회부할 수 있습니다";
 const RESUBMIT_HINT = "다시 회부해 주세요";
 const REVISE_ACTION: CompleteAction = "REVISE";
@@ -66,7 +70,15 @@ export function ExpenseCreatePage() {
 	const capturedAtLabel = `일시 오늘 ${capturedAt.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })} (변경 불가)`;
 	const roomIds = rooms.data?.map((room) => room.id) ?? [];
 	const hasNoRoom = rooms.isSuccess && rooms.data.length === 0;
-	const canBuildDraft = parsedAmount !== null && trimmedTitle.length > 0 && category !== null && roomIds.length > 0;
+	const isAmountInRange = parsedAmount !== null && parsedAmount >= MIN_AMOUNT_KRW && parsedAmount <= MAX_AMOUNT_KRW;
+	const amountMessage = (() => {
+		if (parsedAmount === null || isAmountInRange) {
+			return null;
+		}
+
+		return parsedAmount < MIN_AMOUNT_KRW ? BELOW_MIN_AMOUNT_MESSAGE : ABOVE_MAX_AMOUNT_MESSAGE;
+	})();
+	const canBuildDraft = isAmountInRange && trimmedTitle.length > 0 && category !== null && roomIds.length > 0;
 	const draft: PostDraft | null = canBuildDraft
 		? {
 				postType,
@@ -193,8 +205,13 @@ export function ExpenseCreatePage() {
 					onChange={setPostType}
 				/>
 
-				<div ref={amountRef}>
+				<div ref={amountRef} className="flex flex-col gap-1">
 					<AmountField label={AMOUNT_LABEL[postType]} value={amount} onChange={setAmount} />
+					{amountMessage && (
+						<span role="status" className="text-caption text-red">
+							{amountMessage}
+						</span>
+					)}
 				</div>
 
 				<TextField

@@ -21,10 +21,10 @@ function baseIntervalFor(elapsedMs: number) {
 }
 
 function intervalFor(verdict: PostVerdict, elapsedMs: number) {
-	if (settled(verdict)) {
-		return false as const;
-	}
 	const ownInterval = verdict.textStatus === "TEMPLATE_READY" ? TEMPLATE_RECHECK_MS : baseIntervalFor(elapsedMs);
+	if (!Number.isFinite(verdict.pollAfterMs)) {
+		return ownInterval;
+	}
 	return Math.max(ownInterval, verdict.pollAfterMs);
 }
 
@@ -67,15 +67,26 @@ export function usePostVerdict(postId: string, roomId: string, enabled = true) {
 		},
 		refetchInterval: (query) => {
 			const { status, error, data } = query.state;
-			if (status === "error" && !shouldKeepPolling(error)) {
+
+			if (data !== undefined && settled(data)) {
 				return false;
 			}
+
 			const startMs = startedAt.current;
 			const elapsedMs = startMs === null ? 0 : Date.now() - startMs;
-			if (!data) {
-				return status === "error" ? retryIntervalFor(elapsedMs) : FAST_INTERVAL_MS;
+			const ownInterval = data === undefined ? FAST_INTERVAL_MS : intervalFor(data, elapsedMs);
+
+			if (status !== "error") {
+				return ownInterval;
 			}
-			return intervalFor(data, elapsedMs);
+
+			if (!shouldKeepPolling(error)) {
+				return false;
+			}
+
+			const retryInterval = retryIntervalFor(elapsedMs);
+
+			return retryInterval === false ? false : Math.max(retryInterval, ownInterval);
 		}
 	});
 

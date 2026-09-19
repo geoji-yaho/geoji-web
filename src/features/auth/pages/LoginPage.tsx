@@ -34,6 +34,7 @@ export function LoginPage() {
 		}
 
 		hasNavigatedRef.current = true;
+
 		void navigate(takePathAfterLogin() ?? "/", { replace: true });
 	}, [session, navigate]);
 
