@@ -46,6 +46,8 @@ const VOTE_BUTTON_LABELS: Record<ExpenseVoteState, string> = {
 	closed: "투표하기"
 };
 
+const NO_JUROR_NOTICE = "아직 배심원이 없습니다. 친구를 초대하면 재판이 열립니다";
+
 const VOTE_NOTES: Partial<Record<ExpenseVoteState, string>> = {
 	own: "본인의 재판에는 투표할 수 없습니다"
 };
@@ -128,16 +130,22 @@ export function ExpenseCard(props: ExpenseCardProps) {
 							<span className="font-extrabold text-red">
 								<span aria-hidden="true">◷</span>&nbsp;{props.deadlineLabel}
 							</span>
-							<span className="text-dim">
-								{props.tally.oppose + props.tally.support}/{props.eligibleCount} 투표
-							</span>
+							{props.eligibleCount > 0 && (
+								<span className="text-dim">
+									{props.tally.oppose + props.tally.support}/{props.eligibleCount} 투표
+								</span>
+							)}
 						</div>
-						<TallyRow
-							tally={props.tally}
-							opposeLabel={VERDICT_LABELS[oppose]}
-							supportLabel={VERDICT_LABELS[support]}
-							supportFirst={isSupportFirst(props.postType)}
-						/>
+						{props.eligibleCount === 0 ? (
+							<span className="text-caption text-dim">{NO_JUROR_NOTICE}</span>
+						) : (
+							<TallyRow
+								tally={props.tally}
+								opposeLabel={VERDICT_LABELS[oppose]}
+								supportLabel={VERDICT_LABELS[support]}
+								supportFirst={isSupportFirst(props.postType)}
+							/>
+						)}
 						<Button variant="ink" disabled={props.voteState !== "open"} onClick={props.onVote}>
 							{VOTE_BUTTON_LABELS[props.voteState]}
 						</Button>
