@@ -16,21 +16,23 @@ function settled(verdict: PostVerdict) {
 	return verdict.textStatus === "AI_READY" || verdict.juryStatus === "dismissed";
 }
 
+function baseIntervalFor(elapsedMs: number) {
+	return elapsedMs > SLOW_DOWN_AFTER_MS ? SLOW_INTERVAL_MS : FAST_INTERVAL_MS;
+}
+
 function intervalFor(verdict: PostVerdict, elapsedMs: number) {
 	if (settled(verdict)) {
 		return false as const;
 	}
-	if (verdict.textStatus === "TEMPLATE_READY") {
-		return TEMPLATE_RECHECK_MS;
-	}
-	return elapsedMs > SLOW_DOWN_AFTER_MS ? SLOW_INTERVAL_MS : FAST_INTERVAL_MS;
+	const ownInterval = verdict.textStatus === "TEMPLATE_READY" ? TEMPLATE_RECHECK_MS : baseIntervalFor(elapsedMs);
+	return Math.max(ownInterval, verdict.pollAfterMs);
 }
 
 function retryIntervalFor(elapsedMs: number) {
 	if (elapsedMs > STOP_RETRY_AFTER_MS) {
 		return false as const;
 	}
-	return elapsedMs > SLOW_DOWN_AFTER_MS ? SLOW_INTERVAL_MS : FAST_INTERVAL_MS;
+	return baseIntervalFor(elapsedMs);
 }
 
 function shouldKeepPolling(error: unknown) {

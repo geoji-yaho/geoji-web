@@ -10,6 +10,7 @@ export function useRemovePost() {
 		onSuccess: async (_result, postId) => {
 			await queryClient.invalidateQueries({ queryKey: postQueries.feeds() });
 			queryClient.removeQueries({ queryKey: [...postQueries.details(), postId] });
+			queryClient.removeQueries({ queryKey: [...postQueries.commentLists(), postId] });
 			queryClient.removeQueries({ queryKey: [...postQueries.verdicts(), postId] });
 			queryClient.removeQueries({ queryKey: [...postQueries.shareCards(), postId] });
 		}

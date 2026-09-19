@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-import type { ApiError } from "@/shared/api/api-error";
-import type { CompleteSubmissionInput, PostDraft, Submission } from "@/shared/api/posts";
+import type { ApiError, ApiErrorKind } from "@/shared/api/api-error";
+import type { CompleteAction, CompleteSubmissionInput, PostDraft, Submission } from "@/shared/api/posts";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { type Category, EXPENSE_CATEGORIES } from "@/shared/constants/expense-categories";
@@ -36,6 +36,9 @@ const SUBJECT_LABEL: Record<PostType, string> = {
 };
 const BLOCKED_MESSAGE = "이대로는 등록할 수 없습니다. 내용을 고쳐 다시 회부해 주세요";
 const NO_ROOM_MESSAGE = "먼저 거지방을 만들어야 지출을 회부할 수 있습니다";
+const RESUBMIT_HINT = "다시 회부해 주세요";
+const REVISE_ACTION: CompleteAction = "REVISE";
+const FORM_RETURN_ERROR_KINDS: readonly ApiErrorKind[] = ["conflict", "notFound", "forbidden"];
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
@@ -98,6 +101,11 @@ export function ExpenseCreatePage() {
 		ctaRef.current?.querySelector("button")?.focus();
 	}, [isModalOpen]);
 
+	const closeModal = () => {
+		setSubmission(null);
+		completeSubmission.reset();
+	};
+
 	const handleResult = (result: Submission) => {
 		if (result.status === "COMPLETED") {
 			const notice = `${roomIds.length}개 방의 배심원에게 회부되었습니다`;
@@ -106,7 +114,7 @@ export function ExpenseCreatePage() {
 		}
 
 		if (result.status === "BLOCKED" && result.intakeResult?.mode === "FINAL_CHECK") {
-			setSubmission(null);
+			closeModal();
 			setBlockedMessage(BLOCKED_MESSAGE);
 			return;
 		}
@@ -115,9 +123,15 @@ export function ExpenseCreatePage() {
 	};
 
 	const handleCompleteError = (error: ApiError) => {
-		if (error.kind === "conflict") {
-			setSubmission(null);
+		const isReviseRequired = error.kind === "conflict" && error.message.includes(REVISE_ACTION);
+		const shouldReturnToForm = FORM_RETURN_ERROR_KINDS.includes(error.kind) && !isReviseRequired;
+
+		if (!shouldReturnToForm) {
+			return;
 		}
+
+		closeModal();
+		setBlockedMessage(error.kind === "notFound" ? `${error.message}. ${RESUBMIT_HINT}` : error.message);
 	};
 
 	const handleSubmit = () => {
@@ -139,7 +153,7 @@ export function ExpenseCreatePage() {
 			...draft,
 			item,
 			submissionId: submission.submissionId,
-			action: "REVISE",
+			action: REVISE_ACTION,
 			revision: submission.revision
 		};
 		completeSubmission.mutate(input, {
@@ -163,11 +177,6 @@ export function ExpenseCreatePage() {
 			revision: submission.revision
 		};
 		completeSubmission.mutate(input, { onSuccess: handleResult, onError: handleCompleteError });
-	};
-
-	const handleClose = () => {
-		setSubmission(null);
-		completeSubmission.reset();
 	};
 
 	return (
@@ -253,7 +262,7 @@ export function ExpenseCreatePage() {
 				errorMessage={completeSubmission.error?.message ?? null}
 				onRevise={handleRevise}
 				onProceed={handleProceed}
-				onClose={handleClose}
+				onClose={closeModal}
 			/>
 		</div>
 	);

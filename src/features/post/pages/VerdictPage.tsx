@@ -103,6 +103,14 @@ export function VerdictPage() {
 		removePost.reset();
 	};
 
+	const retryLoad = () => {
+		void me.refetch();
+		void post.refetch();
+		void members.refetch();
+		void room.refetch();
+		void verdict.refetch();
+	};
+
 	const submitRemove = () => {
 		removePost.mutate(postId, {
 			onSuccess: () =>
@@ -138,7 +146,14 @@ export function VerdictPage() {
 			</Card>
 		);
 	} else if (loadError) {
-		content = <Alert>{loadError.message}</Alert>;
+		content = (
+			<>
+				<Alert>{loadError.message}</Alert>
+				<Button variant="outline" onClick={retryLoad}>
+					다시 시도
+				</Button>
+			</>
+		);
 	} else if (detail) {
 		const defendant = findMember(members.data, detail.authorId);
 		const canRemove = myUserId !== undefined && detail.authorId === myUserId;
