@@ -123,6 +123,7 @@ export function VerdictCardPage() {
 						amount={detail.amountKrw}
 						category={detail.category}
 						headline={shareCard.headline}
+						statement={shareCard.statement}
 						sentence={shareCard.sentence ?? undefined}
 						sentenceLabel={shareCard.sentenceLabel}
 						defendantName={detail.authorNickname}
