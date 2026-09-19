@@ -12,6 +12,7 @@ const COMMENT_MAX_LENGTH = 200;
 export type CommentItem = {
 	id: string;
 	authorName: string;
+	authorImageUrl?: string | null;
 	content: string;
 	createdAtLabel: string;
 	isMine?: boolean;
@@ -87,7 +88,7 @@ export function CommentSheet({
 				<ul className="flex max-h-72 flex-col gap-3 overflow-y-auto">
 					{comments.map((comment) => (
 						<li key={comment.id} className="flex items-start gap-2.5">
-							<Avatar name={comment.authorName} size="sm" />
+							<Avatar name={comment.authorName} src={comment.authorImageUrl} size="sm" />
 							<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 								<div className="flex items-baseline gap-2">
 									<span className="text-chip font-extrabold text-ink">{comment.authorName}</span>

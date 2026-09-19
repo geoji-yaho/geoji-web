@@ -8,6 +8,7 @@ export type PodiumPlace = 1 | 2 | 3;
 export type PodiumEntry = {
 	place: PodiumPlace;
 	name: string;
+	imageUrl?: string | null;
 	tier: Tier;
 	value: string;
 	isMe?: boolean;
@@ -39,7 +40,7 @@ export function RankingPodium({ entries, className }: RankingPodiumProps) {
 						entry.place === 1 && "py-4.5"
 					)}
 				>
-					<Avatar name={entry.name} size={entry.place === 1 ? "lg" : "md"} />
+					<Avatar name={entry.name} src={entry.imageUrl} size={entry.place === 1 ? "lg" : "md"} />
 					<span className="text-control font-black">{entry.name}</span>
 					<TierBadge tier={entry.tier} className={cn(entry.isMe && "ring-1 ring-card")} />
 					<span className={cn("text-base font-black", entry.isMe ? "text-cta" : "text-ink")}>{entry.value}</span>

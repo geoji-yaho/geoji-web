@@ -59,6 +59,7 @@ export function RoomRankingPage() {
 							entries={podium.map((entry, index) => ({
 								place: PODIUM_PLACES[index],
 								name: memberName(entry.member),
+								imageUrl: entry.member.avatarUrl,
 								tier: tierFromScore(entry.score),
 								value: formatScore(entry.score),
 								isMe: entry.member.userId === myUserId
@@ -74,6 +75,7 @@ export function RoomRankingPage() {
 								<RankingRow
 									rank={entry.rank}
 									name={memberName(entry.member)}
+									imageUrl={entry.member.avatarUrl}
 									tier={tierFromScore(entry.score)}
 									value={formatScore(entry.score)}
 									isMe={entry.member.userId === myUserId}
@@ -85,6 +87,7 @@ export function RoomRankingPage() {
 								<RankingRow
 									rank={null}
 									name={memberName(member)}
+									imageUrl={member.avatarUrl}
 									tier={null}
 									value={null}
 									isMe={member.userId === myUserId}
@@ -95,7 +98,14 @@ export function RoomRankingPage() {
 				)}
 			</div>
 
-			{mine && <MyRankRow name={memberName(mine)} rank={myRank} className="sticky bottom-0 z-40 rounded-none" />}
+			{mine && (
+				<MyRankRow
+					name={memberName(mine)}
+					imageUrl={mine.avatarUrl}
+					rank={myRank}
+					className="sticky bottom-0 z-40 rounded-none"
+				/>
+			)}
 		</>
 	);
 }

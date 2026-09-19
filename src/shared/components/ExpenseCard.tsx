@@ -23,6 +23,7 @@ import { VerdictStamp } from "./VerdictStamp";
 
 type ExpenseCardBase = {
 	name: string;
+	imageUrl?: string | null;
 	tier?: Tier;
 	timeAgo: string;
 	imprisonedLabel?: string;
@@ -98,7 +99,7 @@ export function ExpenseCard(props: ExpenseCardProps) {
 	return (
 		<article className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-card">
 			<div className="flex items-start gap-2.5">
-				<Avatar name={props.name} />
+				<Avatar name={props.name} src={props.imageUrl} />
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-1.5">
 						<span className="text-sm font-black text-ink">{props.name}</span>

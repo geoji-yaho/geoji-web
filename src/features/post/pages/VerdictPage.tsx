@@ -159,6 +159,7 @@ export function VerdictPage() {
 		const voters = detail.votes.map((vote) => ({
 			id: vote.id,
 			name: vote.voterNickname,
+			imageUrl: findMember(members.data, vote.voterId)?.avatarUrl,
 			verdict: vote.verdict,
 			reason: vote.reason
 		}));
@@ -242,6 +243,7 @@ export function VerdictPage() {
 		? comments.data.map((comment) => ({
 				id: comment.id,
 				authorName: comment.nickname,
+				authorImageUrl: findMember(members.data, comment.userId)?.avatarUrl,
 				content: comment.content,
 				createdAtLabel: formatRelativeTime(comment.createdAt),
 				isMine: myUserId !== undefined && comment.userId === myUserId

@@ -134,6 +134,7 @@ export function VotePage() {
 						<Reveal>
 							<CaseSummaryCard
 								name={detail.authorNickname}
+								imageUrl={findMember(members.data, detail.authorId)?.avatarUrl}
 								tier={memberTier(findMember(members.data, detail.authorId))}
 								timeAgo={formatRelativeTime(detail.createdAt)}
 								category={detail.category}

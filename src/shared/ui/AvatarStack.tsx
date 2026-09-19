@@ -1,21 +1,26 @@
 import { cn } from "../lib/cn";
 import { Avatar } from "./Avatar";
 
+export type AvatarStackItem = {
+	name: string;
+	imageUrl?: string | null;
+};
+
 type AvatarStackProps = {
-	names: string[];
+	items: AvatarStackItem[];
 	max?: number;
 	className?: string;
 };
 
-export function AvatarStack({ names, max = 3, className }: AvatarStackProps) {
-	const visible = names.slice(0, max);
-	const overflow = names.length - visible.length;
+export function AvatarStack({ items, max = 3, className }: AvatarStackProps) {
+	const visible = items.slice(0, max);
+	const overflow = items.length - visible.length;
 
 	return (
 		<ul className={cn("flex items-center -space-x-1.5", className)}>
-			{visible.map((name, index) => (
-				<li key={`${name}-${index}`} className="flex">
-					<Avatar name={name} size="xs" className="ring-2 ring-screen" />
+			{visible.map((item, index) => (
+				<li key={`${item.name}-${index}`} className="flex">
+					<Avatar name={item.name} src={item.imageUrl} size="xs" className="ring-2 ring-screen" />
 				</li>
 			))}
 			{overflow > 0 && (

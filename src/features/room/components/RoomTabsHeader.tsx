@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router";
 
 import { RoomHeader } from "@/shared/components/RoomHeader";
 import { roomInfoPath } from "@/shared/constants/routes";
+import type { AvatarStackItem } from "@/shared/ui/AvatarStack";
 import { TabSegment } from "@/shared/ui/TabSegment";
 
 const TAB_SEGMENTS = ["", "ranking", "info"] as const;
@@ -23,10 +24,10 @@ function currentSegment(pathname: string, roomId: string) {
 type RoomTabsHeaderProps = {
 	roomId: string;
 	roomName: string;
-	memberNames: string[];
+	members: AvatarStackItem[];
 };
 
-export function RoomTabsHeader({ roomId, roomName, memberNames }: RoomTabsHeaderProps) {
+export function RoomTabsHeader({ roomId, roomName, members }: RoomTabsHeaderProps) {
 	const navigate = useNavigate();
 	const { pathname } = useLocation();
 
@@ -34,7 +35,7 @@ export function RoomTabsHeader({ roomId, roomName, memberNames }: RoomTabsHeader
 		<div className="px-5">
 			<RoomHeader
 				roomName={roomName}
-				memberNames={memberNames}
+				members={members}
 				onBack={() => void navigate("/")}
 				onOpenInfo={() => void navigate(roomInfoPath(roomId), { replace: true })}
 			/>
