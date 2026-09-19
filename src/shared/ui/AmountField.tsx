@@ -85,9 +85,9 @@ export function AmountField({
 						disabled ? "text-dim" : "text-ink"
 					)}
 				/>
-				<span className={cn("pb-1 text-lg font-bold", disabled ? "text-dim" : "text-mute")}>{unit}</span>
-				{caption && <span className="ml-auto shrink-0 pb-1.5 text-caption whitespace-nowrap text-mute">{caption}</span>}
+				<span className={cn("shrink-0 pb-1 text-lg font-bold", disabled ? "text-dim" : "text-mute")}>{unit}</span>
 			</span>
+			{caption && <span className="text-caption text-dim">{caption}</span>}
 		</label>
 	);
 }

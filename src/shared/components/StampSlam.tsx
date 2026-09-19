@@ -14,7 +14,7 @@ const SLAM_Y = [-28, 0, 0, 0];
 const SLAM_ROTATE = [-16, 2, -1, 0];
 
 const RIPPLE_SCALE_FROM = 0.7;
-const RIPPLE_SCALE_TO = 1.7;
+const RIPPLE_SCALE_TO = 1.4;
 const RIPPLE_OPACITY_FROM = 0.35;
 
 const rippleVariants = cva("pointer-events-none absolute inset-0 rounded-full", {

@@ -32,6 +32,15 @@ export const VOTE_VERDICTS: Record<PostType, Record<Exclude<VerdictSide, "none">
 	considering: { oppose: "disagree", support: "agree" }
 };
 
+export const VOTE_SIDE_ORDER: Record<PostType, Exclude<VerdictSide, "none">[]> = {
+	spent: ["oppose", "support"],
+	considering: ["support", "oppose"]
+};
+
+export function isSupportFirst(postType: PostType) {
+	return VOTE_SIDE_ORDER[postType][0] === "support";
+}
+
 export type Sentence = "probation" | "oneDay" | "life";
 
 export const SENTENCE_LABELS: Record<Sentence, string> = {

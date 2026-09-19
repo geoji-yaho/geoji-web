@@ -3,6 +3,7 @@
 	bottom: calc(var(--spacing) * 11);
 	z-index: 40;
 	margin-top: auto;
+	margin-bottom: calc(var(--spacing) * 11);
 	padding-inline: calc(var(--spacing) * 5);
 }
 
