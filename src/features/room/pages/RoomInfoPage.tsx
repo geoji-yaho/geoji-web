@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams } from "react-router";
 
-import { memberQueries } from "@/shared/api/members";
+import { memberName, memberQueries } from "@/shared/api/members";
 import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
@@ -47,7 +47,7 @@ export function RoomInfoPage() {
 							<InfoTable
 								rows={[
 									{ label: "방 이름", value: room.data.name },
-									...(owner ? [{ label: "방장", value: owner.nickname, strong: true }] : []),
+									...(owner ? [{ label: "방장", value: memberName(owner), strong: true }] : []),
 									{
 										label: "잔소리 강도",
 										value: <IntensityTag intensity={room.data.spiceLevel} />

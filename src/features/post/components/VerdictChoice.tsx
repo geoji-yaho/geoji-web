@@ -18,7 +18,7 @@ const SIDES: VoteSide[] = ["oppose", "support"];
 
 type VerdictChoiceProps = {
 	postType: PostType;
-	value: VoteSide;
+	value: VoteSide | null;
 	onChange: (side: VoteSide) => void;
 };
 
@@ -38,12 +38,12 @@ export function VerdictChoice({ postType, value, onChange }: VerdictChoiceProps)
 						aria-pressed={selected}
 						onClick={() => onChange(side)}
 						className={cn(
-							"flex flex-1 pressable flex-col items-center gap-1 rounded-2xl bg-card px-3 py-4.5 text-mute shadow-card",
+							"flex flex-1 pressable flex-col items-center gap-1 rounded-2xl bg-card px-3 py-4.5 text-ink shadow-card",
 							selected && [SIDE_TONES[side], "text-stamp-text shadow-cta"]
 						)}
 					>
 						<span className="text-stamp-md">{VERDICT_LABELS[verdicts[side]]}</span>
-						<span className={cn("text-caption", selected && "text-stamp-text/85")}>{notes[side]}</span>
+						<span className={cn("text-caption text-mute", selected && "text-stamp-text/85")}>{notes[side]}</span>
 					</button>
 				);
 			})}

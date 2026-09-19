@@ -17,6 +17,17 @@ export type Room = {
 	createdBy: string;
 };
 
+export type RoomInvitePreview = {
+	id: string;
+	name: string;
+	spiceLevel: RoomSpiceLevel;
+	voteDeadlineMinutes: RoomVoteDeadlineMinutes;
+	rules: string[];
+	ownerNickname: string | null;
+	memberCount: number;
+	alreadyMember: boolean;
+};
+
 export type CreateRoomInput = {
 	name: string;
 	spiceLevel: RoomSpiceLevel;
@@ -53,5 +64,12 @@ export const roomQueries = {
 		queryOptions({
 			queryKey: [...roomQueries.details(), roomId] as const,
 			queryFn: ({ signal }) => http.get<Room>(`/api/rooms/${encodeURIComponent(roomId)}`, { signal })
+		}),
+	invites: () => [...roomQueries.all(), "invite"] as const,
+	invite: (inviteCode: string) =>
+		queryOptions({
+			queryKey: [...roomQueries.invites(), inviteCode] as const,
+			queryFn: ({ signal }) =>
+				http.get<RoomInvitePreview>(`/api/rooms/invite/${encodeURIComponent(inviteCode)}`, { signal })
 		})
 };

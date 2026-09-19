@@ -1,20 +1,19 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 
-import { type Expense, expenseQueries } from "../api/expenses";
+import { postQueries, type RoomPostSummary } from "../api/posts";
 import { profileQueries } from "../api/profile";
 import { roomQueries } from "../api/rooms";
-import { type Trial, TRIAL_QUORUM, trialQueries, voteCount } from "../api/trials";
 import { baselineSpend, calculateDebtScore } from "../domain/score";
 import { type Tier, TIER_LABELS, TIER_MIN_SCORES, tierFromScore } from "../domain/tier";
-import { isPast, monthRange } from "../utils/date";
+import type { Verdict } from "../domain/verdict";
+import { monthRange } from "../utils/date";
 
 const TIER_ORDER: Tier[] = ["penniless", "hardcore", "flower", "king"];
 const KING_LABEL = "이 방의 지배자";
 
-type MyExpense = {
-	id: string;
-	roomId: string;
-	amount: number;
+type MyPost = {
+	amountKrw: number;
+	verdicts: Set<Verdict>;
 };
 
 function formatNextTier(tier: Tier, score: number) {
@@ -27,84 +26,87 @@ function formatNextTier(tier: Tier, score: number) {
 	return `${TIER_LABELS[next]}까지 ${TIER_MIN_SCORES[next] - score}점`;
 }
 
-function collectMyExpenses(roomIds: string[], lists: (Expense[] | undefined)[], userId: string | null) {
-	const collected: MyExpense[] = [];
-	const seen = new Set<string>();
+function collectMyPosts(
+	feeds: (RoomPostSummary[] | undefined)[],
+	userId: string | null,
+	range: { from: Date; to: Date }
+) {
+	const byPostId = new Map<string, MyPost>();
 
 	if (userId === null) {
-		return collected;
+		return byPostId;
 	}
 
-	roomIds.forEach((roomId, index) => {
-		const list = lists[index];
-
-		if (list === undefined) {
-			return;
+	for (const feed of feeds) {
+		if (feed === undefined) {
+			continue;
 		}
 
-		for (const expense of list) {
-			if (expense.userId !== userId || expense.source !== "quick_tap" || seen.has(expense.id)) {
+		for (const post of feed) {
+			const createdAt = new Date(post.createdAt);
+			const inThisMonth = createdAt >= range.from && createdAt <= range.to;
+
+			if (post.authorId !== userId || post.postType !== "spent" || !inThisMonth) {
 				continue;
 			}
 
-			seen.add(expense.id);
-			collected.push({ id: expense.id, roomId, amount: expense.amount });
-		}
-	});
+			const collected = byPostId.get(post.id) ?? { amountKrw: post.amountKrw, verdicts: new Set<Verdict>() };
 
-	return collected;
+			if (post.juryStatus !== null) {
+				collected.verdicts.add(post.juryStatus);
+			}
+
+			byPostId.set(post.id, collected);
+		}
+	}
+
+	return byPostId;
 }
 
-function countJudged(trials: (Trial | null | undefined)[], now: Date) {
+function countJudged(posts: Map<string, MyPost>) {
 	let guilty = 0;
 	let notGuilty = 0;
 	let dismissed = 0;
 
-	for (const trial of trials) {
-		if (!trial) {
-			continue;
-		}
-
-		if (trial.verdict === "guilty") {
-			guilty += 1;
-		} else if (trial.verdict === "notGuilty") {
+	for (const post of posts.values()) {
+		if (post.verdicts.has("notGuilty")) {
 			notGuilty += 1;
-		} else if (isPast(trial.votingDeadline, now) && voteCount(trial) < TRIAL_QUORUM) {
+		} else if (post.verdicts.has("guilty")) {
+			guilty += 1;
+		} else if (post.verdicts.has("dismissed")) {
 			dismissed += 1;
 		}
 	}
 
-	return { guilty, notGuilty, dismissed, total: guilty + notGuilty + dismissed };
+	return { guilty, notGuilty, dismissed };
 }
 
 export function useMyMonthStats() {
 	const now = new Date();
-	const range = monthRange(now);
+	const { from, to } = monthRange(now);
+	const range = { from: new Date(from), to: new Date(to) };
 
 	const me = useQuery(profileQueries.me());
 	const rooms = useQuery(roomQueries.list());
 
 	const roomIds = (rooms.data ?? []).map((room) => room.id);
-	const expenseLists = useQueries({
-		queries: roomIds.map((roomId) => expenseQueries.listByRoom(roomId, range))
+	const feeds = useQueries({
+		queries: roomIds.map((roomId) => postQueries.feed(roomId))
 	});
 
 	const profile = me.data ?? null;
-	const myExpenses = collectMyExpenses(
-		roomIds,
-		expenseLists.map((result) => result.data),
-		profile?.id ?? null
+	const myPosts = collectMyPosts(
+		feeds.map((result) => result.data),
+		profile?.id ?? null,
+		range
 	);
 
-	const trials = useQueries({
-		queries: myExpenses.map((expense) => trialQueries.detail(expense.roomId, expense.id))
-	});
+	let spentThisMonth = 0;
+	for (const post of myPosts.values()) {
+		spentThisMonth += post.amountKrw;
+	}
 
-	const spentThisMonth = myExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-	const judged = countJudged(
-		trials.map((result) => result.data),
-		now
-	);
+	const judged = countJudged(myPosts);
 	const score = calculateDebtScore({
 		monthlyBudget: profile === null ? null : profile.monthlyBudget,
 		spentThisMonth,
@@ -113,23 +115,16 @@ export function useMyMonthStats() {
 	});
 	const tier: Tier = tierFromScore(score);
 
-	const isPending =
-		me.isPending ||
-		rooms.isPending ||
-		expenseLists.some((result) => result.isPending) ||
-		trials.some((result) => result.isPending);
-	const errors = [
-		me.error,
-		rooms.error,
-		...expenseLists.map((result) => result.error),
-		...trials.map((result) => result.error)
-	];
-	const error = errors.find((candidate) => candidate !== null) ?? null;
+	const isPending = me.isPending || rooms.isPending || feeds.some((result) => result.isPending);
+	const summaryErrors = [me.error, ...feeds.map((result) => result.error)];
+	const summaryError = summaryErrors.find((candidate) => candidate !== null) ?? null;
+	const error = summaryError ?? rooms.error;
 
 	return {
 		isPending,
 		isError: error !== null,
 		error,
+		summaryError,
 		profile,
 		spentThisMonth,
 		baseline: profile === null ? null : baselineSpend(profile.monthlyBudget, now),

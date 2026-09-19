@@ -1,6 +1,8 @@
 import type { Ref } from "react";
 
+import type { Meme } from "@/shared/api/posts";
 import { Logo } from "@/shared/components/Logo";
+import { MemeThumbnail } from "@/shared/components/MemeThumbnail";
 import { TierBadge } from "@/shared/components/TierBadge";
 import { VerdictStamp } from "@/shared/components/VerdictStamp";
 import type { Tier } from "@/shared/domain/tier";
@@ -15,9 +17,11 @@ type ShareCardPreviewProps = {
 	category: string | null;
 	headline: string | null;
 	sentence?: Sentence;
+	sentenceLabel?: string | null;
 	defendantName: string;
 	defendantTier?: Tier;
 	siteLabel: string;
+	meme?: Meme | null;
 };
 
 export function ShareCardPreview({
@@ -27,11 +31,14 @@ export function ShareCardPreview({
 	category,
 	headline,
 	sentence,
+	sentenceLabel,
 	defendantName,
 	defendantTier,
-	siteLabel
+	siteLabel,
+	meme
 }: ShareCardPreviewProps) {
-	const note = sentence ? SENTENCE_NOTES[sentence] : null;
+	const label = sentence ? (sentenceLabel ?? SENTENCE_LABELS[sentence]) : null;
+	const note = sentence && !sentenceLabel ? SENTENCE_NOTES[sentence] : null;
 
 	return (
 		<div ref={ref} className="w-full">
@@ -44,19 +51,26 @@ export function ShareCardPreview({
 					{category && <span className="shrink-0">{category}</span>}
 				</div>
 
-				<div className="flex flex-1 items-center gap-3">
+				{meme && (
+					<div className="relative flex-3 overflow-hidden rounded-card">
+						<MemeThumbnail size="lg" meme={{ src: meme.imageUrl, alt: headline ?? "판결 짤" }} className="size-full" />
+						<VerdictStamp verdict={verdict} size="lg" className="absolute right-2 bottom-2" />
+					</div>
+				)}
+
+				<div className="flex flex-2 items-center gap-3">
 					<div className="flex min-w-0 flex-1 flex-col gap-2">
 						<span className="text-amount text-ink">{formatAmount(amount)}원</span>
 						{headline && <p className="text-subtitle text-text">{headline}</p>}
-						{sentence && (
+						{label && (
 							<p className="flex flex-wrap items-baseline gap-1.5">
 								<span className="text-caption text-mute">형량</span>
-								<span className="text-control font-black text-red">{SENTENCE_LABELS[sentence]}</span>
+								<span className="text-control font-black text-red">{label}</span>
 								{note && <span className="text-caption text-mute">{note}</span>}
 							</p>
 						)}
 					</div>
-					<VerdictStamp verdict={verdict} size="lg" className="shrink-0 -rotate-10" />
+					{!meme && <VerdictStamp verdict={verdict} size="lg" className="shrink-0" />}
 				</div>
 
 				<div className="flex items-center justify-between gap-3 border-t border-line pt-2.5">

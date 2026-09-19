@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { type PropsWithChildren, useId } from "react";
+import { type PropsWithChildren, useEffect, useId } from "react";
 
 import { cn } from "../lib/cn";
 import { DURATION, EASE_OUT, SPRING_SHEET } from "../lib/motion";
@@ -13,6 +13,21 @@ type BottomSheetProps = PropsWithChildren<{
 
 export function BottomSheet({ open, onClose, title, children, className }: BottomSheetProps) {
 	const titleId = useId();
+
+	useEffect(() => {
+		if (!open) {
+			return;
+		}
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				onClose();
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [open, onClose]);
 
 	return (
 		<AnimatePresence>

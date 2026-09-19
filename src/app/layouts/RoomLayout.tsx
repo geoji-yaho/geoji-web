@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useLocation, useOutlet, useParams } from "react-router";
 
 import { RoomTabsHeader } from "@/features/room";
-import { memberQueries } from "@/shared/api/members";
+import { memberName, memberQueries } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
 import { DURATION, EASE_OUT } from "@/shared/lib/motion";
 import { Alert } from "@/shared/ui/Alert";
@@ -18,7 +18,7 @@ export function RoomLayout() {
 	const { pathname } = useLocation();
 	const room = useQuery(roomQueries.detail(roomId));
 	const members = useQuery(memberQueries.list(roomId));
-	const memberNames = members.data?.map((member) => member.nickname) ?? [];
+	const memberNames = members.data?.map((member) => memberName(member)) ?? [];
 
 	return (
 		<div className="flex flex-1 flex-col">

@@ -12,6 +12,7 @@ import {
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { formatAmount } from "../utils/format";
+import { MemeThumbnail } from "./MemeThumbnail";
 import { PostTypeTag } from "./PostTypeTag";
 import { ReactionRow } from "./ReactionRow";
 import { StatusTag } from "./StatusTag";
@@ -48,6 +49,15 @@ const VOTE_NOTES: Partial<Record<ExpenseVoteState, string>> = {
 	own: "본인의 재판에는 투표할 수 없습니다"
 };
 
+function formatSentenceNote(sentence: Sentence, sentenceLabel: string | undefined) {
+	if (sentenceLabel !== undefined) {
+		return null;
+	}
+
+	const note = SENTENCE_NOTES[sentence];
+	return note === null ? null : ` (${note})`;
+}
+
 type VotingProps = {
 	state: "voting";
 	deadlineLabel: string;
@@ -62,7 +72,9 @@ type JudgedProps = {
 	verdict: Exclude<Verdict, "dismissed">;
 	tally: VoteTally;
 	sentence?: Sentence;
+	sentenceLabel?: string;
 	headline?: string;
+	meme?: ImageSource;
 	onOpenVerdict?: () => void;
 };
 
@@ -142,12 +154,14 @@ export function ExpenseCard(props: ExpenseCardProps) {
 								</span>
 								{props.sentence && (
 									<span>
-										AI 판사 선고 <b className="font-black text-red">{SENTENCE_LABELS[props.sentence]}</b>
-										{SENTENCE_NOTES[props.sentence] && ` (${SENTENCE_NOTES[props.sentence]})`}
+										AI 판사 선고&nbsp;
+										<b className="font-black text-red">{props.sentenceLabel ?? SENTENCE_LABELS[props.sentence]}</b>
+										{formatSentenceNote(props.sentence, props.sentenceLabel)}
 									</span>
 								)}
 								{props.headline && <span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>}
 							</div>
+							{props.meme && <MemeThumbnail meme={props.meme} size="sm" />}
 						</div>
 						{props.onOpenVerdict && (
 							<Button variant="outline" onClick={props.onOpenVerdict}>

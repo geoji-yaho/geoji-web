@@ -3,24 +3,20 @@ import { useAnimate, useReducedMotionConfig } from "motion/react";
 import { type ReactNode, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import { commentQueries } from "@/shared/api/comments";
-import { expenseQueries, POST_TYPE_BY_EXPENSE_SOURCE } from "@/shared/api/expenses";
-import { findMember, memberName, memberQueries, memberTier } from "@/shared/api/members";
+import { findMember, memberQueries, memberTier } from "@/shared/api/members";
+import { postQueries } from "@/shared/api/posts";
+import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
-import {
-	headlineFromVerdictText,
-	sentenceFromDays,
-	tallyFromTrial,
-	trialQueries,
-	verdictFromTrial
-} from "@/shared/api/trials";
 import { BackHeader } from "@/shared/components/BackHeader";
 import { CommentSheet } from "@/shared/components/CommentSheet";
-import { ExecutionCard } from "@/shared/components/ExecutionCard";
+import { MemeThumbnail } from "@/shared/components/MemeThumbnail";
 import { verdictCardPath } from "@/shared/constants/routes";
-import { useCreateComment } from "@/shared/hooks/useCreateComment";
-import { playStampSound, primeStampSound } from "@/shared/lib/stamp-sound";
+import { useCreatePostComment } from "@/shared/hooks/useCreatePostComment";
+import { useRemovePostComment } from "@/shared/hooks/useRemovePostComment";
+import { playStampSound } from "@/shared/lib/stamp-sound";
 import { Alert } from "@/shared/ui/Alert";
+import { BottomSheet } from "@/shared/ui/BottomSheet";
+import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
@@ -33,13 +29,25 @@ import { JurorTallyCard } from "../components/JurorTallyCard";
 import { RoomMissingNotice } from "../components/RoomMissingNotice";
 import { SoundToggle } from "../components/SoundToggle";
 import { VerdictHeadlineBlock } from "../components/VerdictHeadlineBlock";
-import { useJudgeTrial } from "../hooks/useJudgeTrial";
-import { executionFromTrial, TRIAL_MESSAGES } from "../utils/trial";
+import { usePostVerdict } from "../hooks/usePostVerdict";
+import { useRemovePost } from "../hooks/useRemovePost";
 
 const SHAKE_X = [0, -5, 5, -3, 0];
 const SHAKE_DURATION = 0.24;
 const LAND_VIBRATION_MS = 35;
-const DISMISSED_MESSAGE = "배심원이 모이지 않아 각하되었습니다";
+const MESSAGES = {
+	loading: "판결을 불러오는 중",
+	voting: "배심원들이 투표하고 있습니다",
+	generating: "AI 판사가 심리 중입니다",
+	dismissed: "배심원이 모이지 않아 각하되었습니다"
+} as const;
+const REMOVE_COPY = {
+	title: "게시물 삭제",
+	message: "이 게시물을 삭제할까요? 판결과 댓글이 함께 사라집니다",
+	confirmLabel: "삭제",
+	pendingLabel: "삭제하는 중",
+	notice: "게시물을 삭제했습니다"
+} as const;
 
 export function VerdictPage() {
 	const { postId = "" } = useParams();
@@ -48,16 +56,19 @@ export function VerdictPage() {
 	const navigate = useNavigate();
 	const enabled = roomId !== "" && postId !== "";
 
-	const trial = useQuery({ ...trialQueries.detail(roomId, postId), enabled });
-	const expense = useQuery({ ...expenseQueries.detailInRoom(roomId, postId), enabled });
+	const me = useQuery(profileQueries.me());
+	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled });
 	const room = useQuery({ ...roomQueries.detail(roomId), enabled });
-	const comments = useQuery({ ...commentQueries.list(roomId, postId), enabled });
-	const judge = useJudgeTrial();
-	const createComment = useCreateComment();
+	const comments = useQuery({ ...postQueries.comments(postId, roomId), enabled });
+	const verdict = usePostVerdict(postId, roomId, enabled);
+	const createComment = useCreatePostComment();
+	const removeComment = useRemovePostComment();
+	const removePost = useRemovePost();
 
 	const [soundOn, setSoundOn] = useState(true);
 	const [commentsOpen, setCommentsOpen] = useState(false);
+	const [removeOpen, setRemoveOpen] = useState(false);
 	const [scope, animate] = useAnimate();
 	const reducedMotion = useReducedMotionConfig();
 
@@ -77,16 +88,45 @@ export function VerdictPage() {
 		}
 	};
 
-	const judgeNow = () => {
-		if (soundOn) {
-			primeStampSound();
-		}
-
-		judge.mutate({ roomId, expenseId: postId });
+	const openComments = () => {
+		createComment.reset();
+		removeComment.reset();
+		setCommentsOpen(true);
 	};
 
-	const pending = trial.isPending || expense.isPending || members.isPending || room.isPending;
-	const loadError = trial.error ?? expense.error ?? members.error ?? room.error;
+	const closeRemoveSheet = () => {
+		if (removePost.isPending) {
+			return;
+		}
+
+		setRemoveOpen(false);
+		removePost.reset();
+	};
+
+	const submitRemove = () => {
+		removePost.mutate(postId, {
+			onSuccess: () =>
+				void navigate(`/rooms/${encodeURIComponent(roomId)}`, {
+					replace: true,
+					state: { notice: REMOVE_COPY.notice }
+				})
+		});
+	};
+
+	const detail = post.data ?? null;
+	const state = verdict.data ?? null;
+	const view = state?.view ?? null;
+	const myUserId = me.data?.id;
+	const isDismissed = state?.juryStatus === "dismissed";
+	const pending = me.isPending || post.isPending || members.isPending || room.isPending || verdict.isPending;
+	const loadError = me.error ?? post.error ?? members.error ?? room.error ?? verdict.error;
+
+	const waitingMessage = (() => {
+		if (state === null || view !== null || isDismissed) {
+			return null;
+		}
+		return state.juryStatus === null ? MESSAGES.voting : MESSAGES.generating;
+	})();
 
 	let content: ReactNode = null;
 	let cta: ReactNode = null;
@@ -94,91 +134,101 @@ export function VerdictPage() {
 	if (pending) {
 		content = (
 			<Card role="status" className="p-4 text-chip text-mute">
-				{TRIAL_MESSAGES.loading}
+				{MESSAGES.loading}
 			</Card>
 		);
 	} else if (loadError) {
 		content = <Alert>{loadError.message}</Alert>;
-	} else if (trial.isSuccess && expense.isSuccess && members.isSuccess && room.isSuccess) {
-		const trialData = trial.data;
-		const expenseData = expense.data;
+	} else if (detail) {
+		const defendant = findMember(members.data, detail.authorId);
+		const canRemove = myUserId !== undefined && detail.authorId === myUserId;
+		const voters = detail.votes.map((vote) => ({
+			id: vote.id,
+			name: vote.voterNickname,
+			verdict: vote.verdict,
+			reason: vote.reason
+		}));
 
-		if (!trialData) {
-			content = <Alert>{TRIAL_MESSAGES.noTrial}</Alert>;
-		} else if (!expenseData) {
-			content = <Alert>{TRIAL_MESSAGES.noExpense}</Alert>;
-		} else {
-			const postType = POST_TYPE_BY_EXPENSE_SOURCE[expenseData.source];
-			const verdict = verdictFromTrial(trialData);
-			const judged = trialData.verdict !== null;
-			const defendant = findMember(members.data, expenseData.userId);
-			const sentence = verdict === "guilty" ? sentenceFromDays(trialData.sentenceDays) : undefined;
-			const execution = executionFromTrial(trialData);
-			const headline = verdict === "dismissed" ? DISMISSED_MESSAGE : headlineFromVerdictText(trialData.verdictText);
-			const voters = trialData.votes.map((vote) => ({
-				id: vote.id,
-				name: memberName(findMember(members.data, vote.voterUserId)),
-				verdict: vote.verdict,
-				reason: judged ? vote.reason : null
-			}));
+		content = (
+			<>
+				{isDismissed && <VerdictHeadlineBlock verdict="dismissed" headline={MESSAGES.dismissed} onLand={handleLand} />}
 
-			content = (
-				<>
-					{verdict && (
-						<VerdictHeadlineBlock verdict={verdict} headline={headline} sentence={sentence} onLand={handleLand} />
-					)}
-
-					<CaseOverviewTable
-						expense={expenseData}
-						defendantName={memberName(defendant)}
-						defendantTier={memberTier(defendant)}
+				{view && state?.juryStatus && !isDismissed && (
+					<VerdictHeadlineBlock
+						verdict={state.juryStatus}
+						headline={view.headline}
+						sentence={view.sentence ?? undefined}
+						sentenceLabel={view.sentenceLabel}
+						onLand={handleLand}
 					/>
+				)}
 
-					<JurorTallyCard postType={postType} tally={tallyFromTrial(trialData, postType)} voters={voters} />
+				{waitingMessage && (
+					<Card role="status" className="flex flex-col gap-1.5 p-4.5">
+						<span className="text-subtitle text-ink">{waitingMessage}</span>
+						{state?.juryStatus !== null && (
+							<span className="text-chip text-mute">판결문이 만들어지면 바로 나타납니다</span>
+						)}
+					</Card>
+				)}
 
-					{judged && trialData.verdictText && (
-						<JudgeSentenceCard intensity={room.data.spiceLevel} message={trialData.verdictText} />
-					)}
+				{view?.meme && (
+					<Reveal>
+						<MemeThumbnail size="lg" meme={{ src: view.meme.imageUrl, alt: view.headline }} />
+					</Reveal>
+				)}
 
-					{execution && (
-						<Reveal>
-							<ExecutionCard execution={execution} />
-						</Reveal>
-					)}
+				<CaseOverviewTable
+					amount={detail.amountKrw}
+					category={detail.category}
+					item={detail.item}
+					reason={detail.reason}
+					spentAt={detail.createdAt}
+					defendantName={detail.authorNickname}
+					defendantTier={memberTier(defendant)}
+				/>
 
-					<CommentSummaryCard
-						count={comments.isSuccess ? comments.data.length : null}
-						onOpen={() => setCommentsOpen(true)}
+				<JurorTallyCard postType={detail.postType} tally={detail.tally} voters={voters} rules={room.data?.rules} />
+
+				{view && (
+					<JudgeSentenceCard
+						intensity={view.intensity}
+						statement={view.statement}
+						sentencingReason={view.sentencingReason}
+						source={view.source}
 					/>
+				)}
 
-					{judge.isError && <Alert>{judge.error.message}</Alert>}
-				</>
-			);
+				<CommentSummaryCard count={comments.isSuccess ? comments.data.length : null} onOpen={openComments} />
 
-			cta =
-				verdict === null ? (
-					<StickyCta
-						label={judge.isPending ? "판결하는 중" : "지금 판결하기"}
-						onClick={judgeNow}
-						disabled={judge.isPending}
-						className="sticky-cta"
-					/>
-				) : (
-					<StickyCta
-						label="판결 카드 공유하기"
-						onClick={() => void navigate(verdictCardPath(postId, roomId))}
-						className="sticky-cta"
-					/>
-				);
-		}
+				{canRemove && (
+					<button
+						type="button"
+						onClick={() => setRemoveOpen(true)}
+						className="pressable self-center text-control text-mute"
+					>
+						{REMOVE_COPY.title}
+					</button>
+				)}
+			</>
+		);
+
+		cta = view && (
+			<StickyCta
+				label="판결 카드 공유하기"
+				onClick={() => void navigate(verdictCardPath(postId, roomId))}
+				className="sticky-cta"
+			/>
+		);
 	}
 
 	const commentItems = comments.isSuccess
 		? comments.data.map((comment) => ({
 				id: comment.id,
-				authorName: memberName(findMember(members.data, comment.userId)),
+				authorName: comment.nickname,
 				content: comment.content,
-				createdAtLabel: formatRelativeTime(comment.createdAt)
+				createdAtLabel: formatRelativeTime(comment.createdAt),
+				isMine: myUserId !== undefined && comment.userId === myUserId
 			}))
 		: [];
 
@@ -202,10 +252,26 @@ export function VerdictPage() {
 				comments={commentItems}
 				isLoading={comments.isPending}
 				error={comments.error?.message ?? null}
-				onSubmit={(content) => createComment.mutateAsync({ roomId, expenseId: postId, content })}
+				onSubmit={(content) => createComment.mutateAsync({ postId, roomId, content })}
 				isSubmitting={createComment.isPending}
 				submitError={createComment.error?.message ?? null}
+				onRemove={(commentId) => removeComment.mutateAsync({ postId, roomId, commentId })}
+				removingId={removeComment.isPending ? removeComment.variables.commentId : null}
+				removeError={removeComment.error?.message ?? null}
 			/>
+
+			<BottomSheet open={removeOpen} onClose={closeRemoveSheet} title={REMOVE_COPY.title}>
+				<p className="text-chip text-mute">{REMOVE_COPY.message}</p>
+				{removePost.isError && <Alert>{removePost.error.message}</Alert>}
+				<div className="flex gap-2">
+					<Button variant="outline" onClick={closeRemoveSheet} disabled={removePost.isPending}>
+						취소
+					</Button>
+					<Button variant="danger" onClick={submitRemove} disabled={removePost.isPending}>
+						{removePost.isPending ? REMOVE_COPY.pendingLabel : REMOVE_COPY.confirmLabel}
+					</Button>
+				</div>
+			</BottomSheet>
 		</div>
 	);
 }
