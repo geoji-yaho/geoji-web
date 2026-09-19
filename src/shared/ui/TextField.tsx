@@ -15,8 +15,8 @@ type TextFieldProps = {
 };
 
 const FIELD_STYLES = "w-full min-w-0 bg-transparent text-ink outline-none placeholder:font-normal placeholder:text-dim";
-const TEXTAREA_STYLES = cn(FIELD_STYLES, "min-h-13 resize-none text-body");
-const INPUT_STYLES = cn(FIELD_STYLES, "text-subtitle font-extrabold");
+const TEXTAREA_STYLES = cn(FIELD_STYLES, "min-h-13 resize-none text-base");
+const INPUT_STYLES = cn(FIELD_STYLES, "text-base font-extrabold");
 
 export function TextField({
 	label,
