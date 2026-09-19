@@ -32,7 +32,7 @@ export function TextField({
 	className
 }: TextFieldProps) {
 	const count = maxLength !== undefined && (
-		<span className="shrink-0 text-caption text-dim">
+		<span aria-hidden="true" className="shrink-0 text-caption text-dim">
 			{value.length}/{maxLength}
 		</span>
 	);
@@ -45,9 +45,9 @@ export function TextField({
 					{required && <span className="text-red"> *</span>}
 					{hint && <span className="font-normal tracking-normal"> ({hint})</span>}
 				</span>
-				{multiline && count}
+				{count}
 			</span>
-			<span className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3.5 shadow-card">
+			<span className="flex items-center rounded-2xl bg-card px-4 py-3.5 shadow-card">
 				{multiline ? (
 					<textarea
 						value={value}
@@ -57,18 +57,15 @@ export function TextField({
 						className={TEXTAREA_STYLES}
 					/>
 				) : (
-					<>
-						<input
-							value={value}
-							maxLength={maxLength}
-							placeholder={placeholder}
-							autoCapitalize={autoCapitalize}
-							autoComplete={autoComplete}
-							onChange={(event) => onChange(event.target.value)}
-							className={INPUT_STYLES}
-						/>
-						{count}
-					</>
+					<input
+						value={value}
+						maxLength={maxLength}
+						placeholder={placeholder}
+						autoCapitalize={autoCapitalize}
+						autoComplete={autoComplete}
+						onChange={(event) => onChange(event.target.value)}
+						className={INPUT_STYLES}
+					/>
 				)}
 			</span>
 		</label>
