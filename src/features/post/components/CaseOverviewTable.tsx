@@ -28,7 +28,7 @@ export function CaseOverviewTable({
 	const rows = [
 		{ label: "지출", value: category ? `${category}, ${amountLabel}` : amountLabel, strong: true },
 		...(item ? [{ label: "무엇을", value: item }] : []),
-		...(reason ? [{ label: "왜", value: reason }] : []),
+		...(reason ? [{ label: "사유", value: reason }] : []),
 		{ label: "일시", value: formatSpentAt(spentAt) },
 		{
 			label: "피고인",

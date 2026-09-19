@@ -18,7 +18,7 @@ export function JudgeSentenceCard({ intensity, statement, sentencingReason, sour
 		<Card className="flex flex-col gap-2.5 p-4">
 			<div className="flex items-center gap-2">
 				<Avatar name="판" size="xs" className="size-6.5 bg-ink text-card" />
-				<h2 className="text-xs font-black text-ink">{byAi ? "AI 판사 선고" : "판결문"}</h2>
+				<h2 className="text-xs font-black text-ink">{byAi ? "AI 판사" : "판결문"}</h2>
 				<IntensityTag intensity={intensity} className="ml-auto" />
 			</div>
 
