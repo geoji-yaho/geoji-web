@@ -67,18 +67,26 @@ export function usePostVerdict(postId: string, roomId: string, enabled = true) {
 		},
 		refetchInterval: (query) => {
 			const { status, error, data } = query.state;
-			if (status === "error" && !shouldKeepPolling(error)) {
+
+			if (data !== undefined && settled(data)) {
 				return false;
 			}
-			if (data && settled(data)) {
-				return false;
-			}
+
 			const startMs = startedAt.current;
 			const elapsedMs = startMs === null ? 0 : Date.now() - startMs;
-			if (status === "error") {
-				return retryIntervalFor(elapsedMs);
+			const ownInterval = data === undefined ? FAST_INTERVAL_MS : intervalFor(data, elapsedMs);
+
+			if (status !== "error") {
+				return ownInterval;
 			}
-			return data ? intervalFor(data, elapsedMs) : FAST_INTERVAL_MS;
+
+			if (!shouldKeepPolling(error)) {
+				return false;
+			}
+
+			const retryInterval = retryIntervalFor(elapsedMs);
+
+			return retryInterval === false ? false : Math.max(retryInterval, ownInterval);
 		}
 	});
 

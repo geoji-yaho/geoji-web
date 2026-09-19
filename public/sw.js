@@ -14,10 +14,17 @@ function getHashedAssetPrefix() {
 	return new URL(HASHED_ASSET_DIR, self.registration.scope).pathname;
 }
 
+let cachePromise = null;
+
 async function openCache() {
+	if (cachePromise === null) {
+		cachePromise = caches.open(CACHE_NAME);
+	}
+
 	try {
-		return await caches.open(CACHE_NAME);
+		return await cachePromise;
 	} catch {
+		cachePromise = null;
 		return null;
 	}
 }

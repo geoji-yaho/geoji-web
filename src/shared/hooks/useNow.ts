@@ -1,13 +1,11 @@
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 const TICK_INTERVAL_MS = 15_000;
 
 const listeners = new Set<() => void>();
 let timerId: ReturnType<typeof setInterval> | null = null;
-let now = new Date();
 
-function tick() {
-	now = new Date();
+function notifyListeners() {
 	listeners.forEach((listener) => listener());
 }
 
@@ -15,8 +13,7 @@ function subscribe(listener: () => void) {
 	listeners.add(listener);
 
 	if (timerId === null) {
-		now = new Date();
-		timerId = setInterval(tick, TICK_INTERVAL_MS);
+		timerId = setInterval(notifyListeners, TICK_INTERVAL_MS);
 	}
 
 	return () => {
@@ -30,9 +27,11 @@ function subscribe(listener: () => void) {
 }
 
 function getSnapshot() {
-	return now;
+	return Math.floor(Date.now() / TICK_INTERVAL_MS) * TICK_INTERVAL_MS;
 }
 
 export function useNow() {
-	return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+	const nowMs = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+	return useMemo(() => new Date(nowMs), [nowMs]);
 }
