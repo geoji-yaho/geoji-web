@@ -77,25 +77,6 @@ export function VerdictCardPage() {
 				{LOADING_MESSAGE}
 			</Card>
 		);
-	} else if (loadError) {
-		const isSentencePending = card.isError && hasPendingSentenceWords(card.error.message);
-		const isPostMissing = card.isError && !isSentencePending;
-
-		content = (
-			<div className="flex flex-col gap-3">
-				<Alert>{loadError.message}</Alert>
-				{isSentencePending && (
-					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
-						판결로 돌아가기
-					</Button>
-				)}
-				{isPostMissing && (
-					<Button variant="outline" onClick={() => void navigate("/", { replace: true })}>
-						홈으로 가기
-					</Button>
-				)}
-			</div>
-		);
 	} else if (card.data && post.data) {
 		const shareCard = card.data;
 		const detail = post.data;
@@ -135,6 +116,7 @@ export function VerdictCardPage() {
 
 		content = (
 			<>
+				{loadError && <Alert>{loadError.message}</Alert>}
 				<Reveal>
 					<ShareCardPreview
 						ref={cardRef}
@@ -165,6 +147,23 @@ export function VerdictCardPage() {
 						공유하기
 					</Button>
 				</div>
+			</div>
+		);
+	} else if (loadError) {
+		const isSentencePending = card.isError && hasPendingSentenceWords(card.error.message);
+
+		content = (
+			<div className="flex flex-col gap-3">
+				<Alert>{loadError.message}</Alert>
+				{isSentencePending ? (
+					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
+						판결로 돌아가기
+					</Button>
+				) : (
+					<Button variant="outline" onClick={() => void navigate("/", { replace: true })}>
+						홈으로 가기
+					</Button>
+				)}
 			</div>
 		);
 	}

@@ -145,15 +145,6 @@ export function VerdictPage() {
 				{MESSAGES.loading}
 			</Card>
 		);
-	} else if (loadError) {
-		content = (
-			<>
-				<Alert>{loadError.message}</Alert>
-				<Button variant="outline" onClick={retryLoad}>
-					다시 시도
-				</Button>
-			</>
-		);
 	} else if (detail) {
 		const defendant = findMember(members.data, detail.authorId);
 		const canRemove = myUserId !== undefined && detail.authorId === myUserId;
@@ -166,6 +157,8 @@ export function VerdictPage() {
 
 		content = (
 			<>
+				{loadError && <Alert>{loadError.message}</Alert>}
+
 				{isDismissed && <VerdictHeadlineBlock verdict="dismissed" headline={MESSAGES.dismissed} onLand={handleLand} />}
 
 				{view && state?.juryStatus && !isDismissed && (
@@ -234,6 +227,15 @@ export function VerdictPage() {
 				onClick={() => void navigate(verdictCardPath(postId, roomId))}
 				className="sticky-cta"
 			/>
+		);
+	} else if (loadError) {
+		content = (
+			<>
+				<Alert>{loadError.message}</Alert>
+				<Button variant="outline" onClick={retryLoad}>
+					다시 시도
+				</Button>
+			</>
 		);
 	}
 

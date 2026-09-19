@@ -21,10 +21,10 @@ function baseIntervalFor(elapsedMs: number) {
 }
 
 function intervalFor(verdict: PostVerdict, elapsedMs: number) {
-	if (settled(verdict)) {
-		return false as const;
-	}
 	const ownInterval = verdict.textStatus === "TEMPLATE_READY" ? TEMPLATE_RECHECK_MS : baseIntervalFor(elapsedMs);
+	if (!Number.isFinite(verdict.pollAfterMs)) {
+		return ownInterval;
+	}
 	return Math.max(ownInterval, verdict.pollAfterMs);
 }
 
@@ -70,12 +70,15 @@ export function usePostVerdict(postId: string, roomId: string, enabled = true) {
 			if (status === "error" && !shouldKeepPolling(error)) {
 				return false;
 			}
+			if (data && settled(data)) {
+				return false;
+			}
 			const startMs = startedAt.current;
 			const elapsedMs = startMs === null ? 0 : Date.now() - startMs;
-			if (!data) {
-				return status === "error" ? retryIntervalFor(elapsedMs) : FAST_INTERVAL_MS;
+			if (status === "error") {
+				return retryIntervalFor(elapsedMs);
 			}
-			return intervalFor(data, elapsedMs);
+			return data ? intervalFor(data, elapsedMs) : FAST_INTERVAL_MS;
 		}
 	});
 
