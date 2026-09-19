@@ -74,7 +74,7 @@ export function formatRemaining(deadlineIso: string, now = new Date()) {
 		return `${Math.ceil(remaining / MINUTE_MS)}분 남음`;
 	}
 
-	return `마감까지 ${Math.floor(remaining / HOUR_MS)}시간 남음`;
+	return `마감까지 ${Math.ceil(remaining / HOUR_MS)}시간 남음`;
 }
 
 export function isPast(iso: string, now = new Date()) {

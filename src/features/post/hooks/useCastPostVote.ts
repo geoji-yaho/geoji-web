@@ -7,10 +7,10 @@ export function useCastPostVote() {
 
 	return useMutation({
 		mutationFn: castPostVote,
-		onSuccess: async (_vote, { postId }) => {
-			await queryClient.invalidateQueries({ queryKey: [...postQueries.details(), postId] });
-			await queryClient.invalidateQueries({ queryKey: postQueries.feeds() });
-			await queryClient.invalidateQueries({ queryKey: [...postQueries.verdicts(), postId] });
+		onSuccess: async (_vote, { postId, roomId }) => {
+			await queryClient.invalidateQueries({ queryKey: postQueries.detail(postId, roomId).queryKey });
+			await queryClient.invalidateQueries({ queryKey: postQueries.feed(roomId).queryKey });
+			await queryClient.invalidateQueries({ queryKey: postQueries.verdict(postId, roomId).queryKey });
 		}
 	});
 }
