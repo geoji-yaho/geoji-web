@@ -1,6 +1,6 @@
 import { MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { LogoIcon } from "@/shared/components/LogoIcon";
 import { useSession } from "@/shared/hooks/useSession";
@@ -23,22 +23,50 @@ function formatFailureMessage(description: string | null) {
 	return description === null ? FAILED_MESSAGE : `${FAILED_MESSAGE}. ${description}`;
 }
 
+function readNotice(state: unknown) {
+	if (typeof state !== "object" || state === null || !("notice" in state)) {
+		return null;
+	}
+
+	const { notice } = state;
+	return typeof notice === "string" && notice !== "" ? notice : null;
+}
+
 export function LoginPage() {
 	const navigate = useNavigate();
-	const { session } = useSession();
+	const { pathname, state } = useLocation();
+	const { session, isLoading } = useSession();
+	const [notice] = useState(() => readNotice(state));
 	const login = useKakaoLogin();
 	const [callbackError] = useState(() => oauthError);
 	const hasNavigatedRef = useRef(false);
+	const sawSignedOutRef = useRef(notice === null);
 
 	useEffect(() => {
-		if (!session || hasNavigatedRef.current) {
+		if (notice === null) {
+			return;
+		}
+
+		void navigate(pathname, { replace: true, state: null });
+	}, [notice, pathname, navigate]);
+
+	useEffect(() => {
+		if (session === null) {
+			if (!isLoading) {
+				sawSignedOutRef.current = true;
+			}
+
+			return;
+		}
+
+		if (hasNavigatedRef.current || !sawSignedOutRef.current) {
 			return;
 		}
 
 		hasNavigatedRef.current = true;
 
 		void navigate(takePathAfterLogin() ?? "/", { replace: true });
-	}, [session, navigate]);
+	}, [session, isLoading, navigate]);
 
 	const isCancelled = callbackError?.isCancelled === true;
 	let failed: string | null = null;
@@ -70,6 +98,12 @@ export function LoginPage() {
 					))}
 				</Reveal>
 			</div>
+
+			{notice !== null && (
+				<Reveal index={5} className="mb-8.5">
+					<Alert tone="fill">{notice}</Alert>
+				</Reveal>
+			)}
 
 			{isCancelled && (
 				<Reveal index={5} className="mb-8.5">
