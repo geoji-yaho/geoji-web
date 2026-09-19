@@ -166,7 +166,7 @@ export function HonestyModal({
 								value={revisedTitle}
 								maxLength={maxLength}
 								onChange={(event) => setRevisedTitle(event.target.value)}
-								className="rounded-2xl border-2 border-red bg-card px-3.5 py-3 text-subtitle font-extrabold text-ink outline-none focus-visible:ring-2 focus-visible:ring-ink"
+								className="rounded-2xl border-2 border-red bg-card px-3.5 py-3 text-base font-extrabold text-ink outline-none focus-visible:ring-2 focus-visible:ring-ink"
 							/>
 
 							{errorMessage && <Alert>{errorMessage}</Alert>}
