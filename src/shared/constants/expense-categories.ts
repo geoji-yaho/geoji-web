@@ -11,3 +11,5 @@ export const EXPENSE_CATEGORIES = [
 	"생활",
 	"기타"
 ] as const;
+
+export type Category = (typeof EXPENSE_CATEGORIES)[number];

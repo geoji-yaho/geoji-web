@@ -11,10 +11,11 @@ type CaseSummaryCardProps = {
 	category?: string;
 	amount: number;
 	title?: string;
+	reason?: string | null;
 	rules: string[];
 };
 
-export function CaseSummaryCard({ name, tier, timeAgo, category, amount, title, rules }: CaseSummaryCardProps) {
+export function CaseSummaryCard({ name, tier, timeAgo, category, amount, title, reason, rules }: CaseSummaryCardProps) {
 	const meta = [timeAgo, category].filter((part) => part !== undefined && part !== "").join(", ");
 
 	return (
@@ -35,6 +36,8 @@ export function CaseSummaryCard({ name, tier, timeAgo, category, amount, title, 
 					<strong className="text-amount-sm text-ink">{formatAmount(amount)}원</strong>
 					{title && <span className="text-control text-mute">{title}</span>}
 				</div>
+
+				{reason && <p className="text-control text-mute">&ldquo;{reason}&rdquo;</p>}
 
 				{rules.length > 0 && (
 					<div className="flex flex-col gap-1 text-chip text-mute">

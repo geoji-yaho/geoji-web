@@ -8,12 +8,15 @@ import { type PostComment, postQueries } from "@/shared/api/posts";
 import { profileQueries } from "@/shared/api/profile";
 import { CommentSheet } from "@/shared/components/CommentSheet";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { verdictPath, votePath } from "@/shared/constants/routes";
+import { expenseCreatePath, verdictPath, votePath } from "@/shared/constants/routes";
 import { useCreatePostComment } from "@/shared/hooks/useCreatePostComment";
+import { useRemovePostComment } from "@/shared/hooks/useRemovePostComment";
+import { useRouteNotice } from "@/shared/hooks/useRouteNotice";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Fab } from "@/shared/ui/Fab";
 import { Reveal } from "@/shared/ui/Reveal";
+import { Toast } from "@/shared/ui/Toast";
 import { formatRelativeTime } from "@/shared/utils/date";
 
 import { PostFeedCard } from "../components/PostFeedCard";
@@ -32,18 +35,20 @@ function firstErrorOf(queries: QueryFailure[]) {
 	return queries.find((query) => query.isError)?.error ?? null;
 }
 
-function toCommentItems(comments: PostComment[]) {
+function toCommentItems(comments: PostComment[], myUserId: string | undefined) {
 	return comments.map((comment) => ({
 		id: comment.id,
 		authorName: comment.nickname,
 		content: comment.content,
-		createdAtLabel: formatRelativeTime(comment.createdAt)
+		createdAtLabel: formatRelativeTime(comment.createdAt),
+		isMine: myUserId !== undefined && comment.userId === myUserId
 	}));
 }
 
 export function RoomFeedPage() {
 	const { roomId = "" } = useParams();
 	const navigate = useNavigate();
+	const notice = useRouteNotice();
 	const [sheet, setSheet] = useState<SheetState | null>(null);
 
 	const me = useQuery(profileQueries.me());
@@ -58,6 +63,7 @@ export function RoomFeedPage() {
 		queries: postList.map((post) => postQueries.comments(post.id, roomId))
 	});
 	const createComment = useCreatePostComment();
+	const removeComment = useRemovePostComment();
 
 	const verdictByPostId = new Map(judged.map((post, index) => [post.id, verdicts[index]] as const));
 	const commentsByPostId = new Map(postList.map((post, index) => [post.id, comments[index]] as const));
@@ -71,6 +77,7 @@ export function RoomFeedPage() {
 
 	const openSheet = (postId: string) => {
 		createComment.reset();
+		removeComment.reset();
 		setSheet({ postId, open: true });
 	};
 
@@ -109,7 +116,7 @@ export function RoomFeedPage() {
 
 			<Fab
 				label="+ 지출 등록"
-				onClick={() => void navigate("/posts/new")}
+				onClick={() => void navigate(expenseCreatePath(roomId))}
 				className="sticky bottom-6 z-40 mr-5 self-end"
 			/>
 
@@ -118,13 +125,22 @@ export function RoomFeedPage() {
 					key={sheet.postId}
 					open={sheet.open}
 					onClose={closeSheet}
-					comments={toCommentItems(sheetComments?.data ?? [])}
+					comments={toCommentItems(sheetComments?.data ?? [], me.data?.id)}
 					isLoading={sheetComments?.isPending ?? false}
 					error={sheetComments?.error?.message ?? null}
 					onSubmit={(content) => createComment.mutateAsync({ postId: sheet.postId, roomId, content })}
 					isSubmitting={createComment.isPending}
 					submitError={createComment.error?.message ?? null}
+					onRemove={(commentId) => removeComment.mutateAsync({ postId: sheet.postId, roomId, commentId })}
+					removingId={removeComment.isPending ? removeComment.variables.commentId : null}
+					removeError={removeComment.error?.message ?? null}
 				/>
+			)}
+
+			{notice && (
+				<div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-5">
+					<Toast>{notice}</Toast>
+				</div>
 			)}
 		</>
 	);

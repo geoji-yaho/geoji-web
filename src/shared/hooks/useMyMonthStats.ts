@@ -5,6 +5,7 @@ import { profileQueries } from "../api/profile";
 import { roomQueries } from "../api/rooms";
 import { baselineSpend, calculateDebtScore } from "../domain/score";
 import { type Tier, TIER_LABELS, TIER_MIN_SCORES, tierFromScore } from "../domain/tier";
+import type { Verdict } from "../domain/verdict";
 import { monthRange } from "../utils/date";
 
 const TIER_ORDER: Tier[] = ["penniless", "hardcore", "flower", "king"];
@@ -12,7 +13,7 @@ const KING_LABEL = "이 방의 지배자";
 
 type MyPost = {
 	amountKrw: number;
-	verdicts: Set<string>;
+	verdicts: Set<Verdict>;
 };
 
 function formatNextTier(tier: Tier, score: number) {
@@ -25,13 +26,6 @@ function formatNextTier(tier: Tier, score: number) {
 	return `${TIER_LABELS[next]}까지 ${TIER_MIN_SCORES[next] - score}점`;
 }
 
-/**
- * 이번 달에 내가 올린 지출을 게시물 단위로 모은다.
- *
- * 게시물 하나가 내가 속한 방마다 한 번씩 피드에 나오므로 id 로 합친다. 판결은 방마다 따로 나기
- * 때문에 평결은 게시물당 여러 개가 될 수 있고, 그것을 모아 두었다가 아래에서 하나로 정한다.
- * 살까 말까(considering)는 쓴 돈이 아니라 제외한다.
- */
 function collectMyPosts(
 	feeds: (RoomPostSummary[] | undefined)[],
 	userId: string | null,
@@ -56,7 +50,7 @@ function collectMyPosts(
 				continue;
 			}
 
-			const collected = byPostId.get(post.id) ?? { amountKrw: post.amountKrw, verdicts: new Set<string>() };
+			const collected = byPostId.get(post.id) ?? { amountKrw: post.amountKrw, verdicts: new Set<Verdict>() };
 
 			if (post.juryStatus !== null) {
 				collected.verdicts.add(post.juryStatus);
@@ -69,10 +63,6 @@ function collectMyPosts(
 	return byPostId;
 }
 
-/**
- * 게시물 단위로 센다. 한 게시물이 방마다 다른 평결을 받았으면 무죄가 하나라도 있으면 무죄로 본다
- * (백엔드 거지력 집계 DebtScoreQueries 와 같은 규칙).
- */
 function countJudged(posts: Map<string, MyPost>) {
 	let guilty = 0;
 	let notGuilty = 0;
@@ -88,7 +78,7 @@ function countJudged(posts: Map<string, MyPost>) {
 		}
 	}
 
-	return { guilty, notGuilty, dismissed, total: guilty + notGuilty + dismissed };
+	return { guilty, notGuilty, dismissed };
 }
 
 export function useMyMonthStats() {
@@ -126,13 +116,15 @@ export function useMyMonthStats() {
 	const tier: Tier = tierFromScore(score);
 
 	const isPending = me.isPending || rooms.isPending || feeds.some((result) => result.isPending);
-	const errors = [me.error, rooms.error, ...feeds.map((result) => result.error)];
-	const error = errors.find((candidate) => candidate !== null) ?? null;
+	const summaryErrors = [me.error, ...feeds.map((result) => result.error)];
+	const summaryError = summaryErrors.find((candidate) => candidate !== null) ?? null;
+	const error = summaryError ?? rooms.error;
 
 	return {
 		isPending,
 		isError: error !== null,
 		error,
+		summaryError,
 		profile,
 		spentThisMonth,
 		baseline: profile === null ? null : baselineSpend(profile.monthlyBudget, now),

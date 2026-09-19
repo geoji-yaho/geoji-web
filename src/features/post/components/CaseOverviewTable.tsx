@@ -3,7 +3,7 @@ import type { Tier } from "@/shared/domain/tier";
 import { InfoTable } from "@/shared/ui/InfoTable";
 import { formatAmount } from "@/shared/utils/format";
 
-import { formatSpentAt } from "../utils/trial";
+import { formatSpentAt } from "../utils/formatSpentAt";
 
 type CaseOverviewTableProps = {
 	amount: number;

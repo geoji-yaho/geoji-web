@@ -10,7 +10,7 @@ export function useCastPostVote() {
 		onSuccess: async (_vote, { postId }) => {
 			await queryClient.invalidateQueries({ queryKey: [...postQueries.details(), postId] });
 			await queryClient.invalidateQueries({ queryKey: postQueries.feeds() });
-			await queryClient.invalidateQueries({ queryKey: postQueries.verdicts() });
+			await queryClient.invalidateQueries({ queryKey: [...postQueries.verdicts(), postId] });
 		}
 	});
 }

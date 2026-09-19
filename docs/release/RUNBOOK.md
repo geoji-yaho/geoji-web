@@ -34,14 +34,14 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 ## 환경 변수
 
-| 변수                     | 쓰는 곳                                                                                                              | 값                                                                                                                                                       |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_BASE_URL`      | `src/shared/lib/env.ts`가 읽어 `http` 요청의 기준 주소로 쓴다                                                        | 로컬 서버는 `http://localhost:8080`, 배포는 저장소 Actions variables에 들어 있다                                                                         |
-| `VITE_SUPABASE_URL`      | `env.supabaseUrl`. `shared/lib/supabase.ts`의 `getSupabase()`가 읽어 Supabase 클라이언트를 만든다                    | 값은 팀 위키의 테스트 계정 문서와 저장소 Actions variables에 있다. 카카오 로그인과 세션에 쓰므로 배포에도 넣는다                                         |
-| `VITE_SUPABASE_ANON_KEY` | `env.supabaseAnonKey`. 같은 자리에서 함께 읽는다                                                                     | 공개 값이라 저장소와 배포에 넣어도 된다. 브라우저가 어차피 받아 가고 Supabase의 행 수준 보안이 권한을 가른다. access token과는 다른 값이다               |
-| `VITE_DEV_ACCESS_TOKEN`  | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다                                   | 로컬 전용. Supabase 세션이 없을 때만 쓰이는 대체 토큰이다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                                     |
-| `VITE_DEV_NICKNAME`      | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                                                         | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                                       |
-| `VITE_KAKAO_JS_KEY`      | `env.kakaoJsKey`. `shared/lib/platform.ts`의 `shareToKakao`가 카카오 SDK를 초기화해 초대 시트의 카카오톡 공유에 쓴다 | 카카오 개발자 콘솔 앱 키의 JavaScript 키. 공개 값이라 variables에 둔다. 없으면 카카오톡 공유 버튼이 기기 공유 시트로, 그것도 없으면 링크 복사로 넘어간다 |
+| 변수                     | 쓰는 곳                                                                                                              | 값                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`      | `src/shared/lib/env.ts`가 읽어 `http` 요청의 기준 주소로 쓴다                                                        | 로컬 서버는 `http://localhost:8080`, 배포는 CloudFront 주소 `https://d13dsunuwl4yud.cloudfront.net`이고 저장소 Actions variables에 들어 있다. 백엔드가 허용하는 origin은 `https://geoji-yaho.github.io`와 `http://localhost:3800` 둘뿐이라 다른 포트로 띄운 개발 서버는 CORS 프리플라이트에서 막힌다 |
+| `VITE_SUPABASE_URL`      | `env.supabaseUrl`. `shared/lib/supabase.ts`의 `getSupabase()`가 읽어 Supabase 클라이언트를 만든다                    | 값은 팀 위키의 테스트 계정 문서와 저장소 Actions variables에 있다. 카카오 로그인과 세션에 쓰므로 배포에도 넣는다                                                                                                                                                                                     |
+| `VITE_SUPABASE_ANON_KEY` | `env.supabaseAnonKey`. 같은 자리에서 함께 읽는다                                                                     | 공개 값이라 저장소와 배포에 넣어도 된다. 브라우저가 어차피 받아 가고 Supabase의 행 수준 보안이 권한을 가른다. access token과는 다른 값이다                                                                                                                                                           |
+| `VITE_DEV_ACCESS_TOKEN`  | `env.devAccessToken`. `App.tsx`가 토큰 공급자로 등록해 Authorization 헤더에 붙인다                                   | 로컬 전용. Supabase 세션이 없을 때만 쓰이는 대체 토큰이다. 개발 서버에서만 읽으니 배포에 넣지 않는다                                                                                                                                                                                                 |
+| `VITE_DEV_NICKNAME`      | `env.devNickname`. 온보딩 `POST /api/me`의 닉네임으로 보낸다                                                         | 로컬 전용. 소셜 로그인 메타데이터가 없는 이메일 계정이면 없을 때 서버가 400을 준다                                                                                                                                                                                                                   |
+| `VITE_KAKAO_JS_KEY`      | `env.kakaoJsKey`. `shared/lib/platform.ts`의 `shareToKakao`가 카카오 SDK를 초기화해 초대 시트의 카카오톡 공유에 쓴다 | 카카오 개발자 콘솔 앱 키의 JavaScript 키. 공개 값이라 variables에 둔다. 없으면 카카오톡 공유 버튼이 기기 공유 시트로, 그것도 없으면 링크 복사로 넘어간다                                                                                                                                             |
 
 `VITE_` 접두사 변수는 빌드 시점에 번들에 박힌다. GitHub Pages는 정적 호스팅이라 배포 뒤에 바꿀 수 없고 값을 바꾸면 다시 빌드해 배포한다. Deploy 워크플로(`.github/workflows/deploy.yaml`)의 빌드 단계가 저장소 Actions variables에서 셋을 읽고, 그 앞의 환경 변수 확인 단계가 비어 있는 값을 찾으면 빌드 전에 멈춘다.
 
@@ -63,7 +63,7 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 - 로컬 값은 `.env.local`에 둔다. `.gitignore`의 `*.local` 규칙이 걸러 주고 `.env`는 걸리지 않으니 `.env`를 만들지 않는다. 커밋하는 예시는 `.env.example` 하나이고 거기에는 실제 값을 적지 않는다. anon key가 공개 값이어도 저장소에 박아 두면 공개 여부를 매번 다시 따져야 한다
 - 웹 푸시 VAPID 공개키는 후보이고 도입할 때 위 표에 더한다
 
-백엔드가 HTTPS를 지원하기 전까지 배포된 화면은 API를 부르지 못한다. GitHub Pages는 https로 서비스되고 배포된 서버는 http라 브라우저가 요청 자체를 막는다. `env.ts`가 이 경우를 미리 잡아 화면에 사유를 띄운다. 백엔드에 인증서와 로드밸런서가 붙어 주소가 https로 바뀌면 Actions variables의 `VITE_API_BASE_URL`을 고치고 Deploy를 다시 돌린다.
+배포 API 주소는 CloudFront가 HTTPS로 받아 주는 `https://d13dsunuwl4yud.cloudfront.net`이다. Elastic Beanstalk 도메인은 http만 받아 https인 GitHub Pages에서 부르면 브라우저가 mixed content로 막는다(서버 저장소 `API.md` 머리말). `env.ts`가 https 페이지에서 http 주소를 보면 요청 전에 사유를 담은 오류를 낸다. API 주소가 바뀌면 Actions variables의 `VITE_API_BASE_URL`을 고치고 Deploy를 다시 돌린다.
 
 백엔드는 슬립 없는 구성이 요건이다. 무료 플랜은 유휴 시 슬립되어 심사 기간 첫 접속이 실패할 수 있다.
 
@@ -104,6 +104,5 @@ DNS 설정과 GitHub Pages 커스텀 도메인 연결 절차는 정해지면 여
 2. Actions 탭의 Deploy 로그. 어느 게이트에서 실패했는지, 어느 커밋이 마지막으로 배포됐는지
 3. 백엔드 상태. API를 부르는 화면만 오류면 브라우저 콘솔에서 `VITE_API_BASE_URL` 환경 변수가 없다는 Error인지 백엔드 응답 실패인지 가른다. 백엔드 헬스체크는 API 주소의 `/actuator/health`이고 토큰 없이 열린다
 4. 카카오 로그인. 버튼을 눌러 `KOE205 잘못된 요청`이 뜨면 카카오 앱의 동의 항목이 꺼진 것이고, 카카오에서 돌아온 뒤 로그인 화면에 머물면 Supabase의 리다이렉트 주소 등록을 본다(`../product/ROADMAP.md` 미결정 절의 카카오 로그인 동의 항목 행)
-5. 배포된 서버 버전. 방 만들기나 투표가 본문 없는 400이면 배포 서버의 열거형 값이 `API.md`보다 오래된 것이다. 서버가 배포된 커밋을 확인한다(`../product/ROADMAP.md` 미결정 절의 배포 서버 재배포 행)
-6. base 경로. 자산 404가 나면 `vite.config.ts`의 `base`와 배포 경로가 맞는지 본다
-7. Service Worker 캐시 (도입 뒤). 배포는 성공했는데 옛 화면이 보이면 브라우저 개발자 도구의 Application 탭에서 등록된 Service Worker와 캐시를 본다. 갱신 절차는 Service Worker를 도입할 때 여기에 적는다
+5. base 경로. 자산 404가 나면 `vite.config.ts`의 `base`와 배포 경로가 맞는지 본다
+6. Service Worker 캐시 (도입 뒤). 배포는 성공했는데 옛 화면이 보이면 브라우저 개발자 도구의 Application 탭에서 등록된 Service Worker와 캐시를 본다. 갱신 절차는 Service Worker를 도입할 때 여기에 적는다

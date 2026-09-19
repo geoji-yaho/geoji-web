@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
+import { UNKNOWN_MEMBER_NAME } from "@/shared/api/members";
 import { roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
 import { formatVoteDeadlineLabel } from "@/shared/domain/room";
@@ -14,6 +15,8 @@ import { useJoinRoom } from "../hooks/useJoinRoom";
 
 const EXPIRED_MESSAGE = "만료된 초대 링크입니다";
 const LOADING_MESSAGE = "초대장을 불러오는 중";
+const ALREADY_MEMBER_NOTICE = "이미 참여 중인 방입니다";
+const HELL_NOTICE = "이 방의 판결은 지옥맛입니다. 말이 셉니다.";
 
 export function RoomJoinPage() {
 	const navigate = useNavigate();
@@ -26,11 +29,12 @@ export function RoomJoinPage() {
 	const codeRejected = preview.error?.kind === "badRequest" || join.error?.kind === "badRequest";
 	const expired = codeMissing || codeRejected;
 	const alreadyMember = room?.alreadyMember ?? false;
+	const isHellRoom = room?.spiceLevel === "hell";
 	const joinedRoomId = room?.id ?? null;
 
 	useEffect(() => {
 		if (alreadyMember && joinedRoomId) {
-			void navigate(`/rooms/${joinedRoomId}`, { replace: true });
+			void navigate(`/rooms/${joinedRoomId}`, { replace: true, state: { notice: ALREADY_MEMBER_NOTICE } });
 		}
 	}, [alreadyMember, joinedRoomId, navigate]);
 
@@ -55,7 +59,7 @@ export function RoomJoinPage() {
 	const summary =
 		room === null
 			? ""
-			: `방장 ${room.ownerNickname}, 멤버 ${room.memberCount}, 마감 ${formatVoteDeadlineLabel(room.voteDeadlineMinutes)}`;
+			: `방장 ${room.ownerNickname ?? UNKNOWN_MEMBER_NAME}, 멤버 ${room.memberCount}, 마감 ${formatVoteDeadlineLabel(room.voteDeadlineMinutes)}`;
 
 	return (
 		<div className="flex flex-1 flex-col gap-4.5 px-5 pt-4 pb-8.5">
@@ -85,6 +89,8 @@ export function RoomJoinPage() {
 					</div>
 				</Card>
 			)}
+
+			{isHellRoom && <Alert>{HELL_NOTICE}</Alert>}
 
 			<Alert tone="fill">참여하면 내 지출이 이 방 멤버들에게 공개됩니다</Alert>
 

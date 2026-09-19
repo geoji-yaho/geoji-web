@@ -1,6 +1,7 @@
 import { memberTier, type RoomMember } from "@/shared/api/members";
 import type { PostVerdict, RoomPostSummary } from "@/shared/api/posts";
 import { ExpenseCard } from "@/shared/components/ExpenseCard";
+import type { ImageSource } from "@/shared/domain/post";
 import type { Tier } from "@/shared/domain/tier";
 import { formatRelativeTime, formatRemaining, isPast } from "@/shared/utils/date";
 
@@ -68,6 +69,7 @@ export function PostFeedCard({
 
 	if (post.juryStatus !== null) {
 		const view = verdict?.view ?? null;
+		const meme: ImageSource | undefined = view?.meme ? { src: view.meme.imageUrl, alt: view.headline } : undefined;
 		return (
 			<ExpenseCard
 				{...base}
@@ -75,7 +77,9 @@ export function PostFeedCard({
 				verdict={post.juryStatus}
 				tally={post.tally}
 				sentence={view?.sentence ?? undefined}
+				sentenceLabel={view?.sentenceLabel ?? undefined}
 				headline={view?.headline ?? undefined}
+				meme={meme}
 				onOpenVerdict={onOpenVerdict}
 			/>
 		);

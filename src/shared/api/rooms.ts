@@ -23,7 +23,7 @@ export type RoomInvitePreview = {
 	spiceLevel: RoomSpiceLevel;
 	voteDeadlineMinutes: RoomVoteDeadlineMinutes;
 	rules: string[];
-	ownerNickname: string;
+	ownerNickname: string | null;
 	memberCount: number;
 	alreadyMember: boolean;
 };

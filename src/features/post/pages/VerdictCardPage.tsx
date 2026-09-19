@@ -73,7 +73,16 @@ export function VerdictCardPage() {
 			</Card>
 		);
 	} else if (loadError) {
-		content = <Alert>{loadError.message}</Alert>;
+		content = (
+			<div className="flex flex-col gap-3">
+				<Alert>{loadError.message}</Alert>
+				{card.isError && (
+					<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
+						판결로 돌아가기
+					</Button>
+				)}
+			</div>
+		);
 	} else if (card.data && post.data) {
 		const shareCard = card.data;
 		const detail = post.data;
@@ -121,6 +130,7 @@ export function VerdictCardPage() {
 						category={detail.category}
 						headline={shareCard.headline}
 						sentence={shareCard.sentence ?? undefined}
+						sentenceLabel={shareCard.sentenceLabel}
 						defendantName={detail.authorNickname}
 						defendantTier={memberTier(defendant)}
 						siteLabel={siteLabel}

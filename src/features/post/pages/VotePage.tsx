@@ -4,8 +4,10 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { findMember, memberQueries, memberTier } from "@/shared/api/members";
 import { postQueries } from "@/shared/api/posts";
+import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { BackHeader } from "@/shared/components/BackHeader";
+import type { PostType } from "@/shared/domain/post";
 import { VERDICT_LABELS, VOTE_VERDICTS } from "@/shared/domain/verdict";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
@@ -19,8 +21,12 @@ import { CaseSummaryCard } from "../components/CaseSummaryCard";
 import { VerdictChoice, type VoteSide } from "../components/VerdictChoice";
 import { useCastPostVote } from "../hooks/useCastPostVote";
 
-const REASON_PRESETS = ["지하철이 있었잖아요", "라면은 900원", "이건 인정", "다음엔 도시락"];
+const REASON_PRESETS: Record<PostType, string[]> = {
+	spent: ["지하철이 있었잖아요", "라면은 900원", "이건 인정", "다음엔 도시락"],
+	considering: ["이미 비슷한 거 있잖아요", "한 달만 참아봐요", "이건 필요하죠", "살 만해요"]
+};
 const REASON_MAX_LENGTH = 500;
+const SUBMIT_LABEL = "평결 제출";
 const MESSAGES = {
 	missingRoom: "방 정보가 없습니다",
 	loading: "사건을 불러오는 중",
@@ -35,17 +41,19 @@ export function VotePage() {
 	const navigate = useNavigate();
 	const roomId = searchParams.get("room") ?? "";
 	const hasRoom = roomId !== "";
-	const [side, setSide] = useState<VoteSide>("oppose");
+	const [side, setSide] = useState<VoteSide | null>(null);
 	const [reason, setReason] = useState("");
 
 	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled: hasRoom && postId !== "" });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled: hasRoom });
 	const room = useQuery({ ...roomQueries.detail(roomId), enabled: hasRoom });
+	const me = useQuery(profileQueries.me());
 	const castVote = useCastPostVote();
 
 	const detail = post.data ?? null;
-	const isPending = hasRoom && (post.isPending || members.isPending || room.isPending);
-	const firstError = [post, members, room].find((query) => query.isError)?.error ?? null;
+	const myUserId = me.data?.id;
+	const isPending = hasRoom && (post.isPending || members.isPending || room.isPending || me.isPending);
+	const firstError = [post, members, room, me].find((query) => query.isError)?.error ?? null;
 
 	const voteCount = detail === null ? 0 : detail.tally.oppose + detail.tally.support;
 	const progressLabel =
@@ -54,21 +62,22 @@ export function VotePage() {
 			: `${voteCount}/${detail.eligibleVoterCount} 투표, ${formatRemaining(detail.voteDeadlineAt)}`;
 
 	const blockedMessage = (() => {
-		if (detail === null || detail.canVote) {
+		if (detail === null || detail.canVote || myUserId === undefined) {
 			return null;
 		}
-		if (detail.myVote !== null) {
-			return MESSAGES.alreadyVoted;
+		if (detail.authorId === myUserId) {
+			return MESSAGES.ownPost;
 		}
 		if (detail.juryStatus !== null) {
 			return MESSAGES.closed;
 		}
-		return MESSAGES.ownPost;
+		return MESSAGES.alreadyVoted;
 	})();
 
-	const chosenVerdict = detail === null ? null : VOTE_VERDICTS[detail.postType][side];
+	const chosenVerdict = detail === null || side === null ? null : VOTE_VERDICTS[detail.postType][side];
 	const trimmedReason = reason.trim();
-	const canSubmit = detail !== null && detail.canVote && trimmedReason.length > 0 && !castVote.isPending;
+	const canSubmit =
+		detail !== null && detail.canVote && chosenVerdict !== null && trimmedReason.length > 0 && !castVote.isPending;
 
 	const appendReason = (preset: string) => {
 		setReason((current) => (current ? `${current} ${preset}` : preset));
@@ -110,6 +119,7 @@ export function VotePage() {
 								category={detail.category}
 								amount={detail.amountKrw}
 								title={detail.item}
+								reason={detail.reason}
 								rules={room.data?.rules ?? []}
 							/>
 						</Reveal>
@@ -137,7 +147,7 @@ export function VotePage() {
 								</Reveal>
 
 								<div className="flex flex-wrap gap-1.5">
-									{REASON_PRESETS.map((preset) => (
+									{REASON_PRESETS[detail.postType].map((preset) => (
 										<Chip key={preset} onClick={() => appendReason(preset)}>
 											{preset}
 										</Chip>
@@ -156,9 +166,9 @@ export function VotePage() {
 			</div>
 
 			{!hasRoom && <StickyCta label="홈으로 가기" onClick={() => void navigate("/")} className="sticky-cta" />}
-			{detail && chosenVerdict && detail.canVote && (
+			{detail && detail.canVote && (
 				<StickyCta
-					label={`${VERDICT_LABELS[chosenVerdict]}로 평결 제출`}
+					label={chosenVerdict === null ? SUBMIT_LABEL : `${VERDICT_LABELS[chosenVerdict]}로 ${SUBMIT_LABEL}`}
 					onClick={submit}
 					disabled={!canSubmit}
 					className="sticky-cta"

@@ -31,12 +31,7 @@ export function RoomTabsHeader({ roomId, roomName, memberNames }: RoomTabsHeader
 
 	return (
 		<div className="px-5">
-			<RoomHeader
-				roomName={roomName}
-				memberNames={memberNames}
-				onBack={() => void navigate("/")}
-				onMore={() => void navigate(`/rooms/${roomId}/info`)}
-			/>
+			<RoomHeader roomName={roomName} memberNames={memberNames} onBack={() => void navigate("/")} />
 			<TabSegment
 				tabs={TAB_SEGMENTS}
 				value={currentSegment(pathname, roomId)}

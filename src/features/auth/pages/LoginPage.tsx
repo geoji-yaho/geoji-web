@@ -1,9 +1,10 @@
 import { MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { LogoIcon } from "@/shared/components/LogoIcon";
 import { useSession } from "@/shared/hooks/useSession";
+import { takePathAfterLogin } from "@/shared/lib/path-after-login";
 import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Reveal } from "@/shared/ui/Reveal";
@@ -25,11 +26,15 @@ export function LoginPage() {
 	const { session } = useSession();
 	const login = useKakaoLogin();
 	const [callbackError] = useState(() => oauthError);
+	const hasNavigatedRef = useRef(false);
 
 	useEffect(() => {
-		if (session) {
-			void navigate("/", { replace: true });
+		if (!session || hasNavigatedRef.current) {
+			return;
 		}
+
+		hasNavigatedRef.current = true;
+		void navigate(takePathAfterLogin() ?? "/", { replace: true });
 	}, [session, navigate]);
 
 	const isCancelled = callbackError?.isCancelled === true;
