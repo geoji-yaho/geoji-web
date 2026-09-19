@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 
 import { LogoIcon } from "@/shared/components/LogoIcon";
 import { useSession } from "@/shared/hooks/useSession";
-import { takePathAfterLogin } from "@/shared/lib/path-after-login";
+import { clearPathAfterLogin, readPathAfterLogin } from "@/shared/lib/path-after-login";
 import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Reveal } from "@/shared/ui/Reveal";
@@ -34,7 +34,10 @@ export function LoginPage() {
 		}
 
 		hasNavigatedRef.current = true;
-		void navigate(takePathAfterLogin() ?? "/", { replace: true });
+		const pathAfterLogin = readPathAfterLogin();
+		clearPathAfterLogin();
+
+		void navigate(pathAfterLogin ?? "/", { replace: true });
 	}, [session, navigate]);
 
 	const isCancelled = callbackError?.isCancelled === true;

@@ -1,10 +1,10 @@
 import { AnimatePresence, motion, type Variants } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ScrollRestoration, useLocation, useMatches, useNavigate, useNavigationType, useOutlet } from "react-router";
 
 import { useSession } from "@/shared/hooks/useSession";
 import { DURATION, EASE_OUT } from "@/shared/lib/motion";
-import { takePathAfterLogin } from "@/shared/lib/path-after-login";
+import { clearPathAfterLogin, readPathAfterLogin } from "@/shared/lib/path-after-login";
 
 const ENTER_X = 24;
 const EXIT_X = 12;
@@ -29,6 +29,7 @@ export function AppLayout() {
 	const navigationType = useNavigationType();
 	const matches = useMatches();
 	const { session } = useSession();
+	const hasSessionRef = useRef(false);
 
 	const direction = navigationType === "POP" ? -1 : 1;
 
@@ -39,13 +40,22 @@ export function AppLayout() {
 	}, []);
 
 	useEffect(() => {
-		if (!session) {
+		const hadSession = hasSessionRef.current;
+		hasSessionRef.current = session !== null;
+
+		if (hadSession || session === null) {
 			return;
 		}
 
-		const pathAfterLogin = takePathAfterLogin();
+		const pathAfterLogin = readPathAfterLogin();
 
-		if (pathAfterLogin === null || pathAfterLogin === pathname + search) {
+		if (pathAfterLogin === null) {
+			return;
+		}
+
+		clearPathAfterLogin();
+
+		if (pathAfterLogin === pathname + search) {
 			return;
 		}
 

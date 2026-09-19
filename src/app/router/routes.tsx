@@ -8,12 +8,14 @@ import { RoomCreatePage, RoomFeedPage, RoomInfoPage, RoomJoinPage, RoomRankingPa
 
 import { AppLayout } from "../layouts/AppLayout";
 import { RoomLayout } from "../layouts/RoomLayout";
+import { RouteErrorPage } from "./RouteErrorPage";
 
 export const router = createBrowserRouter(
 	[
 		{
 			path: "/",
 			element: <AppLayout />,
+			errorElement: <RouteErrorPage />,
 			children: [
 				{ index: true, element: <HomePage /> },
 				{ path: "login", element: <LoginPage /> },
@@ -34,7 +36,8 @@ export const router = createBrowserRouter(
 				{ path: "posts/:postId/card", element: <VerdictCardPage /> },
 				{ path: "posts/:postId/vote", element: <VotePage /> },
 				{ path: "me", element: <MyPage /> },
-				{ path: "me/budget", element: <BudgetEditPage /> }
+				{ path: "me/budget", element: <BudgetEditPage /> },
+				{ path: "*", element: <RouteErrorPage /> }
 			]
 		}
 	],

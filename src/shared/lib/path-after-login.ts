@@ -5,7 +5,7 @@ function getBasename() {
 	return import.meta.env.BASE_URL.replace(/\/$/, "");
 }
 
-function toAppPath(path: string) {
+export function toAppPath(path: string) {
 	const basename = getBasename();
 
 	if (basename === "") {
@@ -33,16 +33,19 @@ export function setPathAfterLogin(path: string) {
 	}
 
 	try {
+		if (sessionStorage.getItem(STORAGE_KEY) !== null) {
+			return;
+		}
+
 		sessionStorage.setItem(STORAGE_KEY, appPath);
 	} catch {
 		return;
 	}
 }
 
-export function takePathAfterLogin() {
+export function readPathAfterLogin() {
 	try {
 		const saved = sessionStorage.getItem(STORAGE_KEY);
-		sessionStorage.removeItem(STORAGE_KEY);
 
 		if (saved === null) {
 			return null;
@@ -53,5 +56,13 @@ export function takePathAfterLogin() {
 		return isReturnablePath(appPath) ? appPath : null;
 	} catch {
 		return null;
+	}
+}
+
+export function clearPathAfterLogin() {
+	try {
+		sessionStorage.removeItem(STORAGE_KEY);
+	} catch {
+		return;
 	}
 }

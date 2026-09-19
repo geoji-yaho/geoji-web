@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
+import { clearOnboardingSkip } from "../lib/onboarding-skip";
 import { getSupabase } from "../lib/supabase";
 
 export function useSignOut() {
@@ -12,6 +13,7 @@ export function useSignOut() {
 			await getSupabase().auth.signOut();
 		},
 		onSuccess: async () => {
+			clearOnboardingSkip();
 			queryClient.clear();
 			await navigate("/login");
 		}
