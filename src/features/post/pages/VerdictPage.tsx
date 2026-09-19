@@ -155,6 +155,7 @@ export function VerdictPage() {
 	} else if (detail) {
 		const defendant = findMember(members.data, detail.authorId);
 		const canRemove = myUserId !== undefined && detail.authorId === myUserId;
+		const hasVotes = detail.tally.oppose + detail.tally.support > 0;
 		const voters = detail.votes.map((vote) => ({
 			id: vote.id,
 			name: vote.voterNickname,
@@ -201,7 +202,9 @@ export function VerdictPage() {
 					defendantTier={memberTier(defendant)}
 				/>
 
-				<JurorTallyCard postType={detail.postType} tally={detail.tally} voters={voters} rules={room.data?.rules} />
+				{hasVotes && (
+					<JurorTallyCard postType={detail.postType} tally={detail.tally} voters={voters} rules={room.data?.rules} />
+				)}
 
 				{view && (
 					<JudgeSentenceCard
