@@ -33,7 +33,7 @@ export function CaseSummaryCard({ name, tier, timeAgo, category, amount, title, 
 				</div>
 
 				<div className="flex items-baseline gap-2">
-					<strong className="text-amount-sm text-ink">{formatAmount(amount)}원</strong>
+					<strong className="shrink-0 text-amount-sm text-ink">{formatAmount(amount)}원</strong>
 					{title && <span className="text-control text-mute">{title}</span>}
 				</div>
 
