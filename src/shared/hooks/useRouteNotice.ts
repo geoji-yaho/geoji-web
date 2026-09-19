@@ -17,6 +17,15 @@ export function useRouteNotice() {
 	const navigate = useNavigate();
 	const incoming = readNotice(state);
 	const [notice, setNotice] = useState(incoming);
+	const [takenNotice, setTakenNotice] = useState(incoming);
+
+	if (incoming !== takenNotice) {
+		setTakenNotice(incoming);
+
+		if (incoming !== null) {
+			setNotice(incoming);
+		}
+	}
 
 	useEffect(() => {
 		if (incoming === null) {
