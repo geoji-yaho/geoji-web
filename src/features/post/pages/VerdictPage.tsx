@@ -14,6 +14,7 @@ import { verdictCardPath } from "@/shared/constants/routes";
 import { useCreatePostComment } from "@/shared/hooks/useCreatePostComment";
 import { useRemovePostComment } from "@/shared/hooks/useRemovePostComment";
 import { playStampSound } from "@/shared/lib/stamp-sound";
+import { isStampSoundOn, setStampSoundOn } from "@/shared/lib/stamp-sound-preference";
 import { Alert } from "@/shared/ui/Alert";
 import { BottomSheet } from "@/shared/ui/BottomSheet";
 import { Button } from "@/shared/ui/Button";
@@ -67,7 +68,7 @@ export function VerdictPage() {
 	const removeComment = useRemovePostComment();
 	const removePost = useRemovePost();
 
-	const [soundOn, setSoundOn] = useState(true);
+	const [soundOn, setSoundOn] = useState(isStampSoundOn);
 	const [commentsOpen, setCommentsOpen] = useState(false);
 	const [removeOpen, setRemoveOpen] = useState(false);
 	const [scope, animate] = useAnimate();
@@ -110,6 +111,11 @@ export function VerdictPage() {
 		void members.refetch();
 		void room.refetch();
 		void verdict.refetch();
+	};
+
+	const handleSoundChange = (on: boolean) => {
+		setSoundOn(on);
+		setStampSoundOn(on);
 	};
 
 	const submitRemove = () => {
@@ -179,9 +185,9 @@ export function VerdictPage() {
 					</Card>
 				)}
 
-				{view?.meme && (
+				{state?.juryStatus && !isDismissed && (
 					<Reveal>
-						<MemeThumbnail size="lg" meme={{ src: view.meme.imageUrl, alt: view.headline }} />
+						<MemeThumbnail size="lg" meme={view?.meme ? { src: view.meme.imageUrl, alt: view.headline } : undefined} />
 					</Reveal>
 				)}
 
@@ -243,7 +249,7 @@ export function VerdictPage() {
 		<div className="flex flex-1 flex-col">
 			<div className="px-5">
 				<BackHeader title="판결" onBack={() => void navigate(-1)}>
-					<SoundToggle checked={soundOn} onChange={setSoundOn} />
+					<SoundToggle checked={soundOn} onChange={handleSoundChange} />
 				</BackHeader>
 			</div>
 

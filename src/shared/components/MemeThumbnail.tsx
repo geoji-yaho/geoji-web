@@ -23,8 +23,9 @@ type MemeThumbnailProps = VariantProps<typeof memeThumbnailVariants> & {
 export function MemeThumbnail({ meme, size, className }: MemeThumbnailProps) {
 	return (
 		<span
-			role="img"
-			aria-label={meme?.alt ?? "판결 짤 자리"}
+			role={meme ? "img" : undefined}
+			aria-label={meme?.alt}
+			aria-hidden={meme ? undefined : true}
 			className={cn(memeThumbnailVariants({ size }), className)}
 		>
 			{meme && <img src={meme.src} alt="" className="size-full object-cover" />}
