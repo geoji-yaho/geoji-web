@@ -35,6 +35,7 @@ export function MyPage() {
 		preference === "system" ? `${THEME_LABELS.system} (${THEME_LABELS[resolved]})` : THEME_LABELS[preference];
 
 	const openNickname = () => {
+		updateProfile.reset();
 		setNickname(profile?.nickname ?? "");
 		setNicknameOpen(true);
 	};
