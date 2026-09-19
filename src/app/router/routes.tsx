@@ -5,9 +5,11 @@ import { HomePage } from "@/features/home";
 import { BudgetEditPage, MyPage } from "@/features/me";
 import { ExpenseCreatePage, VerdictCardPage, VerdictPage, VotePage } from "@/features/post";
 import { RoomCreatePage, RoomFeedPage, RoomInfoPage, RoomJoinPage, RoomRankingPage } from "@/features/room";
+import { getBasename } from "@/shared/lib/base-path";
 
 import { AppLayout } from "../layouts/AppLayout";
 import { RoomLayout } from "../layouts/RoomLayout";
+import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { RouteErrorPage } from "./RouteErrorPage";
 
 export const router = createBrowserRouter(
@@ -15,7 +17,7 @@ export const router = createBrowserRouter(
 		{
 			path: "/",
 			element: <AppLayout />,
-			errorElement: <RouteErrorPage />,
+			errorElement: <RouteErrorBoundary />,
 			children: [
 				{ index: true, element: <HomePage /> },
 				{ path: "login", element: <LoginPage /> },
@@ -41,5 +43,5 @@ export const router = createBrowserRouter(
 			]
 		}
 	],
-	{ basename: import.meta.env.BASE_URL.replace(/\/$/, "") }
+	{ basename: getBasename() }
 );
