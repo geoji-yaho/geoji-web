@@ -55,6 +55,7 @@ export function PostFeedCard({
 	const tier: Tier | undefined = memberTier(author);
 	const base = {
 		name: post.authorNickname,
+		imageUrl: author?.avatarUrl,
 		tier,
 		timeAgo: formatRelativeTime(post.createdAt, now),
 		postType: post.postType,

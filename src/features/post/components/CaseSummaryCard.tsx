@@ -6,6 +6,7 @@ import { formatAmount } from "@/shared/utils/format";
 
 type CaseSummaryCardProps = {
 	name: string;
+	imageUrl?: string | null;
 	tier?: Tier;
 	timeAgo: string;
 	category?: string;
@@ -15,14 +16,24 @@ type CaseSummaryCardProps = {
 	rules: string[];
 };
 
-export function CaseSummaryCard({ name, tier, timeAgo, category, amount, title, reason, rules }: CaseSummaryCardProps) {
+export function CaseSummaryCard({
+	name,
+	imageUrl,
+	tier,
+	timeAgo,
+	category,
+	amount,
+	title,
+	reason,
+	rules
+}: CaseSummaryCardProps) {
 	const meta = [timeAgo, category].filter((part) => part !== undefined && part !== "").join(", ");
 
 	return (
 		<Card>
 			<div className="flex flex-col gap-2.5 p-4">
 				<div className="flex items-center gap-2.5">
-					<Avatar name={name} />
+					<Avatar name={name} src={imageUrl} />
 					<div className="flex-1">
 						<div className="flex items-center gap-1.5">
 							<span className="text-sm font-black text-ink">{name}</span>

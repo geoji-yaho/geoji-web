@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { useState } from "react";
 
 import { cn } from "../lib/cn";
 
@@ -27,6 +28,9 @@ type AvatarProps = VariantProps<typeof avatarVariants> & {
 };
 
 export function Avatar({ name, src, size, className }: AvatarProps) {
+	const [failedSrc, setFailedSrc] = useState<string | null>(null);
+	const showsImage = src !== null && src !== undefined && src !== failedSrc;
+
 	return (
 		<span
 			role={name ? "img" : undefined}
@@ -34,8 +38,8 @@ export function Avatar({ name, src, size, className }: AvatarProps) {
 			aria-hidden={name ? undefined : true}
 			className={cn(avatarVariants({ size }), "overflow-hidden", className)}
 		>
-			{src ? (
-				<img src={src} alt="" className="size-full object-cover" />
+			{showsImage ? (
+				<img src={src} alt="" onError={() => setFailedSrc(src)} className="size-full object-cover" />
 			) : (
 				<span aria-hidden="true">{name.slice(0, 1)}</span>
 			)}

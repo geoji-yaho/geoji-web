@@ -23,12 +23,12 @@ export function RoomLayout() {
 	const navigate = useNavigate();
 	const room = useQuery(roomQueries.detail(roomId));
 	const members = useQuery(memberQueries.list(roomId));
-	const memberNames = members.data?.map((member) => memberName(member)) ?? [];
+	const memberItems = members.data?.map((member) => ({ name: memberName(member), imageUrl: member.avatarUrl })) ?? [];
 	const isRoomMissing = room.error?.kind === "notFound";
 
 	return (
 		<div className="flex flex-1 flex-col">
-			<RoomTabsHeader roomId={roomId} roomName={room.data?.name ?? ""} memberNames={memberNames} />
+			<RoomTabsHeader roomId={roomId} roomName={room.data?.name ?? ""} members={memberItems} />
 			<div className="flex flex-1 flex-col">
 				{room.isError ? (
 					<div className="flex flex-col gap-3 px-5 py-3">

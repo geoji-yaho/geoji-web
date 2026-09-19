@@ -5,6 +5,7 @@ import { Avatar } from "../ui/Avatar";
 import { TierBadge } from "./TierBadge";
 
 export type RankingRowProps = {
+	imageUrl?: string | null;
 	rank: number | null;
 	name: string;
 	tier: Tier | null;
@@ -13,7 +14,7 @@ export type RankingRowProps = {
 	className?: string;
 };
 
-export function RankingRow({ rank, name, tier, value, isMe = false, className }: RankingRowProps) {
+export function RankingRow({ rank, name, imageUrl, tier, value, isMe = false, className }: RankingRowProps) {
 	return (
 		<div
 			className={cn(
@@ -23,7 +24,7 @@ export function RankingRow({ rank, name, tier, value, isMe = false, className }:
 			)}
 		>
 			<span className={cn("w-3.5 font-black", rank !== null && rank <= 3 ? "text-red" : "text-dim")}>{rank}</span>
-			<Avatar name={name} size="sm" />
+			<Avatar name={name} src={imageUrl} size="sm" />
 			<span className="flex-1 truncate font-extrabold text-ink">{name}</span>
 			{tier === null ? (
 				<span className="text-tag text-dim">{DEBT_SCORE_PENDING_LABEL}</span>

@@ -39,10 +39,11 @@ function countFailedPosts(posts: RoomPostSummary[], details: Map<string, QueryFa
 	return posts.filter((post) => details.some((detail) => detail.get(post.id)?.isError === true)).length;
 }
 
-function toCommentItems(comments: PostComment[], myUserId: string | undefined) {
+function toCommentItems(comments: PostComment[], myUserId: string | undefined, membersById: Map<string, RoomMember>) {
 	return comments.map((comment) => ({
 		id: comment.id,
 		authorName: comment.nickname,
+		authorImageUrl: membersById.get(comment.userId)?.avatarUrl,
 		content: comment.content,
 		createdAtLabel: formatRelativeTime(comment.createdAt),
 		isMine: myUserId !== undefined && comment.userId === myUserId
@@ -136,7 +137,7 @@ export function RoomFeedPage() {
 					key={sheet.postId}
 					open={sheet.open}
 					onClose={closeSheet}
-					comments={toCommentItems(sheetComments?.data ?? [], me.data?.id)}
+					comments={toCommentItems(sheetComments?.data ?? [], me.data?.id, membersById)}
 					isLoading={sheetComments?.isPending ?? false}
 					error={sheetComments?.error?.message ?? null}
 					onSubmit={(content) => createComment.mutateAsync({ postId: sheet.postId, roomId, content })}

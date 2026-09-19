@@ -87,7 +87,7 @@ export function RoomCreatePage() {
 						renderLabel={(key) => INTENSITY_LABELS[key]}
 						onChange={selectIntensity}
 					/>
-					<IntensityQuote />
+					<IntensityQuote intensity={intensity} />
 				</div>
 
 				<div className="flex flex-col gap-2">

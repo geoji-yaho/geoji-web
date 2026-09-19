@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { toPng } from "html-to-image";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { getFontEmbedCSS, toPng } from "html-to-image";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { findMember, memberQueries, memberTier } from "@/shared/api/members";
@@ -9,7 +9,7 @@ import { BackHeader } from "@/shared/components/BackHeader";
 import { verdictPath } from "@/shared/constants/routes";
 import { VERDICT_LABELS } from "@/shared/domain/verdict";
 import { getBasename, toAbsoluteUrl } from "@/shared/lib/base-path";
-import { downloadDataUrl, shareContent } from "@/shared/lib/platform";
+import { downloadDataUrl, shareContent, toPngFile } from "@/shared/lib/platform";
 import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -21,12 +21,14 @@ import { ShareCardPreview } from "../components/ShareCardPreview";
 
 const IMAGE_FILENAME = "geoji-verdict.png";
 const IMAGE_PIXEL_RATIO = 2;
+const PRELOAD_DELAY_MS = 700;
 const TOAST_MS = 2500;
 const SHARE_TITLE = "떼거지";
 const LOADING_MESSAGE = "판결 카드를 불러오는 중";
 const SAVE_FAILED_MESSAGE = "이미지를 만들지 못했습니다";
 const COPIED_MESSAGE = "링크를 복사했습니다";
 const COPY_FAILED_MESSAGE = "링크를 복사하지 못했습니다";
+const LINK_ONLY_MESSAGE = "카드 이미지를 준비하지 못해 링크만 보냈습니다";
 const PENDING_SENTENCE_WORDS = ["판결", "확정"];
 
 function hasPendingSentenceWords(message: string) {
@@ -44,7 +46,13 @@ export function VerdictCardPage() {
 	const post = useQuery({ ...postQueries.detail(postId, roomId), enabled });
 	const members = useQuery({ ...memberQueries.list(roomId), enabled });
 
+	const pending = card.isPending || post.isPending || members.isPending;
+	const cardReady = !pending && card.data !== undefined && post.data !== undefined;
+
 	const cardRef = useRef<HTMLDivElement>(null);
+	const cardFileRef = useRef<File | null>(null);
+	const cardDataUrlRef = useRef<string | null>(null);
+	const fontEmbedCssRef = useRef<Promise<string> | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const [toast, setToast] = useState<string | null>(null);
@@ -58,6 +66,52 @@ export function VerdictCardPage() {
 		return () => clearTimeout(timer);
 	}, [toast]);
 
+	const renderCardPng = useCallback(async () => {
+		const node = cardRef.current;
+
+		if (node === null) {
+			return null;
+		}
+
+		fontEmbedCssRef.current ??= getFontEmbedCSS(node);
+		const dataUrl = await toPng(node, {
+			pixelRatio: IMAGE_PIXEL_RATIO,
+			cacheBust: true,
+			fontEmbedCSS: await fontEmbedCssRef.current
+		});
+		cardDataUrlRef.current = dataUrl;
+
+		return dataUrl;
+	}, []);
+
+	useEffect(() => {
+		cardFileRef.current = null;
+		cardDataUrlRef.current = null;
+	}, [postId, roomId]);
+
+	useEffect(() => {
+		if (!cardReady || cardFileRef.current !== null) {
+			return;
+		}
+
+		let cancelled = false;
+		const timer = setTimeout(() => {
+			void renderCardPng()
+				.then((dataUrl) => (dataUrl === null ? null : toPngFile(dataUrl, IMAGE_FILENAME)))
+				.then((file) => {
+					if (!cancelled && file !== null) {
+						cardFileRef.current = file;
+					}
+				})
+				.catch(() => undefined);
+		}, PRELOAD_DELAY_MS);
+
+		return () => {
+			cancelled = true;
+			clearTimeout(timer);
+		};
+	}, [cardReady, postId, renderCardPng]);
+
 	if (!enabled) {
 		return <RoomMissingNotice title="공유 카드" />;
 	}
@@ -65,7 +119,6 @@ export function VerdictCardPage() {
 	const siteLabel = `${globalThis.location.host}${getBasename()}`;
 	const verdictUrl = toAbsoluteUrl(verdictPath(postId, roomId));
 
-	const pending = card.isPending || post.isPending || members.isPending;
 	const loadError = card.error ?? post.error ?? members.error;
 
 	let content: ReactNode = null;
@@ -91,8 +144,11 @@ export function VerdictCardPage() {
 			setSaveError(null);
 
 			try {
-				const dataUrl = await toPng(cardRef.current, { pixelRatio: IMAGE_PIXEL_RATIO, cacheBust: true });
-				downloadDataUrl(dataUrl, IMAGE_FILENAME);
+				const dataUrl = cardDataUrlRef.current ?? (await renderCardPng());
+
+				if (dataUrl !== null) {
+					downloadDataUrl(dataUrl, IMAGE_FILENAME);
+				}
 			} catch {
 				setSaveError(SAVE_FAILED_MESSAGE);
 			} finally {
@@ -101,16 +157,20 @@ export function VerdictCardPage() {
 		};
 
 		const share = async () => {
+			const cardFile = cardFileRef.current;
 			const outcome = await shareContent({
 				title: SHARE_TITLE,
 				text: shareCard.headline || VERDICT_LABELS[shareCard.juryStatus],
-				url: verdictUrl
+				url: verdictUrl,
+				files: cardFile === null ? undefined : [cardFile]
 			});
 
 			if (outcome === "copied") {
 				setToast(COPIED_MESSAGE);
 			} else if (outcome === "failed") {
 				setToast(COPY_FAILED_MESSAGE);
+			} else if (outcome === "shared" && cardFile === null) {
+				setToast(LINK_ONLY_MESSAGE);
 			}
 		};
 
@@ -140,8 +200,14 @@ export function VerdictCardPage() {
 			<div className="flex flex-col gap-3">
 				{saveError && <Alert>{saveError}</Alert>}
 				<div className="flex gap-2.5">
-					<Button variant="secondary" className="flex-1" onClick={() => void saveImage()} disabled={saving}>
-						이미지 저장
+					<Button
+						variant="secondary"
+						className="flex-1"
+						onClick={() => void saveImage()}
+						disabled={saving}
+						aria-busy={saving}
+					>
+						{saving ? "저장 중" : "이미지 저장"}
 					</Button>
 					<Button className="flex-1 shadow-cta" onClick={() => void share()}>
 						공유하기

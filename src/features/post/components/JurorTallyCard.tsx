@@ -26,6 +26,7 @@ const voteLabelVariants = cva("shrink-0 text-xs font-black", {
 export type VoterItem = {
 	id: string;
 	name: string;
+	imageUrl?: string | null;
 	verdict: Verdict;
 	reason: string | null;
 };
@@ -63,7 +64,7 @@ export function JurorTallyCard({ postType, tally, voters, rules = [] }: JurorTal
 				<ul className="flex flex-col gap-2.5 border-t border-line pt-2.5">
 					{voters.map((voter) => (
 						<li key={voter.id} className="flex items-start gap-2.5">
-							<Avatar name={voter.name} size="sm" />
+							<Avatar name={voter.name} src={voter.imageUrl} size="sm" />
 							<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 								<div className="flex items-baseline justify-between gap-2">
 									<span className="truncate text-chip font-extrabold text-ink">{voter.name}</span>
