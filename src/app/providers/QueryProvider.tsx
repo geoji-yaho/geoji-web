@@ -2,7 +2,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { PropsWithChildren } from "react";
 
-import { setPathAfterLogin, toAppPath } from "@/shared/lib/path-after-login";
+import { toAppPath } from "@/shared/lib/base-path";
+import { setPathAfterLogin } from "@/shared/lib/path-after-login";
 import { createQueryClient } from "@/shared/lib/query-client";
 import { getSupabase } from "@/shared/lib/supabase";
 

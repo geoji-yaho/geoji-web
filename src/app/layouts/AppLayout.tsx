@@ -4,7 +4,7 @@ import { ScrollRestoration, useLocation, useMatches, useNavigate, useNavigationT
 
 import { useSession } from "@/shared/hooks/useSession";
 import { DURATION, EASE_OUT } from "@/shared/lib/motion";
-import { clearPathAfterLogin, readPathAfterLogin } from "@/shared/lib/path-after-login";
+import { takePathAfterLogin } from "@/shared/lib/path-after-login";
 
 const ENTER_X = 24;
 const EXIT_X = 12;
@@ -47,15 +47,9 @@ export function AppLayout() {
 			return;
 		}
 
-		const pathAfterLogin = readPathAfterLogin();
+		const pathAfterLogin = takePathAfterLogin();
 
-		if (pathAfterLogin === null) {
-			return;
-		}
-
-		clearPathAfterLogin();
-
-		if (pathAfterLogin === pathname + search) {
+		if (pathAfterLogin === null || pathAfterLogin === pathname + search) {
 			return;
 		}
 
