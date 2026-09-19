@@ -99,6 +99,10 @@ function toRequestError(error: unknown, signal: AbortSignal | undefined) {
 }
 
 function linkAbortSignals(signal: AbortSignal | undefined, timeoutMs: number) {
+	if (signal?.aborted) {
+		return { signal, release: () => {} };
+	}
+
 	const timeoutSignal = AbortSignal.timeout(timeoutMs);
 
 	if (signal === undefined) {
@@ -112,11 +116,6 @@ function linkAbortSignals(signal: AbortSignal | undefined, timeoutMs: number) {
 		signal.removeEventListener("abort", abortFromCaller);
 		timeoutSignal.removeEventListener("abort", abortFromTimeout);
 	};
-
-	if (signal.aborted) {
-		abortFromCaller();
-		return { signal: controller.signal, release };
-	}
 
 	signal.addEventListener("abort", abortFromCaller);
 	timeoutSignal.addEventListener("abort", abortFromTimeout);

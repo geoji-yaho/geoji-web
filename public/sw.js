@@ -6,12 +6,23 @@ const STATIC_ASSET_PATTERN = /\.(?:css|js|png|jpg|jpeg|svg|webp|ico|woff|woff2|w
 const HASHED_ASSET_DIR = "assets/";
 const CACHEABLE_STATUS = 200;
 
+let shellUrl = null;
+let hashedAssetPrefix = null;
+
 function getShellUrl() {
-	return new URL(self.registration.scope).href;
+	if (shellUrl === null) {
+		shellUrl = new URL(self.registration.scope).href;
+	}
+
+	return shellUrl;
 }
 
 function getHashedAssetPrefix() {
-	return new URL(HASHED_ASSET_DIR, self.registration.scope).pathname;
+	if (hashedAssetPrefix === null) {
+		hashedAssetPrefix = new URL(HASHED_ASSET_DIR, self.registration.scope).pathname;
+	}
+
+	return hashedAssetPrefix;
 }
 
 let cachePromise = null;
@@ -42,21 +53,33 @@ async function readCache(request) {
 	}
 }
 
+async function putInCache(request, response) {
+	if (response.status !== CACHEABLE_STATUS) {
+		return;
+	}
+
+	const cache = await openCache();
+
+	if (cache === null) {
+		return;
+	}
+
+	await cache.put(request, response).catch(() => undefined);
+}
+
 function writeCacheLater(event, request, response) {
 	if (response.status !== CACHEABLE_STATUS) {
 		return;
 	}
 
-	const copy = response.clone();
+	event.waitUntil(putInCache(request, response.clone()));
+}
 
+function revalidateLater(event, request) {
 	event.waitUntil(
-		openCache().then((cache) => {
-			if (cache === null) {
-				return undefined;
-			}
-
-			return cache.put(request, copy).catch(() => undefined);
-		})
+		fetch(request)
+			.then((response) => putInCache(request, response))
+			.catch(() => undefined)
 	);
 }
 
@@ -100,19 +123,18 @@ async function handleHashedAsset(event) {
 }
 
 async function handleUnhashedAsset(event) {
-	try {
-		const response = await fetch(event.request);
-		writeCacheLater(event, event.request, response);
+	const cached = await readCache(event.request);
 
-		return response;
-	} catch (error) {
-		const cached = await readCache(event.request);
-		if (cached) {
-			return cached;
-		}
+	if (cached) {
+		revalidateLater(event, event.request);
 
-		throw error;
+		return cached;
 	}
+
+	const response = await fetch(event.request);
+	writeCacheLater(event, event.request, response);
+
+	return response;
 }
 
 self.addEventListener("install", (event) => {
