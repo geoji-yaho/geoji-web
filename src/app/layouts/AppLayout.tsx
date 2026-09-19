@@ -1,8 +1,10 @@
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useEffect } from "react";
-import { ScrollRestoration, useLocation, useMatches, useNavigationType, useOutlet } from "react-router";
+import { ScrollRestoration, useLocation, useMatches, useNavigate, useNavigationType, useOutlet } from "react-router";
 
+import { useSession } from "@/shared/hooks/useSession";
 import { DURATION, EASE_OUT } from "@/shared/lib/motion";
+import { takePathAfterLogin } from "@/shared/lib/path-after-login";
 
 const ENTER_X = 24;
 const EXIT_X = 12;
@@ -22,9 +24,11 @@ const pageVariants: Variants = {
 
 export function AppLayout() {
 	const outlet = useOutlet();
-	const { pathname } = useLocation();
+	const { pathname, search } = useLocation();
+	const navigate = useNavigate();
 	const navigationType = useNavigationType();
 	const matches = useMatches();
+	const { session } = useSession();
 
 	const direction = navigationType === "POP" ? -1 : 1;
 
@@ -33,6 +37,20 @@ export function AppLayout() {
 	useEffect(() => {
 		hasEnteredApp = true;
 	}, []);
+
+	useEffect(() => {
+		if (!session) {
+			return;
+		}
+
+		const pathAfterLogin = takePathAfterLogin();
+
+		if (pathAfterLogin === null || pathAfterLogin === pathname + search) {
+			return;
+		}
+
+		void navigate(pathAfterLogin, { replace: true });
+	}, [session, pathname, search, navigate]);
 
 	const transitionKey = matches[1]?.pathname ?? pathname;
 
