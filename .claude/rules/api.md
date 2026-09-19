@@ -30,7 +30,7 @@ paths:
 - 401은 전역에서 로그인 화면으로 보내므로 화면이 다루지 않는다. 그 밖은 `error.kind` 8종(badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout)으로 분기한다. `Register.defaultError`를 `ApiError`로 등록해 두어 `error`가 `ApiError`로 잡힌다
 - 아직 없는 리소스는 queryFn 안에서 잡아 `null`로 바꾼다. 404로 오는 엔드포인트는 `notFound`를, 온보딩 전 프로필은 `GET /api/me`가 409로 오므로 `conflict`를 잡는다. `data === null`이 아직 없다는 뜻이다
 - 재시도는 network와 timeout, server만 2회까지다. 4xx와 변이는 다시 시도하지 않는다
-- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 화면 모델과 값이 다른 것은 엔티티 모듈에 대응표를 두고 화면이 그 표로 바꾼다. 방 강도는 `rooms.ts`의 `SPICE_LEVEL_BY_INTENSITY`와 `INTENSITY_BY_SPICE_LEVEL`, 게시물 타입은 `expenses.ts`의 `EXPENSE_SOURCE_BY_POST_TYPE`과 `POST_TYPE_BY_EXPENSE_SOURCE`다
+- 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 화면 모델과 값이 다른 것은 엔티티 모듈에 대응표를 두고 화면이 그 표로 바꾼다. 지금은 방 강도와 게시물 타입, 판결, 형량이 모두 서버 값과 `shared/domain/`의 타입이 같아 대응표를 둔 모듈이 없다
 - 실패를 빈 값으로 감추지 않는다. `?? []`와 `?? ""`는 `isPending`과 `isError`를 따로 그리는 화면에서만 정당하다
 
 실제 예시는 엔티티 모듈 `src/shared/api/rooms.ts`와 변이 훅 `src/features/room/hooks/useCreateRoom.ts`다.
