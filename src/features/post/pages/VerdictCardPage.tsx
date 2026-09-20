@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getFontEmbedCSS, toPng } from "html-to-image";
+import { toPng } from "html-to-image";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
@@ -9,7 +9,8 @@ import { BackHeader } from "@/shared/components/BackHeader";
 import { verdictPath } from "@/shared/constants/routes";
 import { VERDICT_LABELS } from "@/shared/domain/verdict";
 import { getBasename, toAbsoluteUrl } from "@/shared/lib/base-path";
-import { downloadDataUrl, shareContent, toPngFile } from "@/shared/lib/platform";
+import { buildFontEmbedCss } from "@/shared/lib/buildFontEmbedCss";
+import { saveFile, shareContent, toPngFile } from "@/shared/lib/platform";
 import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -30,6 +31,7 @@ const LOADING_MESSAGE = "판결 카드를 불러오는 중";
 const SAVE_FAILED_MESSAGE = "이미지를 만들지 못했습니다";
 const COPIED_MESSAGE = "링크를 복사했습니다";
 const COPY_FAILED_MESSAGE = "링크를 복사하지 못했습니다";
+const SAVED_MESSAGE = "이미지를 저장했습니다";
 const LINK_ONLY_MESSAGE = "카드 이미지를 준비하지 못해 링크만 보냈습니다";
 export function VerdictCardPage() {
 	const { postId = "" } = useParams();
@@ -69,7 +71,7 @@ export function VerdictCardPage() {
 			return null;
 		}
 
-		fontEmbedCssRef.current ??= getFontEmbedCSS(node);
+		fontEmbedCssRef.current ??= buildFontEmbedCss(node);
 		const dataUrl = await toPng(node, {
 			pixelRatio: IMAGE_PIXEL_RATIO,
 			cacheBust: true,
@@ -81,6 +83,19 @@ export function VerdictCardPage() {
 		return dataUrl;
 	}, []);
 
+	const renderCardFile = useCallback(async () => {
+		const dataUrl = cardDataUrlRef.current ?? (await renderCardPng());
+
+		if (dataUrl === null) {
+			return null;
+		}
+
+		const file = await toPngFile(dataUrl, IMAGE_FILENAME);
+		cardFileRef.current = file;
+
+		return file;
+	}, [renderCardPng]);
+
 	useEffect(() => {
 		cardFileRef.current = null;
 		cardDataUrlRef.current = null;
@@ -91,23 +106,12 @@ export function VerdictCardPage() {
 			return;
 		}
 
-		let cancelled = false;
 		const timer = setTimeout(() => {
-			void renderCardPng()
-				.then((dataUrl) => (dataUrl === null ? null : toPngFile(dataUrl, IMAGE_FILENAME)))
-				.then((file) => {
-					if (!cancelled && file !== null) {
-						cardFileRef.current = file;
-					}
-				})
-				.catch(() => undefined);
+			void renderCardFile().catch(() => undefined);
 		}, PRELOAD_DELAY_MS);
 
-		return () => {
-			cancelled = true;
-			clearTimeout(timer);
-		};
-	}, [cardReady, postId, renderCardPng]);
+		return () => clearTimeout(timer);
+	}, [cardReady, postId, renderCardFile]);
 
 	if (!enabled) {
 		return <RoomMissingNotice title="공유 카드" />;
@@ -141,10 +145,12 @@ export function VerdictCardPage() {
 			setSaveError(null);
 
 			try {
-				const dataUrl = cardDataUrlRef.current ?? (await renderCardPng());
+				const file = cardFileRef.current ?? (await renderCardFile());
 
-				if (dataUrl !== null) {
-					downloadDataUrl(dataUrl, IMAGE_FILENAME);
+				if (file === null) {
+					setSaveError(SAVE_FAILED_MESSAGE);
+				} else if ((await saveFile(file)) === "saved") {
+					setToast(SAVED_MESSAGE);
 				}
 			} catch {
 				setSaveError(SAVE_FAILED_MESSAGE);
@@ -154,7 +160,7 @@ export function VerdictCardPage() {
 		};
 
 		const share = async () => {
-			const cardFile = cardFileRef.current;
+			const cardFile = cardFileRef.current ?? (await renderCardFile().catch(() => null));
 			const outcome = await shareContent({
 				title: SHARE_TITLE,
 				text: shareCard.headline || VERDICT_LABELS[shareCard.juryStatus],

@@ -7,6 +7,7 @@ export type ShareInput = {
 	files?: File[];
 };
 
+const OBJECT_URL_TTL_MS = 60_000;
 const KAKAO_SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js";
 const KAKAO_SDK_INTEGRITY = "sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy";
 
@@ -88,7 +89,7 @@ export async function copyText(text: string) {
 function toSharePayload({ title, text, url, files }: ShareInput) {
 	const canShareFiles = files !== undefined && files.length > 0 && navigator.canShare?.({ files }) === true;
 
-	return canShareFiles ? { title, text, url, files } : { title, text, url };
+	return canShareFiles ? { files } : { title, text, url };
 }
 
 export async function shareContent(input: ShareInput) {
@@ -113,12 +114,40 @@ export async function toPngFile(dataUrl: string, filename: string) {
 	return new File([blob], filename, { type: blob.type });
 }
 
-export function downloadDataUrl(dataUrl: string, filename: string) {
+export function downloadFile(file: File) {
+	const objectUrl = URL.createObjectURL(file);
 	const anchor = document.createElement("a");
-	anchor.href = dataUrl;
-	anchor.download = filename;
+	anchor.href = objectUrl;
+	anchor.download = file.name;
 	anchor.rel = "noopener";
 	document.body.append(anchor);
 	anchor.click();
 	anchor.remove();
+	setTimeout(() => URL.revokeObjectURL(objectUrl), OBJECT_URL_TTL_MS);
+}
+
+function canShareFile(file: File) {
+	return typeof navigator.share === "function" && navigator.canShare?.({ files: [file] }) === true;
+}
+
+function isIosLike() {
+	const { userAgent, maxTouchPoints } = navigator;
+	return /iPhone|iPad|iPod/.test(userAgent) || (maxTouchPoints > 1 && /Macintosh/.test(userAgent));
+}
+
+export async function saveFile(file: File) {
+	if (isIosLike() && canShareFile(file)) {
+		try {
+			await navigator.share({ files: [file] });
+			return "shared";
+		} catch (error) {
+			if (isAbortError(error)) {
+				return "cancelled";
+			}
+		}
+	}
+
+	downloadFile(file);
+
+	return "saved";
 }
