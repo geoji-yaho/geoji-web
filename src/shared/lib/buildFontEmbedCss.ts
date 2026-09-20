@@ -1,3 +1,5 @@
+import { toDataUrl } from "./toDataUrl";
+
 type CodeRange = [from: number, to: number];
 
 const SOURCE_URL_PATTERN = /url\((['"]?)([^'")]+)\1\)/;
@@ -69,18 +71,6 @@ function coversAny(rule: CSSFontFaceRule, codePoints: Set<number>) {
 	}
 
 	return false;
-}
-
-async function toDataUrl(url: string) {
-	const response = await fetch(url);
-	const blob = await response.blob();
-
-	return await new Promise<string>((resolve, reject) => {
-		const reader = new FileReader();
-		reader.addEventListener("load", () => resolve(String(reader.result)));
-		reader.addEventListener("error", () => reject(reader.error));
-		reader.readAsDataURL(blob);
-	});
 }
 
 async function toEmbeddedRule(rule: CSSFontFaceRule) {

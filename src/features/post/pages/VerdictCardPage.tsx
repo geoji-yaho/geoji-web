@@ -11,6 +11,7 @@ import { VERDICT_LABELS } from "@/shared/domain/verdict";
 import { getBasename, toAbsoluteUrl } from "@/shared/lib/base-path";
 import { buildFontEmbedCss } from "@/shared/lib/buildFontEmbedCss";
 import { saveFile, shareContent, toPngFile } from "@/shared/lib/platform";
+import { toDataUrl } from "@/shared/lib/toDataUrl";
 import { Alert } from "@/shared/ui/Alert";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
@@ -23,8 +24,6 @@ import { ShareCardPreview } from "../components/ShareCardPreview";
 const IMAGE_FILENAME = "geoji-verdict.png";
 const IMAGE_PIXEL_RATIO = 2;
 const PRELOAD_DELAY_MS = 700;
-const TRANSPARENT_PIXEL =
-	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const TOAST_MS = 2500;
 const SHARE_TITLE = "떼거지";
 const LOADING_MESSAGE = "판결 카드를 불러오는 중";
@@ -33,6 +32,14 @@ const COPIED_MESSAGE = "링크를 복사했습니다";
 const COPY_FAILED_MESSAGE = "링크를 복사하지 못했습니다";
 const SAVED_MESSAGE = "이미지를 저장했습니다";
 const LINK_ONLY_MESSAGE = "카드 이미지를 준비하지 못해 링크만 보냈습니다";
+const MEME_LOADING_MESSAGE = "짤을 카드에 담는 중입니다";
+const NO_AVATAR_MESSAGE = "프로필 이미지는 들어가지 않습니다";
+
+type InlinedMeme = {
+	url: string;
+	dataUrl: string | null;
+};
+
 export function VerdictCardPage() {
 	const { postId = "" } = useParams();
 	const [searchParams] = useSearchParams();
@@ -55,6 +62,37 @@ export function VerdictCardPage() {
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const [toast, setToast] = useState<string | null>(null);
 
+	const memeUrl = card.data?.meme?.imageUrl ?? null;
+	const [inlinedMeme, setInlinedMeme] = useState<InlinedMeme | null>(null);
+
+	const settledMeme = inlinedMeme?.url === memeUrl ? inlinedMeme : null;
+	const memeDataUrl = settledMeme?.dataUrl ?? null;
+	const isMemeLoading = memeUrl !== null && settledMeme === null;
+
+	useEffect(() => {
+		if (memeUrl === null) {
+			return;
+		}
+
+		let cancelled = false;
+
+		void toDataUrl(memeUrl)
+			.then((dataUrl) => {
+				if (!cancelled) {
+					setInlinedMeme({ url: memeUrl, dataUrl });
+				}
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setInlinedMeme({ url: memeUrl, dataUrl: null });
+				}
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [memeUrl]);
+
 	useEffect(() => {
 		if (toast === null) {
 			return;
@@ -74,8 +112,6 @@ export function VerdictCardPage() {
 		fontEmbedCssRef.current ??= buildFontEmbedCss(node);
 		const dataUrl = await toPng(node, {
 			pixelRatio: IMAGE_PIXEL_RATIO,
-			cacheBust: true,
-			imagePlaceholder: TRANSPARENT_PIXEL,
 			fontEmbedCSS: await fontEmbedCssRef.current
 		});
 		cardDataUrlRef.current = dataUrl;
@@ -99,10 +135,10 @@ export function VerdictCardPage() {
 	useEffect(() => {
 		cardFileRef.current = null;
 		cardDataUrlRef.current = null;
-	}, [postId, roomId]);
+	}, [postId, roomId, memeDataUrl]);
 
 	useEffect(() => {
-		if (!cardReady || cardFileRef.current !== null) {
+		if (!cardReady || isMemeLoading || cardFileRef.current !== null) {
 			return;
 		}
 
@@ -111,7 +147,7 @@ export function VerdictCardPage() {
 		}, PRELOAD_DELAY_MS);
 
 		return () => clearTimeout(timer);
-	}, [cardReady, postId, renderCardFile]);
+	}, [cardReady, isMemeLoading, memeDataUrl, postId, renderCardFile]);
 
 	if (!enabled) {
 		return <RoomMissingNotice title="공유 카드" />;
@@ -137,7 +173,7 @@ export function VerdictCardPage() {
 		const defendant = findMember(members.data, detail.authorId);
 
 		const saveImage = async () => {
-			if (!cardRef.current) {
+			if (!cardRef.current || isMemeLoading) {
 				return;
 			}
 
@@ -158,6 +194,8 @@ export function VerdictCardPage() {
 				setSaving(false);
 			}
 		};
+
+		const saveLabel = saving ? "저장 중" : isMemeLoading ? "짤 준비 중" : "이미지 저장";
 
 		const share = async () => {
 			const cardFile = cardFileRef.current ?? (await renderCardFile().catch(() => null));
@@ -192,10 +230,12 @@ export function VerdictCardPage() {
 						defendantName={detail.authorNickname}
 						defendantTier={memberTier(defendant)}
 						siteLabel={siteLabel}
-						meme={shareCard.meme}
+						memeSrc={memeDataUrl ?? memeUrl}
 					/>
 				</Reveal>
-				<p className="text-center text-xs text-dim">프로필 이미지는 들어가지 않습니다</p>
+				<p role="status" className="text-center text-xs text-dim">
+					{isMemeLoading ? MEME_LOADING_MESSAGE : NO_AVATAR_MESSAGE}
+				</p>
 			</>
 		);
 
@@ -207,12 +247,12 @@ export function VerdictCardPage() {
 						variant="secondary"
 						className="flex-1"
 						onClick={() => void saveImage()}
-						disabled={saving}
-						aria-busy={saving}
+						disabled={saving || isMemeLoading}
+						aria-busy={saving || isMemeLoading}
 					>
-						{saving ? "저장 중" : "이미지 저장"}
+						{saveLabel}
 					</Button>
-					<Button className="flex-1 shadow-cta" onClick={() => void share()}>
+					<Button className="flex-1 shadow-cta" onClick={() => void share()} disabled={isMemeLoading}>
 						공유하기
 					</Button>
 				</div>
