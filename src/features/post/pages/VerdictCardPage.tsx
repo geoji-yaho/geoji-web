@@ -40,6 +40,12 @@ type InlinedMeme = {
 	dataUrl: string | null;
 };
 
+async function decodeImages(node: HTMLElement) {
+	const images = [...node.querySelectorAll("img")];
+
+	await Promise.all(images.map((image) => image.decode()));
+}
+
 export function VerdictCardPage() {
 	const { postId = "" } = useParams();
 	const [searchParams] = useSearchParams();
@@ -110,6 +116,8 @@ export function VerdictCardPage() {
 		}
 
 		fontEmbedCssRef.current ??= buildFontEmbedCss(node);
+		await decodeImages(node);
+
 		const dataUrl = await toPng(node, {
 			pixelRatio: IMAGE_PIXEL_RATIO,
 			fontEmbedCSS: await fontEmbedCssRef.current
