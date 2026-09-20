@@ -6,6 +6,8 @@ import { BottomSheet } from "@/shared/ui/BottomSheet";
 import { Button } from "@/shared/ui/Button";
 import { Toast } from "@/shared/ui/Toast";
 
+import { AiMemberButton } from "./AiMemberButton";
+
 const TOAST_MS = 2500;
 const SHARE_TITLE = "떼거지";
 const SHARE_TEXT = "떼거지 거지방에 초대합니다";
@@ -16,10 +18,11 @@ type InviteSheetProps = {
 	open: boolean;
 	onClose: () => void;
 	inviteUrl: string;
+	roomId?: string;
 	onLater?: () => void;
 };
 
-export function InviteSheet({ open, onClose, inviteUrl, onLater }: InviteSheetProps) {
+export function InviteSheet({ open, onClose, inviteUrl, roomId, onLater }: InviteSheetProps) {
 	const [toast, setToast] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -74,6 +77,7 @@ export function InviteSheet({ open, onClose, inviteUrl, onLater }: InviteSheetPr
 				<MessageCircle className="size-5" fill="currentColor" strokeWidth={0} aria-hidden="true" />
 				카카오톡으로 공유
 			</Button>
+			{roomId && <AiMemberButton roomId={roomId} />}
 			<button type="button" onClick={onLater ?? onClose} className="text-center text-control text-mute">
 				나중에 하기
 			</button>
