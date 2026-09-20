@@ -34,21 +34,20 @@ export function RoomInfoPage() {
 	return (
 		<>
 			<div className="flex flex-1 flex-col gap-3.5 px-5 pt-3 pb-8.5">
-				{(room.isPending || members.isPending) && (
+				{room.isPending && (
 					<Card role="status" className="p-4.5 text-chip text-mute">
 						방 정보를 불러오는 중
 					</Card>
 				)}
 				{room.isError && <Alert>{room.error.message}</Alert>}
-				{members.isError && <Alert>{members.error.message}</Alert>}
 
-				{room.isSuccess && members.isSuccess && (
+				{room.isSuccess && (
 					<>
 						<Reveal>
 							<InfoTable
 								rows={[
 									{ label: "방 이름", value: room.data.name },
-									...(owner ? [{ label: "방장", value: memberName(owner), strong: true }] : []),
+									{ label: "방장", value: memberName(owner), strong: true },
 									{
 										label: "잔소리 강도",
 										value: <IntensityTag intensity={room.data.spiceLevel} />
@@ -69,16 +68,22 @@ export function RoomInfoPage() {
 
 						<Reveal as="section" index={2} className="flex flex-col gap-2">
 							<div className="flex items-baseline justify-between">
-								<h2 className="text-sm font-black text-ink">멤버 {members.data.length}</h2>
+								<h2 className="text-sm font-black text-ink">멤버{members.isSuccess && ` ${members.data.length}`}</h2>
 								<span className="text-xs text-dim">이번 달 거지력</span>
 							</div>
-							<MemberList members={members.data} myUserId={myUserId} />
+							{members.isPending && (
+								<Card role="status" className="p-4.5 text-chip text-mute">
+									멤버를 불러오는 중
+								</Card>
+							)}
+							{members.isError && <Alert>{members.error.message}</Alert>}
+							{members.isSuccess && <MemberList members={members.data} myUserId={myUserId} />}
 						</Reveal>
 
 						<Button variant="secondary" onClick={() => setInviteOpen(true)}>
 							초대 링크 공유
 						</Button>
-						<AiMemberButton roomId={roomId} isAdded={hasAiMember(members.data)} />
+						{members.isSuccess && <AiMemberButton roomId={roomId} isAdded={hasAiMember(members.data)} />}
 						<RoomExitActions roomId={roomId} canRemoveRoom={canRemoveRoom} />
 					</>
 				)}

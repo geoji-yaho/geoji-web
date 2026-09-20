@@ -14,6 +14,7 @@ import { useMyMonthStats } from "@/shared/hooks/useMyMonthStats";
 import { isOnboardingSkipped } from "@/shared/lib/onboarding-skip";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
+import { RetryNotice } from "@/shared/ui/RetryNotice";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { kstCalendar } from "@/shared/utils/date";
@@ -21,6 +22,8 @@ import { formatAmount } from "@/shared/utils/format";
 
 import { ProfileSummaryCard } from "../components/ProfileSummaryCard";
 import { RoomJoinSheet } from "../components/RoomJoinSheet";
+
+const EMPTY_FEED_LABEL = "아직 올라온 지출이 없습니다";
 
 type QueryFailure = {
 	isError: boolean;
@@ -31,10 +34,19 @@ type RoomCardItem = {
 	room: Room;
 	memberCount: number | undefined;
 	latestPost: RoomPostSummary | null;
+	hasFeed: boolean;
 };
 
 function firstErrorOf(queries: QueryFailure[]) {
 	return queries.find((query) => query.isError)?.error ?? null;
+}
+
+function formatRoomActivity(latestPost: RoomPostSummary | null, hasFeed: boolean) {
+	if (latestPost !== null) {
+		return formatRecentPost(latestPost);
+	}
+
+	return hasFeed ? EMPTY_FEED_LABEL : undefined;
 }
 
 function formatRecentPost(post: RoomPostSummary) {
@@ -71,7 +83,8 @@ export function HomePage() {
 	const roomItems: RoomCardItem[] = roomList.map((room, index) => ({
 		room,
 		memberCount: members[index].data?.length,
-		latestPost: feeds[index].data?.[0] ?? null
+		latestPost: feeds[index].data?.[0] ?? null,
+		hasFeed: feeds[index].isSuccess
 	}));
 	const feedsSettled = feeds.every((feed) => !feed.isPending);
 	const sortedRoomItems = feedsSettled ? [...roomItems].sort(compareByRecentPost) : roomItems;
@@ -102,7 +115,7 @@ export function HomePage() {
 						프로필을 불러오는 중
 					</Card>
 				)}
-				{stats.summaryError && <Alert>{stats.summaryError.message}</Alert>}
+				{stats.summaryError && <RetryNotice message={stats.summaryError.message} onRetry={stats.retry} />}
 
 				{!stats.isPending && profile && (
 					<Reveal>
@@ -143,18 +156,18 @@ export function HomePage() {
 						방 목록을 불러오는 중
 					</Card>
 				)}
-				{rooms.isError && <Alert>{rooms.error.message}</Alert>}
+				{rooms.isError && <RetryNotice message={rooms.error.message} onRetry={() => void rooms.refetch()} />}
 				{membersError && <Alert>{membersError.message}</Alert>}
 				{rooms.isSuccess && roomList.length === 0 && <EmptyState title="친구들과 거지방을 만들어보세요" />}
 
-				{sortedRoomItems.map(({ room, memberCount, latestPost }, index) => (
+				{sortedRoomItems.map(({ room, memberCount, latestPost, hasFeed }, index) => (
 					<Reveal key={room.id} index={index + 2}>
 						<RoomCard
 							roomName={room.name}
 							intensity={room.spiceLevel}
 							deadlineLabel={`${formatVoteDeadlineLabel(room.voteDeadlineMinutes)} 재판`}
 							memberCount={memberCount}
-							recentActivity={latestPost ? formatRecentPost(latestPost) : undefined}
+							recentActivity={formatRoomActivity(latestPost, hasFeed)}
 							onClick={() => void navigate(`/rooms/${room.id}`)}
 						/>
 					</Reveal>

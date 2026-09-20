@@ -8,6 +8,7 @@ import { useSignOut } from "@/shared/hooks/useSignOut";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
+import { RetryNotice } from "@/shared/ui/RetryNotice";
 import { Reveal } from "@/shared/ui/Reveal";
 import { kstCalendar } from "@/shared/utils/date";
 
@@ -53,7 +54,7 @@ export function MyPage() {
 						프로필을 불러오는 중
 					</Card>
 				)}
-				{stats.error && <Alert>{stats.error.message}</Alert>}
+				{stats.error && <RetryNotice message={stats.error.message} onRetry={stats.retry} />}
 
 				{!stats.isPending && profile && (
 					<>

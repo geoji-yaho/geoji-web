@@ -125,10 +125,20 @@ export function useMyMonthStats() {
 	const summaryError = summaryErrors.find((candidate) => candidate !== null) ?? null;
 	const error = summaryError ?? rooms.error;
 
+	const retry = () => {
+		void me.refetch();
+		void rooms.refetch();
+
+		for (const feed of feeds) {
+			void feed.refetch();
+		}
+	};
+
 	return {
 		isPending,
 		isError: error !== null,
 		error,
+		retry,
 		summaryError,
 		profile,
 		spentThisMonth,
