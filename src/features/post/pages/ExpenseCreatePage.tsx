@@ -43,7 +43,7 @@ const ABOVE_MAX_AMOUNT_MESSAGE = `금액은 ${formatAmount(MAX_AMOUNT_KRW)}원�
 const NO_ROOM_MESSAGE = "먼저 거지방을 만들어야 지출을 회부할 수 있습니다";
 const RESUBMIT_HINT = "다시 회부해 주세요";
 const REVISE_ACTION: CompleteAction = "REVISE";
-const FORM_RETURN_ERROR_KINDS: readonly ApiErrorKind[] = ["conflict", "notFound", "forbidden"];
+const FORM_RETURN_ERROR_KINDS: readonly ApiErrorKind[] = ["notFound", "forbidden"];
 
 export function ExpenseCreatePage() {
 	const navigate = useNavigate();
@@ -140,10 +140,7 @@ export function ExpenseCreatePage() {
 	};
 
 	const handleCompleteError = (error: ApiError) => {
-		const isReviseRequired = error.kind === "conflict" && error.message.includes(REVISE_ACTION);
-		const shouldReturnToForm = FORM_RETURN_ERROR_KINDS.includes(error.kind) && !isReviseRequired;
-
-		if (!shouldReturnToForm) {
+		if (!FORM_RETURN_ERROR_KINDS.includes(error.kind)) {
 			return;
 		}
 
