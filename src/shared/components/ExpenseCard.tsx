@@ -177,10 +177,14 @@ export function ExpenseCard(props: ExpenseCardProps) {
 							)}
 							{props.headline && <span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>}
 						</div>
-						<div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
+						<div className="flex w-20 shrink-0 flex-col items-center gap-1.5">
 							<MemeThumbnail meme={props.meme} size="sm" />
 							{props.onOpenVerdict && (
-								<Button variant="outline" className="rounded-2xl px-1 py-2 text-center" onClick={props.onOpenVerdict}>
+								<Button
+									variant="outline"
+									className="rounded-2xl px-1.5 py-2.5 leading-tight"
+									onClick={props.onOpenVerdict}
+								>
 									판결문 보기
 								</Button>
 							)}
