@@ -38,19 +38,21 @@ type ExpenseCardBase = {
 	onComments?: () => void;
 };
 
-export type ExpenseVoteState = "open" | "voted" | "own" | "closed";
+export type ExpenseVoteState = "open" | "voted" | "own" | "closed" | "unknownMe";
 
 const VOTE_BUTTON_LABELS: Record<ExpenseVoteState, string> = {
 	open: "투표하기",
 	voted: "투표 완료",
 	own: "투표하기",
-	closed: "투표하기"
+	closed: "투표하기",
+	unknownMe: "투표하기"
 };
 
 const NO_JUROR_NOTICE = "아직 배심원이 없습니다. 친구를 초대하면 재판이 열립니다";
 
 const VOTE_NOTES: Partial<Record<ExpenseVoteState, string>> = {
-	own: "본인의 재판에는 투표할 수 없습니다"
+	own: "본인의 재판에는 투표할 수 없습니다",
+	unknownMe: "내 정보를 불러오지 못해 투표할 수 없습니다"
 };
 
 function formatSentenceNote(sentence: Sentence, sentenceLabel: string | undefined) {
