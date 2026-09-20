@@ -56,3 +56,9 @@ const sessionStore = {
 export function useSession() {
 	return useSyncExternalStore(sessionStore.subscribe, sessionStore.getSnapshot);
 }
+
+export function getSessionSnapshot() {
+	ensureInitialized();
+
+	return snapshot;
+}
