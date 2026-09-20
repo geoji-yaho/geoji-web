@@ -11,5 +11,9 @@ export async function getAccessToken() {
 		return null;
 	}
 
-	return provider();
+	try {
+		return await provider();
+	} catch {
+		return null;
+	}
 }
