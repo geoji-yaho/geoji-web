@@ -87,7 +87,8 @@ export function HomePage() {
 		hasFeed: feeds[index].isSuccess
 	}));
 	const feedsSettled = feeds.every((feed) => !feed.isPending);
-	const sortedRoomItems = feedsSettled ? [...roomItems].sort(compareByRecentPost) : roomItems;
+	const sortedRoomItems = [...roomItems].sort(compareByRecentPost);
+	const roomsPending = rooms.isPending || !feedsSettled;
 	const membersError = firstErrorOf(members);
 	const monthLabel = `${kstCalendar(new Date()).month}월 지출`;
 	const needsProfile = !stats.isPending && stats.error === null && profile === null;
@@ -151,7 +152,7 @@ export function HomePage() {
 					{rooms.isSuccess && <span className="text-xs text-dim">{roomList.length}개</span>}
 				</Reveal>
 
-				{rooms.isPending && (
+				{roomsPending && (
 					<Card role="status" className="p-4.5 text-chip text-mute">
 						방 목록을 불러오는 중
 					</Card>
@@ -160,18 +161,19 @@ export function HomePage() {
 				{membersError && <Alert>{membersError.message}</Alert>}
 				{rooms.isSuccess && roomList.length === 0 && <EmptyState title="친구들과 거지방을 만들어보세요" />}
 
-				{sortedRoomItems.map(({ room, memberCount, latestPost, hasFeed }, index) => (
-					<Reveal key={room.id} index={index + 2}>
-						<RoomCard
-							roomName={room.name}
-							intensity={room.spiceLevel}
-							deadlineLabel={`${formatVoteDeadlineLabel(room.voteDeadlineMinutes)} 재판`}
-							memberCount={memberCount}
-							recentActivity={formatRoomActivity(latestPost, hasFeed)}
-							onClick={() => void navigate(`/rooms/${room.id}`)}
-						/>
-					</Reveal>
-				))}
+				{!roomsPending &&
+					sortedRoomItems.map(({ room, memberCount, latestPost, hasFeed }, index) => (
+						<Reveal key={room.id} index={index + 2}>
+							<RoomCard
+								roomName={room.name}
+								intensity={room.spiceLevel}
+								deadlineLabel={`${formatVoteDeadlineLabel(room.voteDeadlineMinutes)} 재판`}
+								memberCount={memberCount}
+								recentActivity={formatRoomActivity(latestPost, hasFeed)}
+								onClick={() => void navigate(`/rooms/${room.id}`)}
+							/>
+						</Reveal>
+					))}
 			</div>
 
 			<StickyCta
