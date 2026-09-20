@@ -22,6 +22,8 @@ import { ShareCardPreview } from "../components/ShareCardPreview";
 const IMAGE_FILENAME = "geoji-verdict.png";
 const IMAGE_PIXEL_RATIO = 2;
 const PRELOAD_DELAY_MS = 700;
+const TRANSPARENT_PIXEL =
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const TOAST_MS = 2500;
 const SHARE_TITLE = "떼거지";
 const LOADING_MESSAGE = "판결 카드를 불러오는 중";
@@ -77,6 +79,7 @@ export function VerdictCardPage() {
 		const dataUrl = await toPng(node, {
 			pixelRatio: IMAGE_PIXEL_RATIO,
 			cacheBust: true,
+			imagePlaceholder: TRANSPARENT_PIXEL,
 			fontEmbedCSS: await fontEmbedCssRef.current
 		});
 		cardDataUrlRef.current = dataUrl;
