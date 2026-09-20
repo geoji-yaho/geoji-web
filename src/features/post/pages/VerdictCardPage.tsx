@@ -31,12 +31,6 @@ const SAVE_FAILED_MESSAGE = "이미지를 만들지 못했습니다";
 const COPIED_MESSAGE = "링크를 복사했습니다";
 const COPY_FAILED_MESSAGE = "링크를 복사하지 못했습니다";
 const LINK_ONLY_MESSAGE = "카드 이미지를 준비하지 못해 링크만 보냈습니다";
-const PENDING_SENTENCE_WORDS = ["판결", "확정"];
-
-function hasPendingSentenceWords(message: string) {
-	return PENDING_SENTENCE_WORDS.every((word) => message.includes(word));
-}
-
 export function VerdictCardPage() {
 	const { postId = "" } = useParams();
 	const [searchParams] = useSearchParams();
@@ -219,7 +213,7 @@ export function VerdictCardPage() {
 			</div>
 		);
 	} else if (loadError) {
-		const isSentencePending = card.isError && hasPendingSentenceWords(card.error.message);
+		const isSentencePending = card.isError && card.error.kind === "notFound";
 
 		content = isSentencePending ? (
 			<Button variant="outline" onClick={() => void navigate(verdictPath(postId, roomId), { replace: true })}>
