@@ -66,6 +66,16 @@ export function HonestyModal({
 		};
 	}, [open]);
 
+	useEffect(() => {
+		const dialog = dialogRef.current;
+
+		if (!open || errorMessage === null || dialog === null || dialog.contains(document.activeElement)) {
+			return;
+		}
+
+		dialog.focus();
+	}, [open, errorMessage]);
+
 	const trimmedTitle = revisedTitle.trim();
 	const isTitleValid = trimmedTitle.length > 0 && trimmedTitle.length <= maxLength;
 	const canRevise = isTitleValid && !isPending;
@@ -133,6 +143,7 @@ export function HonestyModal({
 						role="dialog"
 						aria-modal="true"
 						aria-labelledby="honesty-modal-headline"
+						tabIndex={-1}
 						onKeyDown={handleKeyDown}
 						className="relative flex w-full max-w-phone flex-col gap-3.5 rounded-3xl bg-card px-5 py-5.5 shadow-fab"
 						initial={{ opacity: 0, scale: CARD_SCALE_FROM }}
