@@ -27,7 +27,7 @@ paths:
 - 키는 엔티티로 시작하는 계층이다. `["rooms"]`, `["rooms", "list"]`, `["rooms", "detail", id]`처럼 팩토리 함수로 만들고 `queryOptions`로 정의해 `useQuery`, `useSuspenseQuery`, `queryClient.prefetchQuery`가 같은 정의를 쓴다. 손으로 적은 키 배열은 한 글자 차이로 다른 캐시가 된다
 - 조회 훅은 따로 만들지 않는다. 페이지에서 `useQuery(xxxQueries.yyy())`로 바로 부른다. 쿼리 여럿을 합쳐 계산하고 그 결과를 화면 둘 이상이 쓰는 자리만 `shared/hooks/`에 훅으로 둔다. `useMyMonthStats`가 그 경우다
 - 변이는 쓰는 화면의 feature `hooks/`에 `useMutation` 훅으로 둔다. api 모듈은 캐시를 무효화하거나 채우지 않는다. 성공하면 `setQueryData`로 상세를 채우고 `invalidateQueries`로 목록을 다시 받는다. `onSuccess`가 그 Promise를 돌려주면 목록이 올 때까지 `isPending`이 유지된다
-- 401은 전역에서 로그인 화면으로 보내므로 화면이 다루지 않는다. 그 밖은 `error.kind` 8종(badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout)으로 분기한다. `Register.defaultError`를 `ApiError`로 등록해 두어 `error`가 `ApiError`로 잡힌다
+- 401은 전역에서 로그인 화면으로 보내므로 화면이 다루지 않는다. 그 밖은 `error.kind` 9종(badRequest, unauthorized, forbidden, notFound, conflict, server, network, timeout, unknown)으로 분기한다. `unknown`은 HTTP 이전에 실패한 것이라 화면이 따로 다룰 것이 없다. `Register.defaultError`를 `ApiError`로 등록해 두어 `error`가 `ApiError`로 잡힌다
 - 아직 없는 리소스는 queryFn 안에서 잡아 `null`로 바꾼다. 404로 오는 엔드포인트는 `notFound`를, 온보딩 전 프로필은 `GET /api/me`가 409로 오므로 `conflict`를 잡는다. `data === null`이 아직 없다는 뜻이다
 - 재시도는 network와 timeout, server만 2회까지다. 4xx와 변이는 다시 시도하지 않는다
 - 응답 타입은 `API.md`의 필드와 값을 그대로 옮긴다. 화면 모델과 값이 다른 것은 엔티티 모듈에 대응표를 두고 화면이 그 표로 바꾼다. 지금은 방 강도와 게시물 타입, 판결, 형량이 모두 서버 값과 `shared/domain/`의 타입이 같아 대응표를 둔 모듈이 없다

@@ -1,5 +1,5 @@
 export type ApiErrorKind =
-	"badRequest" | "unauthorized" | "forbidden" | "notFound" | "conflict" | "server" | "network" | "timeout";
+	"badRequest" | "unauthorized" | "forbidden" | "notFound" | "conflict" | "server" | "network" | "timeout" | "unknown";
 
 export type ApiErrorOptions = {
 	status?: number;
@@ -15,7 +15,8 @@ export const API_ERROR_MESSAGES: Record<ApiErrorKind, string> = {
 	conflict: "지금 상태에서는 할 수 없습니다",
 	server: "서버에 문제가 생겼습니다",
 	network: "네트워크에 연결할 수 없습니다",
-	timeout: "응답이 늦어 요청을 취소했습니다"
+	timeout: "응답이 늦어 요청을 취소했습니다",
+	unknown: "요청을 보내지 못했습니다"
 };
 
 function kindFromStatus(status: number) {

@@ -95,7 +95,7 @@ function toRequestError(error: unknown, signal: AbortSignal | undefined) {
 		return new ApiError("network", API_ERROR_MESSAGES.network, { cause: error });
 	}
 
-	return error;
+	return new ApiError("unknown", API_ERROR_MESSAGES.unknown, { cause: error });
 }
 
 function linkAbortSignals(signal: AbortSignal | undefined, timeoutMs: number) {
