@@ -2,6 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { PropsWithChildren } from "react";
 
+import { getSessionSnapshot } from "@/shared/hooks/useSession";
 import { toAppPath } from "@/shared/lib/base-path";
 import { clearOnboardingSkip } from "@/shared/lib/onboarding-skip";
 import { setPathAfterLogin } from "@/shared/lib/path-after-login";
@@ -12,6 +13,7 @@ import { router } from "../router/routes";
 
 const LOGIN_PATH = "/login";
 const EXPIRED_STATE = { notice: "세션이 만료되어 로그아웃되었습니다. 다시 로그인해 주세요" };
+const SIGN_IN_STATE = { notice: "로그인하면 이어서 볼 수 있습니다" };
 
 let isHandlingUnauthorized = false;
 
@@ -38,12 +40,16 @@ const queryClient = createQueryClient({
 		isHandlingUnauthorized = true;
 		setPathAfterLogin(pathname + search);
 
+		const hadSession = getSessionSnapshot().session !== null;
+
 		void signOutQuietly();
-		void router.navigate(LOGIN_PATH, { replace: true, state: EXPIRED_STATE }).finally(() => {
-			clearOnboardingSkip();
-			queryClient.clear();
-			isHandlingUnauthorized = false;
-		});
+		void router
+			.navigate(LOGIN_PATH, { replace: true, state: hadSession ? EXPIRED_STATE : SIGN_IN_STATE })
+			.finally(() => {
+				clearOnboardingSkip();
+				queryClient.clear();
+				isHandlingUnauthorized = false;
+			});
 	}
 });
 
