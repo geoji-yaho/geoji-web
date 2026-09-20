@@ -7,6 +7,7 @@ import { IntensityTag } from "@/shared/components/IntensityTag";
 import { formatVoteDeadlineLabel } from "@/shared/domain/room";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
+import { RetryNotice } from "@/shared/ui/RetryNotice";
 import { StickyCta } from "@/shared/ui/StickyCta";
 
 import { RoomRuleList } from "../components/RoomRuleList";
@@ -68,7 +69,7 @@ export function RoomJoinPage() {
 				</Card>
 			)}
 
-			{preview.error && <Alert>{preview.error.message}</Alert>}
+			{preview.error && <RetryNotice message={preview.error.message} onRetry={() => void preview.refetch()} />}
 
 			{room && (
 				<Card className="flex flex-col gap-3.5 p-4.5">

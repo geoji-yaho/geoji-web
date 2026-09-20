@@ -7,8 +7,8 @@ import { MyRankRow } from "@/shared/components/MyRankRow";
 import { type PodiumPlace, RankingPodium } from "@/shared/components/RankingPodium";
 import { RankingRow } from "@/shared/components/RankingRow";
 import { tierFromScore } from "@/shared/domain/tier";
-import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
+import { RetryNotice } from "@/shared/ui/RetryNotice";
 import { Reveal } from "@/shared/ui/Reveal";
 
 const PODIUM_PLACES = [1, 2, 3] as const satisfies readonly PodiumPlace[];
@@ -50,8 +50,8 @@ export function RoomRankingPage() {
 						랭킹을 불러오는 중
 					</Card>
 				)}
-				{members.isError && <Alert>{members.error.message}</Alert>}
-				{me.isError && <Alert>{me.error.message}</Alert>}
+				{members.isError && <RetryNotice message={members.error.message} onRetry={() => void members.refetch()} />}
+				{me.isError && <RetryNotice message={me.error.message} onRetry={() => void me.refetch()} />}
 
 				{podium.length > 0 && (
 					<Reveal index={1}>

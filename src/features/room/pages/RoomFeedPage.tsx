@@ -15,6 +15,7 @@ import { useRouteNotice } from "@/shared/hooks/useRouteNotice";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
 import { Fab } from "@/shared/ui/Fab";
+import { RetryNotice } from "@/shared/ui/RetryNotice";
 import { Reveal } from "@/shared/ui/Reveal";
 import { Toast } from "@/shared/ui/Toast";
 import { formatRelativeTime } from "@/shared/utils/date";
@@ -99,7 +100,16 @@ export function RoomFeedPage() {
 						피드를 불러오는 중
 					</Card>
 				)}
-				{feedError && <Alert>{feedError.message}</Alert>}
+				{feedError && (
+					<RetryNotice
+						message={feedError.message}
+						onRetry={() => {
+							void me.refetch();
+							void members.refetch();
+							void feed.refetch();
+						}}
+					/>
+				)}
 				{!feedError && failedDetailCount > 0 && (
 					<Alert tone="fill">
 						게시물 {failedDetailCount}건의 판결과 댓글을 불러오지 못했습니다. 그 카드의 도장과 댓글 수가 실제와 다를 수

@@ -14,6 +14,7 @@ import { useMyMonthStats } from "@/shared/hooks/useMyMonthStats";
 import { isOnboardingSkipped } from "@/shared/lib/onboarding-skip";
 import { Alert } from "@/shared/ui/Alert";
 import { Card } from "@/shared/ui/Card";
+import { RetryNotice } from "@/shared/ui/RetryNotice";
 import { Reveal } from "@/shared/ui/Reveal";
 import { StickyCta } from "@/shared/ui/StickyCta";
 import { kstCalendar } from "@/shared/utils/date";
@@ -114,7 +115,7 @@ export function HomePage() {
 						프로필을 불러오는 중
 					</Card>
 				)}
-				{stats.summaryError && <Alert>{stats.summaryError.message}</Alert>}
+				{stats.summaryError && <RetryNotice message={stats.summaryError.message} onRetry={stats.retry} />}
 
 				{!stats.isPending && profile && (
 					<Reveal>
@@ -155,7 +156,7 @@ export function HomePage() {
 						방 목록을 불러오는 중
 					</Card>
 				)}
-				{rooms.isError && <Alert>{rooms.error.message}</Alert>}
+				{rooms.isError && <RetryNotice message={rooms.error.message} onRetry={() => void rooms.refetch()} />}
 				{membersError && <Alert>{membersError.message}</Alert>}
 				{rooms.isSuccess && roomList.length === 0 && <EmptyState title="친구들과 거지방을 만들어보세요" />}
 
