@@ -3,6 +3,7 @@ import { useAnimate, useReducedMotionConfig } from "motion/react";
 import { type ReactNode, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
+import type { ApiError } from "@/shared/api/api-error";
 import { findMember, memberQueries, memberTier } from "@/shared/api/members";
 import { postQueries } from "@/shared/api/posts";
 import { profileQueries } from "@/shared/api/profile";
@@ -68,6 +69,7 @@ export function VerdictPage() {
 	const removeComment = useRemovePostComment();
 	const removePost = useRemovePost();
 
+	const [shownError, setShownError] = useState<ApiError | null>(null);
 	const [soundOn, setSoundOn] = useState(isStampSoundOn);
 	const [commentsOpen, setCommentsOpen] = useState(false);
 	const [removeOpen, setRemoveOpen] = useState(false);
@@ -135,6 +137,11 @@ export function VerdictPage() {
 	const isDismissed = state?.juryStatus === "dismissed";
 	const pending = me.isPending || post.isPending || members.isPending || room.isPending || verdict.isPending;
 	const loadError = me.error ?? post.error ?? members.error ?? room.error ?? verdict.error;
+	if (loadError !== null && loadError !== shownError) {
+		setShownError(loadError);
+	} else if (loadError === null && shownError !== null && !pending) {
+		setShownError(null);
+	}
 
 	const waitingMessage = (() => {
 		if (state === null || view !== null || isDismissed) {
@@ -146,7 +153,7 @@ export function VerdictPage() {
 	let content: ReactNode = null;
 	let cta: ReactNode = null;
 
-	if (pending) {
+	if (pending && shownError === null) {
 		content = (
 			<Card role="status" className="p-4 text-chip text-mute">
 				{MESSAGES.loading}
@@ -259,10 +266,10 @@ export function VerdictPage() {
 			</div>
 
 			<div ref={scope} className="flex flex-col gap-3 px-5 pt-1.5 pb-10">
-				{!pending && loadError && (
+				{shownError && (
 					<>
-						<Alert>{loadError.message}</Alert>
-						<Button variant="outline" onClick={retryLoad}>
+						<Alert>{shownError.message}</Alert>
+						<Button variant="outline" disabled={pending} onClick={retryLoad}>
 							{MESSAGES.retry}
 						</Button>
 					</>
