@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams } from "react-router";
 
-import { hasAiMember, memberName, memberQueries } from "@/shared/api/members";
+import { hasAiMember, memberName, memberQueries, UNKNOWN_MEMBER_NAME } from "@/shared/api/members";
 import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
@@ -29,6 +29,10 @@ export function RoomInfoPage() {
 
 	const myUserId = me.data?.id ?? null;
 	const owner = members.data?.find((member) => member.userId === room.data?.createdBy);
+	const inviteCode = room.data?.inviteCode ?? "";
+	const shouldLoadOwnerName = members.isSuccess && owner === undefined && inviteCode !== "";
+	const ownerPreview = useQuery({ ...roomQueries.invite(inviteCode), enabled: shouldLoadOwnerName });
+	const ownerName = owner ? memberName(owner) : (ownerPreview.data?.ownerNickname ?? UNKNOWN_MEMBER_NAME);
 	const canRemoveRoom = myUserId !== null && room.data?.createdBy === myUserId;
 
 	return (
@@ -47,7 +51,7 @@ export function RoomInfoPage() {
 							<InfoTable
 								rows={[
 									{ label: "방 이름", value: room.data.name },
-									{ label: "방장", value: memberName(owner), strong: true },
+									{ label: "방장", value: ownerName, strong: true },
 									{
 										label: "잔소리 강도",
 										value: <IntensityTag intensity={room.data.spiceLevel} />
