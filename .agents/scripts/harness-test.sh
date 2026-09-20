@@ -6,7 +6,7 @@
 # 막을 것을 막고 통과시킬 것을 통과시키는지 본다. 토큰을 쓰지 않는다.
 # 픽스처에 심은 위반: 화살표 함수의 반환 타입, 뒤따르는 본문 주석, 격식체 동사 이름, ?? 0, 기능 폴더의 fetch,
 # 동사 없는 export 함수 이름, 대문자 약어 roomID, on 없는 함수형 prop, 접두사 없는 boolean prop.
-# main 과 develop 에서의 커밋 차단은 현재 브랜치에 따라 결과가 달라 여기서 시험하지 않는다.
+# main 에서의 커밋 차단은 현재 브랜치에 따라 결과가 달라 여기서 시험하지 않는다.
 
 set -uo pipefail
 
@@ -97,7 +97,7 @@ git add ./src/a.ts|0
 git add src/a.ts src/b.ts|0
 git add .env.example|0
 git push --force-with-lease origin f|0
-git push origin develop|0
+git push origin feature/x|0
 printf "훅 건너뛰기 플래그 --no-verify 금지" > /tmp/x|0
 grep -rn -- --no-verify .agents|0
 ls -la|0

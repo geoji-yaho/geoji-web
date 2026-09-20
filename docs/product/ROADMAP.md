@@ -31,17 +31,17 @@ M1부터 M4는 팀 전체의 마일스톤이고 완료 조건은 기획서 v1.1�
 
 ### 프론트엔드 현재 위치
 
-| 있는 것                                                                                        | 없는 것                                                             |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| 스택 세팅, GitHub Pages 배포, CI 게이트(`pnpm check`)                                          | 무지출 신고와 이모지 리액션, 형 집행 조회. 서버에 API가 없다        |
-| 공통 컴포넌트와 디자인 토큰, 컴포넌트 카탈로그                                                 | 시상식과 도전 과제, 순찰 알림, 하루로그 화면. 아래 API 연동 현황 절 |
-| 도메인 타입과 유틸(`cn`, `formatAmount`, `parseAmount`, `date.ts`, `score.ts`, `platform.ts`)  | 클라이언트 상태 관리, 테스트 도구                                   |
-| 라우터(react-router 8)와 레이아웃, 화면 14개, 앱 셸을 캐싱하는 Service Worker                  | Web Push                                                            |
-| 데이터 층. TanStack Query 5, `http` 클라이언트와 `ApiError`, 엔티티 모듈 넷, `.env.example`    | 방 피드의 무한 스크롤. 최신 100건을 한 번 받는다                    |
-| 로그인. 카카오 OAuth(Supabase Auth `signInWithOAuth`)와 세션 토큰 공급자, 로그아웃             |                                                                     |
-| API 연동 화면 열넷. 아래 API 연동 현황 절                                                      |                                                                     |
-| 브랜치 전략(main 배포, develop 통합, feature 작업)과 폴더 구조 규칙(app, features, shared 3층) |                                                                     |
-| 브랜드 자산(파비콘, 앱 아이콘, OG 이미지, manifest)                                            |                                                                     |
+| 있는 것                                                                                       | 없는 것                                                             |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 스택 세팅, GitHub Pages 배포, CI 게이트(`pnpm check`)                                         | 무지출 신고와 이모지 리액션, 형 집행 조회. 서버에 API가 없다        |
+| 공통 컴포넌트와 디자인 토큰, 컴포넌트 카탈로그                                                | 시상식과 도전 과제, 순찰 알림, 하루로그 화면. 아래 API 연동 현황 절 |
+| 도메인 타입과 유틸(`cn`, `formatAmount`, `parseAmount`, `date.ts`, `score.ts`, `platform.ts`) | 클라이언트 상태 관리, 테스트 도구                                   |
+| 라우터(react-router 8)와 레이아웃, 화면 14개, 앱 셸을 캐싱하는 Service Worker                 | Web Push                                                            |
+| 데이터 층. TanStack Query 5, `http` 클라이언트와 `ApiError`, 엔티티 모듈 넷, `.env.example`   | 방 피드의 무한 스크롤. 최신 100건을 한 번 받는다                    |
+| 로그인. 카카오 OAuth(Supabase Auth `signInWithOAuth`)와 세션 토큰 공급자, 로그아웃            |                                                                     |
+| API 연동 화면 열넷. 아래 API 연동 현황 절                                                     |                                                                     |
+| 브랜치 전략(main 배포이자 통합, feature 작업)과 폴더 구조 규칙(app, features, shared 3층)     |                                                                     |
+| 브랜드 자산(파비콘, 앱 아이콘, OG 이미지, manifest)                                           |                                                                     |
 
 백엔드 geoji-server는 Spring Boot와 Supabase(Postgres, Auth)로 확정됐고 규약은 그 저장소의 `API.md`다. 배포 주소는 CloudFront가 HTTPS로 받아 주는 `https://d13dsunuwl4yud.cloudfront.net`이고 GitHub Pages에서 부를 수 있다. 카카오 로그인은 끝까지 돈다. 앱의 동의 항목(닉네임, 프로필 사진, 카카오계정 이메일)을 켜고 클라이언트 시크릿을 끄면서 풀렸다. 화면과 API를 이으며 드러난 규약 차이는 `SPEC.md`의 확인 필요 절에 있다.
 

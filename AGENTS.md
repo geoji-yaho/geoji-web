@@ -18,7 +18,7 @@
 
 - `api.md`. 데이터 층 규칙. 요청은 shared/api/http만 쓰고 엔티티 모듈은 쓰는 feature 수로 자리를 가른다. 쿼리 키는 엔티티로 시작하는 계층, 변이는 feature hooks의 useMutation 훅, 401 밖은 error.kind로 분기하고 아직 없는 리소스는 queryFn에서 null로 바꾼다
 - `folder-structure.md`. src는 app, features, shared 3층이고 위에서 아래로만 가져온다. 같은 층 안은 상대 경로, 층을 넘으면 @/. index.ts는 feature 공개 API에만 두고 export *를 쓰지 않는다. 컴포넌트 파일은 PascalCase, 그 밖은 주 export를 따른다
-- `git-workflow.md`. main과 develop, feature 세 브랜치. 커밋 메시지는 <타입>: <한국어 제목>. 금지 패턴 여섯. 브랜치와 커밋, PR, 머지, 릴리스 절차는 geoji-git 스킬에 있다
+- `git-workflow.md`. main과 feature 두 브랜치. 커밋 메시지는 <타입>: <한국어 제목>. 금지 패턴 여섯. 브랜치와 커밋, PR, 머지, 배포 절차는 geoji-git 스킬에 있다
 - `tailwind.md`. 대괄호 임의값을 쓰지 않는다. 색은 src/app/styles/theme/colors.css 토큰만 쓰고 dark: 변형이 없다. 클래스는 cn과 cva로 합치고 CSS에 주석을 쓰지 않는다
 - `typescript.md`. 이 저장소의 TypeScript와 주석 규칙. 추론되는 반환 타입을 적지 않는 것과 예외 둘, TypeScript와 React 생태계가 쓰는 동사와 접두사, 접미사로 짓는 이름, 코드에 주석을 적지 않고 지시문만 남기는 것, as 단언과 이름 없는 숫자. 전역 룰과 어긋나면 여기가 이긴다
 
