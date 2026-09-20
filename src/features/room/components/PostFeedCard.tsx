@@ -16,12 +16,16 @@ function voteDeadlineLabel(deadline: string, now: Date) {
 	return remaining.startsWith("마감까지") ? `투표 ${remaining}` : `투표 마감까지 ${remaining}`;
 }
 
-function voteStateOf(post: RoomPostSummary, isOwn: boolean, closed: boolean) {
+function voteStateOf(post: RoomPostSummary, myUserId: string | undefined, closed: boolean) {
 	if (closed) {
 		return "closed";
 	}
 
-	if (isOwn) {
+	if (myUserId === undefined) {
+		return "unknownMe";
+	}
+
+	if (post.authorId === myUserId) {
 		return "own";
 	}
 
@@ -97,7 +101,7 @@ export function PostFeedCard({
 			deadlineLabel={voteDeadlineLabel(post.voteDeadlineAt, now)}
 			tally={post.tally}
 			eligibleCount={eligibleCount}
-			voteState={voteStateOf(post, myUserId !== undefined && post.authorId === myUserId, closed)}
+			voteState={voteStateOf(post, myUserId, closed)}
 			onVote={onVote}
 		/>
 	);

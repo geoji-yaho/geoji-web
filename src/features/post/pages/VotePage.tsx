@@ -29,7 +29,8 @@ const MESSAGES = {
 	loading: "사건을 불러오는 중",
 	alreadyVoted: "이미 투표했습니다",
 	closed: "투표가 마감되었습니다",
-	ownPost: "본인 게시물에는 투표할 수 없습니다"
+	ownPost: "본인 게시물에는 투표할 수 없습니다",
+	unknownMe: "내 정보를 불러오지 못해 투표할 수 없습니다"
 } as const;
 
 export function VotePage() {
@@ -61,8 +62,11 @@ export function VotePage() {
 			: `${voteCount}/${detail.eligibleVoterCount} 투표, ${formatRemaining(detail.voteDeadlineAt, now)}`;
 
 	const blockedMessage = (() => {
-		if (detail === null || myUserId === undefined) {
+		if (detail === null) {
 			return null;
+		}
+		if (myUserId === undefined) {
+			return MESSAGES.unknownMe;
 		}
 		if (detail.authorId === myUserId) {
 			return MESSAGES.ownPost;
@@ -75,7 +79,7 @@ export function VotePage() {
 
 	const chosenVerdict = detail === null || side === null ? null : VOTE_VERDICTS[detail.postType][side];
 	const trimmedReason = reason.trim();
-	const canVote = detail !== null && detail.canVote && !isDeadlinePast;
+	const canVote = detail !== null && detail.canVote && !isDeadlinePast && blockedMessage === null;
 	const hasVerdictInput = chosenVerdict !== null && trimmedReason.length > 0;
 	const canSubmit = canVote && hasVerdictInput && !castVote.isPending;
 	const submitLabel = (() => {
@@ -130,7 +134,7 @@ export function VotePage() {
 
 						{blockedMessage && <Alert>{blockedMessage}</Alert>}
 
-						{detail.canVote && (
+						{canVote && (
 							<>
 								<Reveal index={1} className="flex flex-col gap-2.5">
 									<span className="text-label text-mute">
@@ -162,9 +166,7 @@ export function VotePage() {
 			</div>
 
 			{!hasRoom && <StickyCta label="홈으로 가기" onClick={() => void navigate("/")} className="sticky-cta" />}
-			{detail?.canVote && (
-				<StickyCta label={submitLabel} onClick={submit} disabled={!canSubmit} className="sticky-cta" />
-			)}
+			{canVote && <StickyCta label={submitLabel} onClick={submit} disabled={!canSubmit} className="sticky-cta" />}
 		</div>
 	);
 }
