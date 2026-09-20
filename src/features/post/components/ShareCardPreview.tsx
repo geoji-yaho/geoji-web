@@ -7,6 +7,7 @@ import { TierBadge } from "@/shared/components/TierBadge";
 import { VerdictStamp } from "@/shared/components/VerdictStamp";
 import type { Tier } from "@/shared/domain/tier";
 import { type Sentence, SENTENCE_LABELS, SENTENCE_NOTES, type Verdict } from "@/shared/domain/verdict";
+import { cn } from "@/shared/lib/cn";
 import { Card } from "@/shared/ui/Card";
 import { formatAmount } from "@/shared/utils/format";
 
@@ -67,7 +68,7 @@ export function ShareCardPreview({
 					</div>
 				)}
 
-				<div className="flex shrink-0 items-center gap-3">
+				<div className={cn("flex items-center gap-3", meme ? "shrink-0" : "min-h-0 flex-1")}>
 					<div className="flex min-w-0 flex-1 flex-col gap-2">
 						<span className="text-amount text-ink">{formatAmount(amount)}원</span>
 						{headline && <p className="text-subtitle text-text">{headline}</p>}
