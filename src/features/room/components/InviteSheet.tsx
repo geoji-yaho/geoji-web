@@ -60,7 +60,6 @@ export function InviteSheet({ open, onClose, inviteUrl, roomId, onLater }: Invit
 
 	return (
 		<BottomSheet open={open} onClose={onClose} title="친구 초대">
-			<p className="text-chip text-mute">링크는 7일간 유효합니다</p>
 			<div className="flex gap-2">
 				<span className="min-w-0 flex-1 truncate rounded-2xl bg-fill px-3.5 py-3 text-control text-mute">
 					{inviteUrl}
