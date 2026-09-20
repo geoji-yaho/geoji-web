@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import type { Intensity, VoteDeadlineMinutes } from "../domain/room";
+import type { ApiError } from "./api-error";
 import { http } from "./http";
 
 export type RoomSpiceLevel = Intensity;
@@ -49,6 +50,24 @@ export function leaveRoom(roomId: string) {
 
 export function removeRoom(roomId: string) {
 	return http.delete<void>(`/api/rooms/${encodeURIComponent(roomId)}`);
+}
+
+export type AiMember = {
+	userId: string;
+	nickname: string;
+	postIds: string[];
+};
+
+export const AI_MEMBER_UNAVAILABLE_CODE = "AI_JUROR_NOT_CONFIGURED";
+
+export function addAiMember(roomId: string) {
+	return http.post<AiMember>(`/api/rooms/${encodeURIComponent(roomId)}/ai-member`);
+}
+
+export function isAiMemberUnavailable(error: ApiError) {
+	const { body } = error;
+	const hasCode = typeof body === "object" && body !== null && "code" in body;
+	return error.kind === "server" && hasCode && body.code === AI_MEMBER_UNAVAILABLE_CODE;
 }
 
 export const roomQueries = {

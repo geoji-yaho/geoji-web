@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams } from "react-router";
 
-import { memberName, memberQueries } from "@/shared/api/members";
+import { hasAiMember, memberName, memberQueries } from "@/shared/api/members";
 import { profileQueries } from "@/shared/api/profile";
 import { roomQueries } from "@/shared/api/rooms";
 import { IntensityTag } from "@/shared/components/IntensityTag";
@@ -13,6 +13,7 @@ import { Card } from "@/shared/ui/Card";
 import { InfoTable } from "@/shared/ui/InfoTable";
 import { Reveal } from "@/shared/ui/Reveal";
 
+import { AiMemberButton } from "../components/AiMemberButton";
 import { InviteSheet } from "../components/InviteSheet";
 import { MemberList } from "../components/MemberList";
 import { RoomExitActions } from "../components/RoomExitActions";
@@ -77,6 +78,7 @@ export function RoomInfoPage() {
 						<Button variant="secondary" onClick={() => setInviteOpen(true)}>
 							초대 링크 공유
 						</Button>
+						<AiMemberButton roomId={roomId} isAdded={hasAiMember(members.data)} />
 						<RoomExitActions roomId={roomId} canRemoveRoom={canRemoveRoom} />
 					</>
 				)}

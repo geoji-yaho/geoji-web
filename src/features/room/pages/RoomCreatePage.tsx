@@ -121,6 +121,7 @@ export function RoomCreatePage() {
 				open={created !== null}
 				onClose={goToRoom}
 				inviteUrl={created ? buildInviteUrl(created.inviteCode) : ""}
+				roomId={created?.id}
 				onLater={goToRoom}
 			/>
 
