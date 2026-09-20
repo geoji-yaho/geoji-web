@@ -14,10 +14,6 @@ export function roomPath(roomId: string) {
 	return `/rooms/${encodeURIComponent(roomId)}`;
 }
 
-export function roomInfoPath(roomId: string) {
-	return `${roomPath(roomId)}/info`;
-}
-
 export function invitePath(inviteCode: string) {
 	return `/invite/${encodeURIComponent(inviteCode)}`;
 }

@@ -1,7 +1,6 @@
 import { useLocation, useNavigate } from "react-router";
 
 import { RoomHeader } from "@/shared/components/RoomHeader";
-import { roomInfoPath } from "@/shared/constants/routes";
 import type { AvatarStackItem } from "@/shared/ui/AvatarStack";
 import { TabSegment } from "@/shared/ui/TabSegment";
 
@@ -33,12 +32,7 @@ export function RoomTabsHeader({ roomId, roomName, members }: RoomTabsHeaderProp
 
 	return (
 		<div className="px-5">
-			<RoomHeader
-				roomName={roomName}
-				members={members}
-				onBack={() => void navigate("/")}
-				onOpenInfo={() => void navigate(roomInfoPath(roomId), { replace: true })}
-			/>
+			<RoomHeader roomName={roomName} members={members} onBack={() => void navigate("/")} />
 			<TabSegment
 				tabs={TAB_SEGMENTS}
 				value={currentSegment(pathname, roomId)}
