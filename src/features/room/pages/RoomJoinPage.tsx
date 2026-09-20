@@ -79,11 +79,15 @@ export function RoomJoinPage() {
 						</div>
 						<IntensityTag intensity={room.spiceLevel} />
 					</div>
-					<span aria-hidden="true" className="h-px bg-line" />
-					<div className="flex flex-col gap-2">
-						<span className="text-label text-mute">방 규칙</span>
-						<RoomRuleList rules={room.rules} />
-					</div>
+					{room.rules.length > 0 && (
+						<>
+							<span aria-hidden="true" className="h-px bg-line" />
+							<div className="flex flex-col gap-2">
+								<span className="text-label text-mute">방 규칙</span>
+								<RoomRuleList rules={room.rules} />
+							</div>
+						</>
+					)}
 				</Card>
 			)}
 
