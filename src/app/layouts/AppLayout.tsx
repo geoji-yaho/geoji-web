@@ -2,12 +2,15 @@ import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useEffect, useRef } from "react";
 import { ScrollRestoration, useLocation, useMatches, useNavigate, useNavigationType, useOutlet } from "react-router";
 
+import { useIsOnline } from "@/shared/hooks/useIsOnline";
 import { useSession } from "@/shared/hooks/useSession";
 import { DURATION, EASE_OUT } from "@/shared/lib/motion";
 import { takePathAfterLogin } from "@/shared/lib/path-after-login";
 
 const ENTER_X = 24;
 const EXIT_X = 12;
+
+const OFFLINE_MESSAGE = "연결이 끊겼습니다. 연결되면 이어서 불러옵니다";
 
 let hasEnteredApp = false;
 
@@ -29,6 +32,7 @@ export function AppLayout() {
 	const navigationType = useNavigationType();
 	const matches = useMatches();
 	const { session } = useSession();
+	const isOnline = useIsOnline();
 	const hasSessionRef = useRef(false);
 
 	const direction = navigationType === "POP" ? -1 : 1;
@@ -61,6 +65,11 @@ export function AppLayout() {
 	return (
 		<div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col overflow-x-clip bg-screen">
 			<ScrollRestoration />
+			{!isOnline && (
+				<p role="status" className="sticky top-0 z-50 bg-ink px-5 py-2 text-center text-caption font-bold text-card">
+					{OFFLINE_MESSAGE}
+				</p>
+			)}
 			<AnimatePresence mode="wait" custom={direction}>
 				<motion.main
 					key={transitionKey}
