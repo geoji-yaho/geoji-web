@@ -26,8 +26,7 @@ export function RoomJoinPage() {
 
 	const room = preview.data ?? null;
 	const codeMissing = !code;
-	const codeRejected = preview.error?.kind === "badRequest" || join.error?.kind === "badRequest";
-	const expired = codeMissing || codeRejected;
+	const previewError = preview.error;
 	const alreadyMember = room?.alreadyMember ?? false;
 	const isHellRoom = room?.spiceLevel === "hell";
 	const joinedRoomId = room?.id ?? null;
@@ -43,10 +42,14 @@ export function RoomJoinPage() {
 		return <Navigate to={`/rooms/${joinedRoomId}`} replace state={ALREADY_MEMBER_STATE} />;
 	}
 
-	if (expired) {
+	if (codeMissing || previewError !== null) {
 		return (
 			<div className="flex flex-1 flex-col gap-4.5 px-5 pt-4 pb-8.5">
-				<Alert>{EXPIRED_MESSAGE}</Alert>
+				{previewError === null ? (
+					<Alert>{EXPIRED_MESSAGE}</Alert>
+				) : (
+					<RetryNotice message={previewError.message} onRetry={() => void preview.refetch()} />
+				)}
 				<div className="mt-auto">
 					<StickyCta label="홈으로 가기" onClick={() => void navigate("/")} />
 				</div>
@@ -68,8 +71,6 @@ export function RoomJoinPage() {
 					{LOADING_MESSAGE}
 				</Card>
 			)}
-
-			{preview.error && <RetryNotice message={preview.error.message} onRetry={() => void preview.refetch()} />}
 
 			{room && (
 				<Card className="flex flex-col gap-3.5 p-4.5">
