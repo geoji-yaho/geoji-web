@@ -136,7 +136,7 @@ function replaceBetween(text, begin, end, section) {
 function agentOutputs(file) {
 	const raw = fs.readFileSync(file);
 	const { meta, body } = frontmatter(raw.toString("utf8"));
-	const relative = path.relative(path.join(SRC, "agents"), file);
+	const relative = path.relative(path.join(SRC, "agents"), file).split(path.sep).join("/");
 	const name = typeof meta.name === "string" && meta.name !== "" ? meta.name : path.basename(file, ".md");
 
 	let instructions = body.trim();
