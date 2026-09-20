@@ -1,6 +1,6 @@
 ---
 name: geoji-git
-description: 떼거지 저장소의 git 절차. 브랜치 따기, 커밋 메시지 형식과 타입, lefthook 훅이 하는 일과 MM 함정, PR 머지 조건과 머지 방식, 릴리스 PR 전후의 develop 정리. "브랜치 따줘", "커밋해", "PR 올려", "머지해", "배포해" 같은 요청과 /git:branch, /git:commit, /git:create-pr, /git:merge 커맨드에 쓴다. 금지 패턴은 git-workflow.md 룰이 갖는다.
+description: 떼거지 저장소의 git 절차. 브랜치 따기, 커밋 메시지 형식과 타입, lefthook 훅이 하는 일과 MM 함정, PR 머지 조건과 머지 방식, 머지 뒤 배포. "브랜치 따줘", "커밋해", "PR 올려", "머지해", "배포해" 같은 요청과 /git:branch, /git:commit, /git:create-pr, /git:merge 커맨드에 쓴다. 금지 패턴은 git-workflow.md 룰이 갖는다.
 ---
 
 # 떼거지 git 절차
@@ -10,21 +10,21 @@ description: 떼거지 저장소의 git 절차. 브랜치 따기, 커밋 메시�
 ## 브랜치 전략
 
 ```
-main       배포. 머지되면 GitHub Pages로 자동 배포된다
-  위로
-develop    통합. 모든 feature PR의 base
+main       배포이자 통합. 모든 PR의 base이고 머지되면 GitHub Pages로 자동 배포된다
   위로
 feature/{슬러그}    작업 단위. 설정과 문서 작업도 같다
 ```
 
-대회 출품작이라 hotfix와 release 브랜치는 두지 않는다. 브랜치 이름은 `feature/room-feed`처럼 영문 케밥 케이스로 짓고 원격의 최신 `develop`에서 딴다. 한 브랜치에는 한 가지 일만 담는다. 미커밋 변경이 있으면 커밋할지 스태시할지 사용자에게 먼저 확인한다.
+대회 출품작이라 통합 브랜치와 hotfix, release 브랜치를 두지 않는다. `main` 하나로 가고 형제 저장소 geoji-server도 같다. 브랜치 이름은 `feature/room-feed`처럼 영문 케밥 케이스로 짓고 원격의 최신 `main`에서 딴다. 한 브랜치에는 한 가지 일만 담는다. 미커밋 변경이 있으면 커밋할지 스태시할지 사용자에게 먼저 확인한다.
 
 ```bash
-git fetch origin develop
-git switch -c feature/{슬러그} origin/develop
+git fetch origin main
+git switch -c feature/{슬러그} origin/main
 ```
 
-GitHub 기본 브랜치는 `main`이라 화면에서 PR을 열면 base가 `main`으로 잡힌다. `develop`으로 바꾼다. `/git:create-pr`은 `--base develop`을 명시한다.
+GitHub 기본 브랜치가 `main`이라 화면에서 PR을 열면 base가 그대로 잡힌다. `/git:create-pr`은 `--base main`을 명시한다.
+
+심사 기간에 `main`이 죽으면 심사에서 제외되므로 배포를 깨뜨릴 변경은 PR에서 확인하고 머지한다. 통합 브랜치가 없어 머지가 곧 배포다.
 
 ## 커밋 메시지
 
@@ -60,32 +60,22 @@ pre-commit과 pre-push의 명령은 저장소 전체를 본다. 내가 건드리
 
 ### PR 머지 조건
 
-CI(`.github/workflows/ci.yaml`)가 PR마다 게이트 넷과 하네스 검사 `pnpm harness:check`를 돌린다. `develop`과 `main`은 CI 통과 없이 머지하지 않는다. PR 제목은 커밋과 같은 형식이고 본문은 `.github/PULL_REQUEST_TEMPLATE.md`의 절을 채운다. 검증 절에는 `pnpm check` 통과 여부를 적는다. 훅은 로컬에서 건너뛸 수 있지만 CI는 그럴 수 없어 머지 조건은 CI에 둔다.
+CI(`.github/workflows/ci.yaml`)가 PR마다 게이트 넷과 하네스 검사 `pnpm harness:check`를 돌린다. `main`은 CI 통과 없이 머지하지 않는다. PR 제목은 커밋과 같은 형식이고 본문은 `.github/PULL_REQUEST_TEMPLATE.md`의 절을 채운다. 검증 절에는 `pnpm check` 통과 여부를 적는다. 훅은 로컬에서 건너뛸 수 있지만 CI는 그럴 수 없어 머지 조건은 CI에 둔다.
 
 ## 머지 방식
 
-**merge commit만 쓴다.** squash와 rebase merge를 쓰지 않는다. 작업 단위가 머지 커밋으로 묶여 이력에 남고 `develop`과 `main`의 조상 관계가 유지된다. squash로 압축하면 조상 관계가 끊겨 다음 PR마다 충돌이 새로 생기고 커밋 단위 이력도 사라진다.
+**merge commit만 쓴다.** squash와 rebase merge를 쓰지 않는다. 작업 단위가 머지 커밋으로 묶여 이력에 남고 feature 브랜치와 `main`의 조상 관계가 유지된다. squash로 압축하면 조상 관계가 끊겨 다음 PR마다 충돌이 새로 생기고 커밋 단위 이력도 사라진다.
 
-`gh pr merge`를 쓸 때는 `--merge`를 명시한다. GitHub 화면에서는 Create a merge commit을 고른다. 원격이나 PR이 없으면 `git switch develop` 뒤 `git merge --no-ff feature/{슬러그}`다. 머지 후 `pnpm check`를 돌리고 feature 브랜치는 로컬과 원격에서 지운다. 충돌이 나면 양쪽 의미를 검토해 해소하고 판단이 어려우면 사용자에게 확인한다.
+`gh pr merge`를 쓸 때는 `--merge`를 명시한다. GitHub 화면에서는 Create a merge commit을 고른다. 머지 후 `pnpm check`를 돌리고 feature 브랜치는 로컬과 원격에서 지운다. 충돌이 나면 양쪽 의미를 검토해 해소하고 판단이 어려우면 사용자에게 확인한다.
 
-## 릴리스
+## 배포
 
-`develop`에서 `main`으로 PR을 열어 머지한다. 사용자가 배포를 요청할 때만 한다. PR을 열기 전에 `main`을 먼저 흡수한다. 이 단계를 건너뛰면 PR 화면에서 충돌이 뜬다.
+별도의 릴리스 PR이 없다. PR이 `main`에 머지되면 `.github/workflows/deploy.yaml`이 게이트를 다시 돌리고 GitHub Pages에 배포한다. 배포 주소와 롤백은 `docs/release/RUNBOOK.md`에 있다.
 
-```bash
-git switch develop
-git fetch origin main
-git merge origin/main
-git push origin develop
-```
-
-릴리스 PR을 머지하면 `main`에 머지 커밋이 하나 생겨 `develop`보다 앞선다. 그대로 두면 다음 릴리스 PR에 그 커밋이 다시 끼어든다. 머지 직후 `develop`을 `main`에 맞춘다.
+머지한 뒤에는 로컬 `main`을 원격에 맞추고 다음 작업 브랜치를 거기서 딴다.
 
 ```bash
-git switch develop
+git switch main
 git fetch origin main
 git merge --ff-only origin/main
-git push origin develop
 ```
-
-`main`에 머지되면 `.github/workflows/deploy.yaml`이 게이트를 다시 돌리고 GitHub Pages에 배포한다. 배포 주소와 롤백은 `docs/release/RUNBOOK.md`에 있다.

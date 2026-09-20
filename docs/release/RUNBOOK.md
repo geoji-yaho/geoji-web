@@ -7,7 +7,7 @@
 
 ## 배포
 
-GitHub Pages에 배포한다. `main`이 프로덕션이고 `develop`을 `main`으로 머지하면 자동으로 배포된다.
+GitHub Pages에 배포한다. `main`이 프로덕션이고 PR을 `main`으로 머지하면 자동으로 배포된다.
 
 | 항목         | 값                                                                  |
 | ------------ | ------------------------------------------------------------------- |
@@ -17,7 +17,7 @@ GitHub Pages에 배포한다. `main`이 프로덕션이고 `develop`을 `main`�
 | 빌드         | `pnpm build` (Vite, base 경로 `/geoji-web/`)                        |
 | 게이트       | 타입 검사, 빌드, 린트, 포맷 검사. 하나라도 실패하면 배포하지 않는다 |
 
-Deploy 워크플로는 빌드 잡에서 게이트를 돌리고 산출물을 올린 뒤 배포 잡이 GitHub Pages에 올린다. PR은 `develop`으로 올리고 CI(`.github/workflows/ci.yaml`) 통과 뒤에만 머지한다. CI는 `develop`과 `main`으로 가는 PR과 푸시에서 같은 게이트를 돈다. GitHub Pages는 정적 호스팅이라 슬립이 없고, 프론트엔드가 저절로 죽을 요인은 저장소 삭제와 워크플로 실패 정도다.
+Deploy 워크플로는 빌드 잡에서 게이트를 돌리고 산출물을 올린 뒤 배포 잡이 GitHub Pages에 올린다. PR은 `main`으로 올리고 CI(`.github/workflows/ci.yaml`) 통과 뒤에만 머지한다. CI는 `main`으로 가는 PR과 푸시에서 같은 게이트를 돈다. GitHub Pages는 정적 호스팅이라 슬립이 없고, 프론트엔드가 저절로 죽을 요인은 저장소 삭제와 워크플로 실패 정도다.
 
 배포 뒤에는 프로덕션 URL에 접속해 화면이 뜨는지 보고, Actions 탭의 Deploy 실행이 성공했는지와 배포된 커밋이 의도한 커밋인지 본다.
 
@@ -29,7 +29,7 @@ BrowserRouter를 쓰므로 `/rooms/1` 같은 경로를 서버가 모른다. GitH
 
 두 가지 방법이 있다. 어느 쪽이든 배포 뒤 실제 접속을 확인한다.
 
-1. 문제 커밋을 `git revert`로 되돌려 `develop`을 거쳐 `main`에 머지한다. 배포가 자동으로 다시 돈다
+1. 문제 커밋을 `git revert`로 되돌린 브랜치를 `main`에 머지한다. 배포가 자동으로 다시 돈다
 2. Actions 탭에서 마지막으로 성공한 Deploy 실행을 열어 Re-run all jobs를 누른다. 그 시점의 커밋으로 다시 배포된다
 
 ## 환경 변수

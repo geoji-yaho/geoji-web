@@ -12,6 +12,7 @@ export type CreateQueryClientOptions = {
 	onUnauthorized?: () => void;
 };
 
+const NETWORK_MODE = "always";
 const STALE_TIME_MS = 10_000;
 const RETRY_LIMIT = 2;
 const RETRYABLE_KINDS: readonly ApiErrorKind[] = ["network", "timeout", "server"];
@@ -28,11 +29,13 @@ export function createQueryClient(options: CreateQueryClientOptions = {}) {
 		mutationCache: new MutationCache({ onError: handleError }),
 		defaultOptions: {
 			queries: {
+				networkMode: NETWORK_MODE,
 				staleTime: STALE_TIME_MS,
 				retry: (failureCount, error) =>
 					failureCount < RETRY_LIMIT && isApiError(error) && RETRYABLE_KINDS.includes(error.kind)
 			},
 			mutations: {
+				networkMode: NETWORK_MODE,
 				retry: false
 			}
 		}

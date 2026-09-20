@@ -159,33 +159,33 @@ export function ExpenseCard(props: ExpenseCardProps) {
 				)}
 
 				{props.state === "judged" && (
-					<div className="flex items-start gap-3">
-						<VerdictStamp verdict={props.verdict} />
-						<div className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-mute">
-							<span>
-								배심원 평결&nbsp;
-								<b className="font-black text-ink">
-									{props.tally.oppose} : {props.tally.support}
-								</b>
-							</span>
-							{props.sentence && (
+					<>
+						<div className="flex items-start gap-3">
+							<VerdictStamp verdict={props.verdict} />
+							<div className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-mute">
 								<span>
-									AI 판사 선고&nbsp;
-									<b className="font-black text-red">{props.sentenceLabel ?? SENTENCE_LABELS[props.sentence]}</b>
-									{formatSentenceNote(props.sentence, props.sentenceLabel)}
+									배심원 평결&nbsp;
+									<b className="font-black text-ink">
+										{props.tally.oppose} : {props.tally.support}
+									</b>
 								</span>
-							)}
-							{props.headline && <span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>}
-						</div>
-						<div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
+								{props.sentence && (
+									<span>
+										AI 판사 선고&nbsp;
+										<b className="font-black text-red">{props.sentenceLabel ?? SENTENCE_LABELS[props.sentence]}</b>
+										{formatSentenceNote(props.sentence, props.sentenceLabel)}
+									</span>
+								)}
+								{props.headline && <span className="text-control text-text">&ldquo;{props.headline}&rdquo;</span>}
+							</div>
 							<MemeThumbnail meme={props.meme} size="sm" />
-							{props.onOpenVerdict && (
-								<Button variant="outline" className="rounded-2xl px-1 py-2 text-center" onClick={props.onOpenVerdict}>
-									판결문 보기
-								</Button>
-							)}
 						</div>
-					</div>
+						{props.onOpenVerdict && (
+							<Button variant="outline" onClick={props.onOpenVerdict}>
+								판결문 보기
+							</Button>
+						)}
+					</>
 				)}
 
 				{props.state === "dismissed" && (
