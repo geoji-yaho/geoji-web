@@ -30,7 +30,7 @@ export function BudgetOnboardingPage() {
 
 	const parsed = parseAmount(amount);
 	const withinRange = parsed !== null && parsed >= BUDGET_MIN && parsed <= BUDGET_MAX;
-	const failed = onboarding.isError && onboarding.error.kind !== "conflict";
+	const failed = onboarding.isError;
 
 	const submit = () => {
 		if (!withinRange) {
@@ -45,12 +45,6 @@ export function BudgetOnboardingPage() {
 				onSuccess: () => {
 					clearOnboardingSkip();
 					void navigate("/");
-				},
-				onError: (error) => {
-					if (error.kind === "conflict") {
-						clearOnboardingSkip();
-						void navigate("/");
-					}
 				}
 			}
 		);
