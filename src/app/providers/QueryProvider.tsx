@@ -25,6 +25,18 @@ async function signOutQuietly() {
 	}
 }
 
+async function goToLogin(hadSession: boolean) {
+	try {
+		await router.navigate(LOGIN_PATH, { replace: true, state: hadSession ? EXPIRED_STATE : SIGN_IN_STATE });
+	} catch {
+		return;
+	} finally {
+		clearOnboardingSkip();
+		queryClient.clear();
+		isHandlingUnauthorized = false;
+	}
+}
+
 const queryClient = createQueryClient({
 	onUnauthorized: () => {
 		if (isHandlingUnauthorized) {
@@ -40,16 +52,10 @@ const queryClient = createQueryClient({
 		isHandlingUnauthorized = true;
 		setPathAfterLogin(pathname + search);
 
-		const hadSession = getSessionSnapshot().session !== null;
+		const { session, hasFailed } = getSessionSnapshot();
 
 		void signOutQuietly();
-		void router
-			.navigate(LOGIN_PATH, { replace: true, state: hadSession ? EXPIRED_STATE : SIGN_IN_STATE })
-			.finally(() => {
-				clearOnboardingSkip();
-				queryClient.clear();
-				isHandlingUnauthorized = false;
-			});
+		void goToLogin(session !== null || hasFailed);
 	}
 });
 
