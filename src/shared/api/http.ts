@@ -98,6 +98,17 @@ function toRequestError(error: unknown, signal: AbortSignal | undefined) {
 	return new ApiError("unknown", API_ERROR_MESSAGES.unknown, { cause: error });
 }
 
+function waitForAbort(signal: AbortSignal) {
+	return new Promise<never>((_, reject) => {
+		if (signal.aborted) {
+			reject(signal.reason);
+			return;
+		}
+
+		signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+	});
+}
+
 function linkAbortSignals(signal: AbortSignal | undefined, timeoutMs: number) {
 	if (signal?.aborted) {
 		return { signal, release: () => {} };
@@ -126,12 +137,13 @@ function linkAbortSignals(signal: AbortSignal | undefined, timeoutMs: number) {
 async function request<T>(method: HttpMethod, path: string, options: RequestOptions = {}) {
 	const { query, body, signal, timeoutMs = DEFAULT_TIMEOUT_MS, auth = true } = options;
 	const url = buildUrl(path, query);
-	const headers = await buildHeaders(body, auth);
 	let releaseSignals = () => {};
 
 	try {
 		const linked = linkAbortSignals(signal, timeoutMs);
 		releaseSignals = linked.release;
+
+		const headers = await Promise.race([buildHeaders(body, auth), waitForAbort(linked.signal)]);
 
 		const response = await fetch(url, {
 			method,
